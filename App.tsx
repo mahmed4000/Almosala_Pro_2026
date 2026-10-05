@@ -1375,6 +1375,7 @@ function AlmosalaApp() {
   const currentScrollYRef = useRef<number>(0);
   const [quranReaderFullScreen, setQuranReaderFullScreen] = useState<boolean>(false);
   const [streamSurahCount, setStreamSurahCount] = useState<number>(1);
+  const [streamPageCount, setStreamPageCount] = useState<number>(3);
 
   // Robust High-Performance Smooth Auto-Scrolling
   useEffect(() => {
@@ -1912,6 +1913,7 @@ function AlmosalaApp() {
         setSelectedSurah(found);
         setSurahPageIndex(pageIndex);
         setStreamSurahCount(1);
+        setStreamPageCount(3);
         navigate('QuranReader');
       };
       (window as any).__toggleQuranAutoScroll = (active: boolean, speed?: number) => {
@@ -2603,6 +2605,7 @@ function AlmosalaApp() {
         setSelectedSurah(target);
         setSurahPageIndex(pageIndex);
         setStreamSurahCount(1);
+        setStreamPageCount(3);
         setScreen('QuranReader');
       }
     };
@@ -10008,6 +10011,7 @@ const ALLAH_99_NAMES = [
                 setSelectedSurah(foundSurah);
                 setReadingAyah(readingBookmark.ayahNumber);
                 setStreamSurahCount(1);
+                setStreamPageCount(4);
                 navigate('QuranReader');
                 setTimeout(() => {
                   if (Platform.OS === 'web') {
@@ -10165,6 +10169,7 @@ const ALLAH_99_NAMES = [
                 setReadingAyah(surah.id === 18 ? 15 : 1);
                 setSurahPageIndex(0);
                 setStreamSurahCount(1);
+                setStreamPageCount(3);
                 navigate('QuranReader');
               }}
               rightElement={
@@ -10351,6 +10356,7 @@ const ALLAH_99_NAMES = [
                         setSelectedSurah(foundSurah);
                         setReadingAyah(readingBookmark.ayahNumber);
                         setStreamSurahCount(1);
+                        setStreamPageCount(4);
                         setTimeout(() => {
                           if (Platform.OS === 'web') {
                             const el = document.getElementById('reading-bookmark-target');
@@ -10533,10 +10539,11 @@ const ALLAH_99_NAMES = [
             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
             currentScrollYRef.current = contentOffset.y;
             if (
-              contentSize.height > layoutMeasurement.height + 300 &&
-              contentOffset.y > 200 &&
-              contentOffset.y + layoutMeasurement.height >= contentSize.height - 400
+              contentSize.height > layoutMeasurement.height + 200 &&
+              contentOffset.y > 100 &&
+              contentOffset.y + layoutMeasurement.height >= contentSize.height - 350
             ) {
+              setStreamPageCount((prev: number) => prev + 3);
               setStreamSurahCount((prev: number) => Math.min(114, prev + 1));
             }
           }}
@@ -10588,8 +10595,8 @@ const ALLAH_99_NAMES = [
                   </View>
                 )}
 
-                {/* Pages of this Surah */}
-                {pages.map((page, pIdx) => (
+                {/* Pages of this Surah (Lazy sliced to streamPageCount) */}
+                {pages.slice(0, streamPageCount).map((page, pIdx) => (
                   <View key={`surah-${surah.id}-page-${pIdx}`} style={{ width: '100%' }}>
                     {/* Subtle Authentic Madinah Mushaf Page Divider */}
                     {pIdx > 0 && (
@@ -10636,7 +10643,6 @@ const ALLAH_99_NAMES = [
                       color={c.textPrimary}
                       style={{
                         lineHeight: quranFontSize * 1.95,
-                        letterSpacing: 0.4,
                         textAlign: Platform.OS === 'web' ? 'justify' : 'right'
                       }}
                     >
@@ -10651,56 +10657,24 @@ const ALLAH_99_NAMES = [
                             onPress={() => handleOpenAyahTafsir(surah, v)}
                             style={{
                               backgroundColor: isSelected
-                                ? 'rgba(198, 146, 85, 0.35)'
+                                ? (themeMode === 'light' ? 'rgba(198, 146, 85, 0.25)' : 'rgba(198, 146, 85, 0.35)')
                                 : isMarked
-                                ? (themeMode === 'light' ? 'rgba(212, 163, 115, 0.25)' : 'rgba(212, 163, 115, 0.35)')
-                                : 'transparent',
-                              borderBottomWidth: isMarked ? 2.5 : 0,
-                              borderBottomColor: isMarked ? '#C69255' : 'transparent',
-                              borderRadius: 4
+                                ? (themeMode === 'light' ? 'rgba(212, 163, 115, 0.2)' : 'rgba(212, 163, 115, 0.3)')
+                                : undefined
                             }}
                           >
-                            {isMarked && (
+                            {isMarked ? ' 🔖 ' : ''}
+                            {v.text}
+                            {v.badge ? (
                               <Text
                                 style={{
-                                  backgroundColor: '#C69255',
-                                  color: '#FFFFFF',
-                                  fontSize: Math.max(10.5, quranFontSize * 0.42),
-                                  fontFamily: Platform.OS === 'web' ? 'Tajawal, sans-serif' : (fontsLoaded ? 'Tajawal_700Bold' : undefined),
-                                  fontWeight: 'bold',
-                                  paddingHorizontal: 7,
-                                  paddingVertical: 2,
-                                  borderRadius: 6,
-                                  marginHorizontal: 4
+                                  color: isMarked ? '#C69255' : (isSelected ? TOKENS.colors.primaryDark : TOKENS.colors.primary),
+                                  fontWeight: 'bold'
                                 }}
                               >
-                                {` 🔖 ${t('علامة التوقف', 'Bookmark')} `}
+                                {` ${v.badge} `}
                               </Text>
-                            )}
-                            <Text
-                              style={{
-                                fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : (fontsLoaded ? 'Amiri_400Regular' : undefined),
-                                color: isSelected ? TOKENS.colors.primaryDark : c.textPrimary,
-                                fontWeight: isMarked ? '600' : 'normal'
-                              }}
-                            >
-                              {v.text}
-                            </Text>
-                            {v.badge ? (
-                              <>
-                                {' '}
-                                <Text
-                                  style={{
-                                    fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : (fontsLoaded ? 'Amiri_700Bold' : undefined),
-                                    color: isMarked ? '#C69255' : (isSelected ? TOKENS.colors.primaryDark : TOKENS.colors.primary),
-                                    fontWeight: '700'
-                                  }}
-                                >
-                                  {v.badge}
-                                </Text>
-                                {' '}
-                              </>
-                            ) : null}
+                            ) : ' '}
                           </Text>
                         );
                       })}
