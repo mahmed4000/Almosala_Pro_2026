@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -1117,6 +1117,53 @@ const SURAH_TASHKEEL: Record<number, string> = {
   113: 'الفَلَقِ',
   114: 'النَّاسِ'
 };
+
+// High-performance static cache for Quran Surah pages and verse parsing
+const PARSED_SURAH_CACHE: Record<number, any> = {};
+
+function getParsedSurahPages(surah: any) {
+  if (!surah) return { surah, pages: [] };
+  if (PARSED_SURAH_CACHE[surah.id]) {
+    return PARSED_SURAH_CACHE[surah.id];
+  }
+  const sPages = getSurahPages(surah);
+  const parsedPages = sPages.map((pageText: string, pIdx: number) => {
+    const pageMeta = surah.pageMetadata && surah.pageMetadata[pIdx];
+    const mushafPageNum = pageMeta?.pageNum || ((SURAH_MUSHAF_PAGES[surah.id] || 1) + pIdx);
+    const juzNum = pageMeta?.juz || surah.juz || 1;
+
+    const tokens = pageText.split(/(﴿[٠-٩0-9]+﴾)/g);
+    const verses: { text: string; badge: string; ayahNumber: number; arabicNumber: string }[] = [];
+    for (let i = 0; i < tokens.length; i += 2) {
+      const vText = tokens[i] || '';
+      const vBadge = tokens[i + 1] || '';
+      if (vText.trim() || vBadge.trim()) {
+        const numMatch = vBadge.match(/[٠-٩0-9]+/);
+        const rawNum = numMatch ? numMatch[0] : '';
+        const stdNum = parseInt(toStandardNumber(rawNum), 10) || (verses.length + 1);
+        verses.push({
+          text: vText,
+          badge: vBadge,
+          ayahNumber: stdNum,
+          arabicNumber: rawNum || toArabicNumber(stdNum)
+        });
+      }
+    }
+    return {
+      pageIndex: pIdx,
+      mushafPageNum,
+      juzNum,
+      verses
+    };
+  });
+
+  const result = {
+    surah,
+    pages: parsedPages
+  };
+  PARSED_SURAH_CACHE[surah.id] = result;
+  return result;
+}
 
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 48 : (Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0);
 
@@ -10162,45 +10209,7 @@ const ALLAH_99_NAMES = [
 
     const firstPageText = (activeSurah.pages && activeSurah.pages[0]) || activeSurah.text || 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
-    const parsedSurahStream = useMemo(() => {
-      return streamSurahs.map((surah: any) => {
-        const sPages = getSurahPages(surah);
-        const parsedPages = sPages.map((pageText: string, pIdx: number) => {
-          const pageMeta = surah.pageMetadata && surah.pageMetadata[pIdx];
-          const mushafPageNum = pageMeta?.pageNum || ((SURAH_MUSHAF_PAGES[surah.id] || 1) + pIdx);
-          const juzNum = pageMeta?.juz || surah.juz || 1;
-
-          const tokens = pageText.split(/(﴿[٠-٩0-9]+﴾)/g);
-          const verses: { text: string; badge: string; ayahNumber: number; arabicNumber: string }[] = [];
-          for (let i = 0; i < tokens.length; i += 2) {
-            const vText = tokens[i] || '';
-            const vBadge = tokens[i + 1] || '';
-            if (vText.trim() || vBadge.trim()) {
-              const numMatch = vBadge.match(/[٠-٩0-9]+/);
-              const rawNum = numMatch ? numMatch[0] : '';
-              const stdNum = parseInt(toStandardNumber(rawNum), 10) || (verses.length + 1);
-              verses.push({
-                text: vText,
-                badge: vBadge,
-                ayahNumber: stdNum,
-                arabicNumber: rawNum || toArabicNumber(stdNum)
-              });
-            }
-          }
-          return {
-            pageIndex: pIdx,
-            mushafPageNum,
-            juzNum,
-            verses
-          };
-        });
-
-        return {
-          surah,
-          pages: parsedPages
-        };
-      });
-    }, [safeStartIndex, streamSurahCount]);
+    const parsedSurahStream = streamSurahs.map((surah: any) => getParsedSurahPages(surah));
 
     return (
       <View style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}>
