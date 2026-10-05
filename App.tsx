@@ -48,7 +48,7 @@ import {
 } from '@expo-google-fonts/amiri';
 
 const isWeb = Platform.OS === 'web';
-// Inject mobile viewport height lock for rock-solid mobile layout
+// Inject rock-solid mobile viewport height and flex locking
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
   try {
     const existing = document.getElementById('almosala-viewport-lock');
@@ -56,15 +56,23 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
       const s = document.createElement('style');
       s.id = 'almosala-viewport-lock';
       s.innerHTML = `
-        html, body, #root {
+        html, body {
           height: 100% !important;
-          height: 100dvh !important;
-          max-height: 100% !important;
-          max-height: 100dvh !important;
           width: 100% !important;
           margin: 0 !important;
           padding: 0 !important;
           overflow: hidden !important;
+        }
+        #root, #root > div {
+          height: 100% !important;
+          max-height: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 1 0% !important;
         }
       `;
       document.head.appendChild(s);
@@ -76,16 +84,37 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 // --- NATIVE SENSOR & GEOLOCATION HELPERS ---
 const triggerHapticFeedback = (type: 'light' | 'medium' | 'success' = 'light') => {
   try {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS !== 'web' && Haptics) {
       if (type === 'success') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)?.catch?.(() => {});
       } else if (type === 'medium') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)?.catch?.(() => {});
       } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)?.catch?.(() => {});
       }
     }
   } catch (e) {}
+};
+
+// Platform-Safe Shadow Utility (Guarantees zero crashes on native iOS / Android)
+const makeShadow = (
+  webShadow: string,
+  nativeColor: string = '#000',
+  nativeOpacity: number = 0.08,
+  nativeRadius: number = 4,
+  nativeOffset: { width: number; height: number } = { width: 0, height: 2 },
+  nativeElevation: number = 3
+) => {
+  if (Platform.OS === 'web') {
+    return { boxShadow: webShadow };
+  }
+  return {
+    shadowColor: nativeColor,
+    shadowOffset: nativeOffset,
+    shadowOpacity: nativeOpacity,
+    shadowRadius: nativeRadius,
+    elevation: nativeElevation
+  };
 };
 
 // Kaaba Coordinates (Makkah al-Mukarramah)
@@ -1070,7 +1099,7 @@ const toStandardNumber = (str: string | number): string => {
   return String(str).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
 };
 
-export default function App() {
+function AlmosalaApp() {
   const [fontsLoaded] = useFonts({
     Tajawal_400Regular,
     Tajawal_500Medium,
@@ -1090,6 +1119,7 @@ export default function App() {
   // Settings State
   const [themeMode, setThemeMode] = useState('light'); // 'light' | 'dark'
   const [lang, setLang] = useState('ar');               // 'ar' | 'en'
+  const [selectedRiwayah, setSelectedRiwayah] = useState('hafs');
   const [quranFontSize, setQuranFontSize] = useState(34); // 26, 32, 38, 44
   const [calculationMethod, setCalculationMethod] = useState('mwl');
   const [asrMethod, setAsrMethod] = useState('majority');
@@ -1874,34 +1904,44 @@ export default function App() {
         min-width: 0;
       }
       html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        min-height: 100%;
-        overflow-x: hidden;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
         background-color: #FAF6F0;
         direction: rtl;
         text-align: right;
         font-family: Tajawal, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
       #root {
-        width: 100%;
-        min-height: 100%;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
         display: flex !important;
+        flex-direction: column !important;
         justify-content: center !important;
         align-items: stretch !important;
         background-color: #FAF6F0;
+        overflow: hidden !important;
       }
       #root > div {
         width: 100% !important;
-        max-width: 440px !important;
+        height: 100% !important;
+        max-height: 100% !important;
         margin: 0 auto !important;
         display: flex !important;
         flex-direction: column !important;
+        flex: 1 1 0% !important;
+        overflow: hidden !important;
       }
       @media (min-width: 481px) {
         html, body {
           background-color: #ECE4D8 !important;
+        }
+        #root > div {
+          max-width: 440px !important;
         }
       }
     `;
@@ -2357,7 +2397,7 @@ export default function App() {
     return (
       <View
         style={{
-          ...StyleSheet.absoluteFillObject,
+          ...(StyleSheet.absoluteFill as any),
           borderWidth: 2,
           borderColor: '#C69255',
           borderRadius: 8,
@@ -2553,10 +2593,18 @@ export default function App() {
 
   // Reusable Typography Component with Guaranteed Arabic Alignment
   const TextUI = ({ children, style, weight = 'regular', size = 15, color, align, quran = false, numberOfLines, onPress }: any) => {
-    let fontFamily = Platform.OS === 'web'
-      ? (quran ? 'Amiri, serif' : 'Tajawal, "Noto Sans Arabic", -apple-system, sans-serif')
-      : (quran ? (weight === 'bold' ? 'Amiri_700Bold' : 'Amiri_400Regular') : (weight === 'bold' ? 'Tajawal_700Bold' : weight === 'medium' ? 'Tajawal_500Medium' : 'Tajawal_400Regular'));
-    let fontWeight = weight === 'bold' ? '700' : weight === 'medium' ? '500' : '400';
+    let fontFamily: string | undefined = undefined;
+    let fontWeight: any = weight === 'bold' ? '700' : weight === 'medium' ? '500' : '400';
+
+    if (Platform.OS === 'web') {
+      fontFamily = quran ? 'Amiri, serif' : 'Tajawal, "Noto Sans Arabic", -apple-system, sans-serif';
+    } else if (fontsLoaded) {
+      fontFamily = quran
+        ? (weight === 'bold' ? 'Amiri_700Bold' : 'Amiri_400Regular')
+        : (weight === 'bold' ? 'Tajawal_700Bold' : weight === 'medium' ? 'Tajawal_500Medium' : 'Tajawal_400Regular');
+      // On iOS / Android native, the loaded font file already encapsulates the weight; omitting fontWeight prevents iOS font lookup crashes
+      fontWeight = undefined;
+    }
 
     const alignment = align || (isRTL ? 'right' : 'left');
 
@@ -2566,8 +2614,8 @@ export default function App() {
         onPress={onPress}
         style={[
           {
-            fontFamily,
-            fontWeight,
+            ...(fontFamily ? { fontFamily } : {}),
+            ...(fontWeight ? { fontWeight } : {}),
             fontSize: size,
             color: color || c.textPrimary,
             textAlign: alignment,
@@ -2788,17 +2836,17 @@ export default function App() {
           backgroundColor: c.surface,
           borderTopWidth: 1,
           borderColor: c.border,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 22 : 10,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 6,
+          minHeight: 56,
+          maxHeight: 64,
+          flexShrink: 0,
           justifyContent: 'space-around',
           alignItems: 'center',
           width: '100%',
-          zIndex: 100,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4
+          zIndex: 9999,
+          elevation: 12,
+          ...makeShadow('0 -2px 10px rgba(0, 0, 0, 0.06)', '#000', 0.06, 6, { width: 0, height: -2 }, 4)
         }}
       >
         {tabs.map((tab) => {
@@ -3335,7 +3383,7 @@ export default function App() {
               padding: 20,
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: '0 8px 30px rgba(93, 58, 34, 0.15)'
+              ...makeShadow('0 8px 30px rgba(93, 58, 34, 0.15)', '#5D3A22', 0.15, 8, { width: 0, height: 4 }, 6)
             }}
           >
             {/* Decorative Inner Thin Border */}
@@ -3717,7 +3765,7 @@ export default function App() {
               marginBottom: 16,
               borderWidth: 1.5,
               borderColor: 'rgba(198, 146, 85, 0.45)',
-              boxShadow: '0 8px 24px rgba(93, 58, 34, 0.16)'
+              ...makeShadow('0 8px 24px rgba(93, 58, 34, 0.16)', '#5D3A22', 0.16, 8, { width: 0, height: 4 }, 6)
             }}
           >
             <LinearGradient
@@ -3955,7 +4003,7 @@ export default function App() {
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 18,
-              boxShadow: '0 4px 14px rgba(140, 94, 60, 0.3)'
+              ...makeShadow('0 4px 14px rgba(140, 94, 60, 0.3)', '#8C5E3C', 0.3, 6, { width: 0, height: 2 }, 4)
             }}
           >
             <Feather name="book-open" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
@@ -4120,7 +4168,7 @@ export default function App() {
             paddingVertical: 16,
             borderRadius: TOKENS.radius.pill,
             alignItems: 'center',
-            boxShadow: '0 4px 14px rgba(140, 94, 60, 0.35)'
+            ...makeShadow('0 4px 14px rgba(140, 94, 60, 0.35)', '#8C5E3C', 0.35, 6, { width: 0, height: 2 }, 4)
           }}
         >
           <TextUI weight="bold" size={16} color="#FFFFFF">
@@ -4430,7 +4478,7 @@ export default function App() {
             marginBottom: 16,
             borderWidth: 1.5,
             borderColor: 'rgba(198, 146, 85, 0.45)',
-            boxShadow: '0 8px 24px rgba(93, 58, 34, 0.22)'
+            ...makeShadow('0 8px 24px rgba(93, 58, 34, 0.22)', '#5D3A22', 0.22, 8, { width: 0, height: 4 }, 6)
           }}
         >
           <LinearGradient
@@ -4587,7 +4635,7 @@ export default function App() {
                       : c.surface,
                     borderWidth: 1.5,
                     borderColor: isNext ? TOKENS.colors.secondary : c.border,
-                    boxShadow: isNext ? '0 4px 12px rgba(140, 94, 60, 0.25)' : 'none'
+                    ...(isNext ? makeShadow('0 4px 12px rgba(140, 94, 60, 0.25)', '#8C5E3C', 0.25, 4, { width: 0, height: 2 }, 4) : {})
                   }}
                 >
                   {isNext ? (
@@ -5312,7 +5360,7 @@ export default function App() {
               marginBottom: 16,
               borderWidth: 1.5,
               borderColor: 'rgba(198, 146, 85, 0.45)',
-              boxShadow: '0 8px 24px rgba(93, 58, 34, 0.16)'
+              ...makeShadow('0 8px 24px rgba(93, 58, 34, 0.16)', '#5D3A22', 0.16, 8, { width: 0, height: 4 }, 6)
             }}
           >
             <LinearGradient
@@ -7455,7 +7503,7 @@ export default function App() {
               marginBottom: 16,
               borderWidth: 1.5,
               borderColor: 'rgba(198, 146, 85, 0.45)',
-              boxShadow: '0 8px 24px rgba(93, 58, 34, 0.16)'
+              ...makeShadow('0 8px 24px rgba(93, 58, 34, 0.16)', '#5D3A22', 0.16, 8, { width: 0, height: 4 }, 6)
             }}
           >
             <LinearGradient
@@ -8168,7 +8216,7 @@ const ALLAH_99_NAMES = [
                       borderColor: done ? '#4E7D5B' : c.border,
                       padding: 18,
                       marginBottom: 14,
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+                      ...makeShadow('0 2px 10px rgba(0,0,0,0.03)', '#000', 0.03, 4, { width: 0, height: 1 }, 2)
                     }}
                   >
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -8878,7 +8926,7 @@ const ALLAH_99_NAMES = [
                   alignItems: 'center',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(93, 58, 34, 0.04)'
+                  ...makeShadow('0 2px 8px rgba(93, 58, 34, 0.04)', '#5D3A22', 0.04, 4, { width: 0, height: 1 }, 2)
                 }}
               >
                 <ArabesqueWatermark opacity={0.04} color={TOKENS.colors.secondary} />
@@ -9651,7 +9699,7 @@ const ALLAH_99_NAMES = [
             paddingHorizontal: 20,
             borderRadius: TOKENS.radius.md,
             marginBottom: 18,
-            boxShadow: '0 4px 14px rgba(140, 94, 60, 0.25)'
+            ...makeShadow('0 4px 14px rgba(140, 94, 60, 0.25)', '#8C5E3C', 0.25, 6, { width: 0, height: 2 }, 4)
           }}
         >
           <Feather name={gpsLoading ? "loader" : "crosshair"} size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
@@ -9903,7 +9951,7 @@ const ALLAH_99_NAMES = [
         {readingBookmark && (
           <View style={{ paddingHorizontal: 18, marginBottom: 12 }}>
             <TouchableOpacity
-              nativeID="resume-reading-card"
+              testID="resume-reading-card"
               activeOpacity={0.85}
               onPress={() => {
                 const foundSurah = SURAHS.find((s: any) => s.id === readingBookmark.surahId) || SURAHS[0];
@@ -9927,7 +9975,7 @@ const ALLAH_99_NAMES = [
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 3px 12px rgba(198, 146, 85, 0.12)'
+                ...makeShadow('0 3px 12px rgba(198, 146, 85, 0.12)', '#C69255', 0.15, 6, { width: 0, height: 2 }, 4)
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11, flex: 1 }}>
@@ -10171,7 +10219,7 @@ const ALLAH_99_NAMES = [
               gap: 6,
               borderWidth: 1.5,
               borderColor: 'rgba(198, 146, 85, 0.5)',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)'
+              ...makeShadow('0 4px 14px rgba(0, 0, 0, 0.25)', '#000', 0.25, 6, { width: 0, height: 2 }, 6)
             }}
           >
             <Feather name="minimize-2" size={13} color={TOKENS.colors.primary} />
@@ -10188,7 +10236,7 @@ const ALLAH_99_NAMES = [
               backgroundColor: themeMode === 'light' ? '#FFFDF8' : '#271D17',
               borderBottomWidth: 1,
               borderColor: 'rgba(198, 146, 85, 0.3)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+              ...makeShadow('0 2px 8px rgba(0, 0, 0, 0.04)', '#000', 0.04, 4, { width: 0, height: 1 }, 2),
               zIndex: 50
             }}
           >
@@ -10204,7 +10252,7 @@ const ALLAH_99_NAMES = [
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <TouchableOpacity
-                  nativeID="quran-reader-back-btn"
+                  testID="quran-reader-back-btn"
                   onPress={goBack}
                   style={{
                     width: 34,
@@ -10448,7 +10496,7 @@ const ALLAH_99_NAMES = [
                     paddingHorizontal: 9,
                     borderRadius: TOKENS.radius.pill,
                     backgroundColor: quranAutoScroll ? '#C62828' : TOKENS.colors.primary,
-                    boxShadow: quranAutoScroll ? '0 2px 8px rgba(198, 40, 40, 0.4)' : '0 2px 8px rgba(198, 146, 85, 0.3)'
+                    ...(quranAutoScroll ? makeShadow('0 2px 8px rgba(198, 40, 40, 0.4)', '#C62828', 0.4, 4, { width: 0, height: 2 }, 4) : makeShadow('0 2px 8px rgba(198, 146, 85, 0.3)', '#C69255', 0.3, 4, { width: 0, height: 2 }, 4))
                   }}
                 >
                   <Feather name={quranAutoScroll ? 'pause' : 'play'} size={11} color="#FFFFFF" />
@@ -10506,7 +10554,7 @@ const ALLAH_99_NAMES = [
                   borderColor: 'rgba(198, 146, 85, 0.4)',
                   padding: quranReaderFullScreen ? 14 : 20,
                   paddingVertical: 22,
-                  boxShadow: '0 4px 16px rgba(93, 58, 34, 0.06)'
+                  ...makeShadow('0 4px 16px rgba(93, 58, 34, 0.06)', '#5D3A22', 0.08, 6, { width: 0, height: 2 }, 3)
                 }}
               >
                 {/* Interactive Ayah Hint Banner (Only shown once at very top) */}
@@ -10714,7 +10762,7 @@ const ALLAH_99_NAMES = [
                 maxHeight: '84%',
                 borderWidth: 1,
                 borderColor: 'rgba(198, 146, 85, 0.35)',
-                boxShadow: '0 -8px 24px rgba(0,0,0,0.2)'
+                ...makeShadow('0 -8px 24px rgba(0,0,0,0.2)', '#000', 0.2, 8, { width: 0, height: -4 }, 8)
               }}
             >
               {/* Top Handle Bar */}
@@ -10749,7 +10797,7 @@ const ALLAH_99_NAMES = [
                   </View>
                 </View>
                 <TouchableOpacity
-                  nativeID="close-tafsir-modal-btn"
+                  testID="close-tafsir-modal-btn"
                   onPress={() => setTafsirModalVisible(false)}
                   style={{
                     width: 32,
@@ -10812,7 +10860,7 @@ const ALLAH_99_NAMES = [
                     </View>
                   )}
                   <TouchableOpacity
-                    nativeID="set-reading-bookmark-btn"
+                    testID="set-reading-bookmark-btn"
                     activeOpacity={0.8}
                     onPress={() => {
                       const isCurrentlyMarked = readingBookmark?.surahId === selectedAyahForTafsir.surahId && readingBookmark?.ayahNumber === selectedAyahForTafsir.ayahNumber;
@@ -11183,7 +11231,7 @@ const ALLAH_99_NAMES = [
                 marginBottom: 4,
                 borderWidth: 1.5,
                 borderColor: TOKENS.colors.secondary,
-                boxShadow: '0 2px 8px rgba(198, 146, 85, 0.25)',
+                ...makeShadow('0 2px 8px rgba(198, 146, 85, 0.25)', '#C69255', 0.25, 4, { width: 0, height: 1 }, 3),
                 gap: 8
               }}
             >
@@ -11337,7 +11385,7 @@ const ALLAH_99_NAMES = [
                   backgroundColor: TOKENS.colors.primary,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 6px 18px rgba(140, 94, 60, 0.4)'
+                  ...makeShadow('0 6px 18px rgba(140, 94, 60, 0.4)', '#8C5E3C', 0.4, 6, { width: 0, height: 3 }, 6)
                 }}
               >
                 <Feather name={audioPlaying ? 'pause' : 'play'} size={28} color="#FFFFFF" />
@@ -11916,8 +11964,6 @@ const ALLAH_99_NAMES = [
   );
 
   const renderQuranSettings = () => {
-    const [selectedRiwayah, setSelectedRiwayah] = useState('hafs');
-
     const riwayahs = [
       { id: 'hafs', name: t('رواية حفص عن عاصم', 'Hafs \'an \'Asim'), desc: t('المصحف العثماني المعتمد بمجمع الملك فهد', 'King Fahd Complex Standard') },
       { id: 'warsh', name: t('رواية ورش عن نافع', 'Warsh \'an Nafi\''), desc: t('الرسم المغربي الأندلسي الأصيل', 'Authentic Andalusian-Maghrebi script') },
@@ -12300,14 +12346,14 @@ const ALLAH_99_NAMES = [
   const isDesktopWeb = isWeb && (windowWidth > 480);
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.root,
         {
           backgroundColor: isDesktopWeb ? '#ECE4D8' : c.bg,
           direction: isRTL ? 'rtl' : 'ltr',
-          height: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
-          maxHeight: Platform.OS === 'web' ? ('100dvh' as any) : '100%'
+          height: '100%',
+          maxHeight: '100%'
         }
       ]}
       {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
@@ -12326,8 +12372,9 @@ const ALLAH_99_NAMES = [
             width: '100%',
             maxWidth: isDesktopWeb ? 440 : '100%',
             alignSelf: isDesktopWeb ? 'center' : 'stretch',
-            height: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
-            maxHeight: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
+            height: '100%',
+            maxHeight: '100%',
+            flex: 1,
             flexDirection: 'column',
             overflow: 'hidden',
             ...(isDesktopWeb
@@ -12342,12 +12389,12 @@ const ALLAH_99_NAMES = [
           {renderCurrentScreen()}
         </View>
         {audioPlaying && !['QuranAudio', 'Welcome', 'LocationPermission', 'ManualLocation', 'NotificationPermission'].includes(screen) && !audioMiniPlayerDismissed && (
-          <FloatingMiniPlayer />
+          FloatingMiniPlayer()
         )}
-        {!isFullScreen && <BottomNav />}
-        <ScreenCatalogModal />
+        {!isFullScreen && BottomNav()}
+        {ScreenCatalogModal()}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -12365,4 +12412,62 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   }
 });
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class SafeErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Almosala ErrorBoundary caught error:', error, errorInfo);
+  }
+
+  resetError = () => {
+    this.setState({ hasError: false, error: null });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#FAF6F0', justifyContent: 'center', alignItems: 'center', padding: 24, direction: 'rtl' }}>
+          <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#F5EBE1', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Feather name="alert-triangle" size={32} color="#8C5E3C" />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#5D3A22', marginBottom: 10, textAlign: 'center' }}>
+            نعتذر، حدثت مشكلة غير متوقعة
+          </Text>
+          <Text style={{ fontSize: 13, color: '#8C5E3C', marginBottom: 24, textAlign: 'center', paddingHorizontal: 16 }}>
+            {this.state.error?.message || 'تمت استعادة استقرار التطبيق لمنع الإغلاق المفاجئ.'}
+          </Text>
+          <TouchableOpacity
+            onPress={this.resetError}
+            activeOpacity={0.8}
+            style={{ backgroundColor: '#8C5E3C', paddingHorizontal: 28, paddingVertical: 12, borderRadius: 25 }}
+          >
+            <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: 15 }}>العودة للتطبيق</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function App() {
+  return (
+    <SafeErrorBoundary>
+      <AlmosalaApp />
+    </SafeErrorBoundary>
+  );
+}
 
