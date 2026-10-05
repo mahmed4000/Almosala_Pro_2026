@@ -48,6 +48,30 @@ import {
 } from '@expo-google-fonts/amiri';
 
 const isWeb = Platform.OS === 'web';
+// Inject mobile viewport height lock for rock-solid mobile layout
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  try {
+    const existing = document.getElementById('almosala-viewport-lock');
+    if (!existing) {
+      const s = document.createElement('style');
+      s.id = 'almosala-viewport-lock';
+      s.innerHTML = `
+        html, body, #root {
+          height: 100% !important;
+          height: 100dvh !important;
+          max-height: 100% !important;
+          max-height: 100dvh !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+        }
+      `;
+      document.head.appendChild(s);
+    }
+  } catch (e) {}
+}
+
 
 // --- NATIVE SENSOR & GEOLOCATION HELPERS ---
 const triggerHapticFeedback = (type: 'light' | 'medium' | 'success' = 'light') => {
@@ -2758,20 +2782,23 @@ export default function App() {
 
     return (
       <View
+        nativeID="bottom-nav-bar"
         style={{
           flexDirection: 'row',
           backgroundColor: c.surface,
           borderTopWidth: 1,
           borderColor: c.border,
-          paddingVertical: 8,
+          paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 22 : 10,
           justifyContent: 'space-around',
           alignItems: 'center',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100
+          width: '100%',
+          zIndex: 100,
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4
         }}
       >
         {tabs.map((tab) => {
@@ -4273,17 +4300,17 @@ export default function App() {
         contentContainerStyle={{ padding: 18, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. Header (City, GPS detector, Hijri Date, Master Directory & Logo) */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 16
-          }}
-        >
-          {/* Right side in RTL: Title, Pro badge and Location/Date */}
-          <View style={{ alignItems: 'flex-start' }}>
+        {/* 1. Header (Brand, Master Directory, Location & Date) */}
+        <View style={{ marginBottom: 14 }}>
+          {/* Top Line: Brand Title & Badges on right, Catalog & Logo on left */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%'
+            }}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextUI weight="bold" size={24} color={TOKENS.colors.primaryDark}>
                 {t('المصلى', 'Al-Mosala')}
@@ -4305,56 +4332,91 @@ export default function App() {
               </View>
             </View>
 
+            {/* Left side in RTL: Catalog Launcher & Brand Logo */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setCatalogModalVisible(true)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C221C',
+                  paddingVertical: 5,
+                  paddingHorizontal: 9,
+                  borderRadius: TOKENS.radius.pill,
+                  borderWidth: 1,
+                  borderColor: TOKENS.colors.secondary
+                }}
+              >
+                <Feather name="grid" size={13} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
+                <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark}>
+                  {t(`كل الشاشات (${toArabicNumber(ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0))})`, `${ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0)} Screens`)}
+                </TextUI>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => navigate('About')}
+                style={{
+                  padding: 3,
+                  backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2A2019',
+                  borderRadius: TOKENS.radius.pill,
+                  borderWidth: 1,
+                  borderColor: TOKENS.colors.secondary
+                }}
+              >
+                <IslamicLogo size={36} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Sub Line: Full-width Location & Hijri Date Bar (Never wrapped or truncated!) */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 6,
+              paddingTop: 2
+            }}
+          >
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => navigate('LocationSettings')}
-              style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
-            >
-              <Feather name="map-pin" size={12} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
-              <TextUI size={12} weight="medium" color={TOKENS.colors.primary}>
-                {`${isRTL ? currentCity.nameAr : currentCity.nameEn} • ${t('تغيير', 'Change')}`}
-              </TextUI>
-              <TextUI size={12} color={c.textSecondary} style={{ marginRight: 6 }}>
-                {`• ${isRTL ? getFormattedHijriDate(hijriAdjustment).ar : getFormattedHijriDate(hijriAdjustment).en}`}
-              </TextUI>
-            </TouchableOpacity>
-          </View>
-
-          {/* Left side in RTL: Catalog Launcher & Brand Logo */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setCatalogModalVisible(true)}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C221C',
-                paddingVertical: 6,
-                paddingHorizontal: 10,
+                backgroundColor: themeMode === 'light' ? 'rgba(140, 94, 60, 0.08)' : 'rgba(255, 255, 255, 0.08)',
+                paddingHorizontal: 8,
+                paddingVertical: 3,
                 borderRadius: TOKENS.radius.pill,
                 borderWidth: 1,
-                borderColor: TOKENS.colors.secondary
+                borderColor: 'rgba(198, 146, 85, 0.25)',
+                maxWidth: '52%'
               }}
             >
-              <Feather name="grid" size={13} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
-              <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark}>
-                {t(`كل الشاشات (${toArabicNumber(ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0))})`, `${ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0)} Screens`)}
+              <Feather name="map-pin" size={11} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
+              <TextUI size={11} weight="medium" color={TOKENS.colors.primary} numberOfLines={1}>
+                {`${isRTL ? currentCity.nameAr : currentCity.nameEn} • ${t('تغيير', 'Change')}`}
               </TextUI>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => navigate('About')}
+            <View
               style={{
-                padding: 3,
-                backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2A2019',
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.08)' : 'rgba(255, 255, 255, 0.06)',
+                paddingHorizontal: 8,
+                paddingVertical: 3,
                 borderRadius: TOKENS.radius.pill,
-                borderWidth: 1,
-                borderColor: TOKENS.colors.secondary
+                maxWidth: '46%'
               }}
             >
-              <IslamicLogo size={38} />
-            </TouchableOpacity>
+              <Feather name="calendar" size={11} color={c.textSecondary} style={{ marginLeft: 4 }} />
+              <TextUI size={11} color={c.textSecondary} numberOfLines={1}>
+                {isRTL ? getFormattedHijriDate(hijriAdjustment).ar : getFormattedHijriDate(hijriAdjustment).en}
+              </TextUI>
+            </View>
           </View>
         </View>
 
@@ -4687,7 +4749,7 @@ export default function App() {
               }}
               style={{
                 flex: 1,
-                padding: 14,
+                padding: 11,
                 borderLeftWidth: isRTL ? 1 : 0,
                 borderRightWidth: isRTL ? 0 : 1,
                 borderColor: c.border,
@@ -4742,7 +4804,7 @@ export default function App() {
               onPress={() => navigate('QuranAudio')}
               style={{
                 flex: 1,
-                padding: 14,
+                padding: 11,
                 alignItems: 'flex-start'
               }}
             >
@@ -12243,7 +12305,9 @@ const ALLAH_99_NAMES = [
         styles.root,
         {
           backgroundColor: isDesktopWeb ? '#ECE4D8' : c.bg,
-          direction: isRTL ? 'rtl' : 'ltr'
+          direction: isRTL ? 'rtl' : 'ltr',
+          height: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
+          maxHeight: Platform.OS === 'web' ? ('100dvh' as any) : '100%'
         }
       ]}
       {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
@@ -12262,20 +12326,19 @@ const ALLAH_99_NAMES = [
             width: '100%',
             maxWidth: isDesktopWeb ? 440 : '100%',
             alignSelf: isDesktopWeb ? 'center' : 'stretch',
+            height: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
+            maxHeight: Platform.OS === 'web' ? ('100dvh' as any) : '100%',
+            flexDirection: 'column',
+            overflow: 'hidden',
             ...(isDesktopWeb
               ? ({
-                  boxShadow: '0 10px 40px rgba(93, 58, 34, 0.12), 0 0 0 1px rgba(198, 146, 85, 0.2)',
-                  minHeight: '100vh',
-                  maxHeight: '100vh'
+                  boxShadow: '0 10px 40px rgba(93, 58, 34, 0.12), 0 0 0 1px rgba(198, 146, 85, 0.2)'
                 } as any)
-              : {
-                  minHeight: '100%',
-                  height: '100%'
-                })
+              : {})
           }
         ]}
       >
-        <View style={{ flex: 1, overflow: 'hidden' }} {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}>
+        <View style={{ flex: 1, minHeight: 0, overflow: 'hidden' }} {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}>
           {renderCurrentScreen()}
         </View>
         {audioPlaying && !['QuranAudio', 'Welcome', 'LocationPermission', 'ManualLocation', 'NotificationPermission'].includes(screen) && !audioMiniPlayerDismissed && (
