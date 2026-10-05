@@ -2,7 +2,7 @@
   "expo": {
     "name": "رفيق المسلم | Almosala Pro",
     "slug": "almosala-pro",
-    "version": "2.0.26",
+    "version": "2.0.27",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "almosala",
@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "com.almosala.app",
-      "versionCode": 2026,
+      "versionCode": 2027,
       "adaptiveIcon": {
         "backgroundColor": "#FAF6F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
