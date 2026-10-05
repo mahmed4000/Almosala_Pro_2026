@@ -1099,6 +1099,27 @@ const toStandardNumber = (str: string | number): string => {
   return String(str).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
 };
 
+// Global helper for Arabic-Indic Numerals
+const toArabicNumber = (num: number | string) => {
+  return String(num).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d, 10)]);
+};
+
+// Surah names with authentic full diacritics / tashkeel as in the Holy Quran
+const SURAH_TASHKEEL: Record<number, string> = {
+  1: 'الفَاتِحَةِ',
+  2: 'البَقَرَةِ',
+  3: 'آلِ عِمْرَانَ',
+  18: 'الكَهْفِ',
+  36: 'يس',
+  55: 'الرَّحْمَٰنِ',
+  67: 'المُلْكِ',
+  112: 'الإِخْلَاصِ',
+  113: 'الفَلَقِ',
+  114: 'النَّاسِ'
+};
+
+const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 48 : (Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0);
+
 function AlmosalaApp() {
   const [fontsLoaded] = useFonts({
     Tajawal_400Regular,
@@ -1306,7 +1327,7 @@ function AlmosalaApp() {
   const autoScrollTimerRef = useRef<any>(null);
   const currentScrollYRef = useRef<number>(0);
   const [quranReaderFullScreen, setQuranReaderFullScreen] = useState<boolean>(false);
-  const [streamSurahCount, setStreamSurahCount] = useState<number>(4);
+  const [streamSurahCount, setStreamSurahCount] = useState<number>(1);
 
   // Robust High-Performance Smooth Auto-Scrolling
   useEffect(() => {
@@ -1340,8 +1361,8 @@ function AlmosalaApp() {
               const maxScroll = node.scrollHeight - node.clientHeight;
               if (maxScroll > 5) {
                 // Seamlessly append more Surahs as the reader approaches the end
-                if (node.scrollTop >= maxScroll - 2500) {
-                  setStreamSurahCount(prev => Math.min(114, prev + 3));
+                if (maxScroll > 600 && node.scrollTop >= maxScroll - 400) {
+                  setStreamSurahCount(prev => Math.min(114, prev + 1));
                 }
                 if (node.scrollTop >= maxScroll - 3) {
                   setQuranAutoScroll(false);
@@ -1843,7 +1864,7 @@ function AlmosalaApp() {
         const found = SURAHS.find((s: any) => s.id === surahId) || SURAHS[0];
         setSelectedSurah(found);
         setSurahPageIndex(pageIndex);
-        setStreamSurahCount(4);
+        setStreamSurahCount(1);
         navigate('QuranReader');
       };
       (window as any).__toggleQuranAutoScroll = (active: boolean, speed?: number) => {
@@ -2237,25 +2258,6 @@ function AlmosalaApp() {
     );
   };
 
-  // Helper for Arabic-Indic Numerals
-  const toArabicNumber = (num: number | string) => {
-    return String(num).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d, 10)]);
-  };
-
-  // Surah names with authentic full diacritics / tashkeel as in the Holy Quran
-  const SURAH_TASHKEEL: Record<number, string> = {
-    1: 'الفَاتِحَةِ',
-    2: 'البَقَرَةِ',
-    3: 'آلِ عِمْرَانَ',
-    18: 'الكَهْفِ',
-    36: 'يس',
-    55: 'الرَّحْمَٰنِ',
-    67: 'المُلْكِ',
-    112: 'الإِخْلَاصِ',
-    113: 'الفَلَقِ',
-    114: 'النَّاسِ'
-  };
-
   // Authentic Mushaf Surah Header Vector Frame (ترويسة السورة في مصحف المدينة المنورة)
   const MushafSurahFrame = ({ themeMode = 'light' }: { themeMode?: string }) => {
     const isLight = themeMode === 'light';
@@ -2553,7 +2555,7 @@ function AlmosalaApp() {
       if (target) {
         setSelectedSurah(target);
         setSurahPageIndex(pageIndex);
-        setStreamSurahCount(4);
+        setStreamSurahCount(1);
         setScreen('QuranReader');
       }
     };
@@ -2742,6 +2744,7 @@ function AlmosalaApp() {
         {onBack ? (
           <TouchableOpacity
             onPress={onBack}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{
               width: 38,
               height: 38,
@@ -9957,7 +9960,7 @@ const ALLAH_99_NAMES = [
                 const foundSurah = SURAHS.find((s: any) => s.id === readingBookmark.surahId) || SURAHS[0];
                 setSelectedSurah(foundSurah);
                 setReadingAyah(readingBookmark.ayahNumber);
-                setStreamSurahCount(4);
+                setStreamSurahCount(1);
                 navigate('QuranReader');
                 setTimeout(() => {
                   if (Platform.OS === 'web') {
@@ -10114,6 +10117,7 @@ const ALLAH_99_NAMES = [
                 setSelectedSurah(surah);
                 setReadingAyah(surah.id === 18 ? 15 : 1);
                 setSurahPageIndex(0);
+                setStreamSurahCount(1);
                 navigate('QuranReader');
               }}
               rightElement={
@@ -10151,49 +10155,52 @@ const ALLAH_99_NAMES = [
     };
 
     // Continuous Extended Holy Quran Stream (المصحف ممتد عبر السور تلقائياً دون انقطاع)
-    const startSurahIndex = SURAHS.findIndex((s: any) => s.id === selectedSurah.id);
+    const activeSurah = selectedSurah || SURAHS[0];
+    const startSurahIndex = SURAHS.findIndex((s: any) => s.id === activeSurah.id);
     const safeStartIndex = startSurahIndex >= 0 ? startSurahIndex : 0;
     const streamSurahs = SURAHS.slice(safeStartIndex, safeStartIndex + streamSurahCount);
 
-    const firstPageText = (selectedSurah.pages && selectedSurah.pages[0]) || selectedSurah.text || 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+    const firstPageText = (activeSurah.pages && activeSurah.pages[0]) || activeSurah.text || 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
-    const parsedSurahStream = streamSurahs.map((surah: any) => {
-      const sPages = getSurahPages(surah);
-      const parsedPages = sPages.map((pageText: string, pIdx: number) => {
-        const pageMeta = surah.pageMetadata && surah.pageMetadata[pIdx];
-        const mushafPageNum = pageMeta?.pageNum || ((SURAH_MUSHAF_PAGES[surah.id] || 1) + pIdx);
-        const juzNum = pageMeta?.juz || surah.juz || 1;
+    const parsedSurahStream = useMemo(() => {
+      return streamSurahs.map((surah: any) => {
+        const sPages = getSurahPages(surah);
+        const parsedPages = sPages.map((pageText: string, pIdx: number) => {
+          const pageMeta = surah.pageMetadata && surah.pageMetadata[pIdx];
+          const mushafPageNum = pageMeta?.pageNum || ((SURAH_MUSHAF_PAGES[surah.id] || 1) + pIdx);
+          const juzNum = pageMeta?.juz || surah.juz || 1;
 
-        const tokens = pageText.split(/(﴿[٠-٩0-9]+﴾)/g);
-        const verses: { text: string; badge: string; ayahNumber: number; arabicNumber: string }[] = [];
-        for (let i = 0; i < tokens.length; i += 2) {
-          const vText = tokens[i] || '';
-          const vBadge = tokens[i + 1] || '';
-          if (vText.trim() || vBadge.trim()) {
-            const numMatch = vBadge.match(/[٠-٩0-9]+/);
-            const rawNum = numMatch ? numMatch[0] : '';
-            const stdNum = parseInt(toStandardNumber(rawNum), 10) || (verses.length + 1);
-            verses.push({
-              text: vText,
-              badge: vBadge,
-              ayahNumber: stdNum,
-              arabicNumber: rawNum || toArabicNumber(stdNum)
-            });
+          const tokens = pageText.split(/(﴿[٠-٩0-9]+﴾)/g);
+          const verses: { text: string; badge: string; ayahNumber: number; arabicNumber: string }[] = [];
+          for (let i = 0; i < tokens.length; i += 2) {
+            const vText = tokens[i] || '';
+            const vBadge = tokens[i + 1] || '';
+            if (vText.trim() || vBadge.trim()) {
+              const numMatch = vBadge.match(/[٠-٩0-9]+/);
+              const rawNum = numMatch ? numMatch[0] : '';
+              const stdNum = parseInt(toStandardNumber(rawNum), 10) || (verses.length + 1);
+              verses.push({
+                text: vText,
+                badge: vBadge,
+                ayahNumber: stdNum,
+                arabicNumber: rawNum || toArabicNumber(stdNum)
+              });
+            }
           }
-        }
+          return {
+            pageIndex: pIdx,
+            mushafPageNum,
+            juzNum,
+            verses
+          };
+        });
+
         return {
-          pageIndex: pIdx,
-          mushafPageNum,
-          juzNum,
-          verses
+          surah,
+          pages: parsedPages
         };
       });
-
-      return {
-        surah,
-        pages: parsedPages
-      };
-    });
+    }, [safeStartIndex, streamSurahCount]);
 
     return (
       <View style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}>
@@ -10254,6 +10261,7 @@ const ALLAH_99_NAMES = [
                 <TouchableOpacity
                   testID="quran-reader-back-btn"
                   onPress={goBack}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   style={{
                     width: 34,
                     height: 34,
@@ -10333,7 +10341,7 @@ const ALLAH_99_NAMES = [
                       if (foundSurah && foundSurah.id !== selectedSurah.id) {
                         setSelectedSurah(foundSurah);
                         setReadingAyah(readingBookmark.ayahNumber);
-                        setStreamSurahCount(4);
+                        setStreamSurahCount(1);
                         setTimeout(() => {
                           if (Platform.OS === 'web') {
                             const el = document.getElementById('reading-bookmark-target');
@@ -10515,8 +10523,12 @@ const ALLAH_99_NAMES = [
           onScroll={(e) => {
             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
             currentScrollYRef.current = contentOffset.y;
-            if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 2500) {
-              setStreamSurahCount((prev: number) => Math.min(114, prev + 3));
+            if (
+              contentSize.height > layoutMeasurement.height + 300 &&
+              contentOffset.y > 200 &&
+              contentOffset.y + layoutMeasurement.height >= contentSize.height - 400
+            ) {
+              setStreamSurahCount((prev: number) => Math.min(114, prev + 1));
             }
           }}
           scrollEventThrottle={16}
@@ -10610,13 +10622,13 @@ const ALLAH_99_NAMES = [
                     {/* Verses of this Page */}
                     <TextUI
                       quran
-                      align="justify"
+                      align={Platform.OS === 'web' ? 'justify' : 'right'}
                       size={quranFontSize}
                       color={c.textPrimary}
                       style={{
                         lineHeight: quranFontSize * 1.95,
                         letterSpacing: 0.4,
-                        textAlign: 'justify'
+                        textAlign: Platform.OS === 'web' ? 'justify' : 'right'
                       }}
                     >
                       {page.verses.map((v, vIdx) => {
@@ -10625,7 +10637,8 @@ const ALLAH_99_NAMES = [
                         return (
                           <Text
                             key={`surah-${surah.id}-ayah-p${pIdx}-${vIdx}-${v.ayahNumber}`}
-                            nativeID={isMarked ? 'reading-bookmark-target' : undefined}
+                            testID={isMarked ? 'reading-bookmark-target' : undefined}
+                            {...({ id: Platform.OS === 'web' && isMarked ? 'reading-bookmark-target' : undefined } as any)}
                             onPress={() => handleOpenAyahTafsir(surah, v)}
                             style={{
                               backgroundColor: isSelected
@@ -10644,7 +10657,7 @@ const ALLAH_99_NAMES = [
                                   backgroundColor: '#C69255',
                                   color: '#FFFFFF',
                                   fontSize: Math.max(10.5, quranFontSize * 0.42),
-                                  fontFamily: Platform.OS === 'web' ? 'Tajawal, sans-serif' : 'Tajawal_700Bold',
+                                  fontFamily: Platform.OS === 'web' ? 'Tajawal, sans-serif' : (fontsLoaded ? 'Tajawal_700Bold' : undefined),
                                   fontWeight: 'bold',
                                   paddingHorizontal: 7,
                                   paddingVertical: 2,
@@ -10657,7 +10670,7 @@ const ALLAH_99_NAMES = [
                             )}
                             <Text
                               style={{
-                                fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : 'Amiri_400Regular',
+                                fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : (fontsLoaded ? 'Amiri_400Regular' : undefined),
                                 color: isSelected ? TOKENS.colors.primaryDark : c.textPrimary,
                                 fontWeight: isMarked ? '600' : 'normal'
                               }}
@@ -10669,7 +10682,7 @@ const ALLAH_99_NAMES = [
                                 {' '}
                                 <Text
                                   style={{
-                                    fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : 'Amiri_700Bold',
+                                    fontFamily: Platform.OS === 'web' ? 'Amiri, serif' : (fontsLoaded ? 'Amiri_700Bold' : undefined),
                                     color: isMarked ? '#C69255' : (isSelected ? TOKENS.colors.primaryDark : TOKENS.colors.primary),
                                     fontWeight: '700'
                                   }}
@@ -12377,6 +12390,7 @@ const ALLAH_99_NAMES = [
             flex: 1,
             flexDirection: 'column',
             overflow: 'hidden',
+            paddingTop: isWeb ? 0 : (quranReaderFullScreen ? 0 : STATUSBAR_HEIGHT),
             ...(isDesktopWeb
               ? ({
                   boxShadow: '0 10px 40px rgba(93, 58, 34, 0.12), 0 0 0 1px rgba(198, 146, 85, 0.2)'
