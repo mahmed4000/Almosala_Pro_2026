@@ -2868,7 +2868,7 @@ function AlmosalaApp() {
       }}
     >
       {/* Right Edge (RTL): Back Button pointing right, or Islamic Logo */}
-      <View style={{ width: 42, alignItems: 'flex-start' }}>
+      <View style={{ minWidth: 42, alignItems: 'flex-start', justifyContent: 'center' }}>
         {onBack ? (
           <TouchableOpacity
             onPress={onBack}
@@ -2914,7 +2914,7 @@ function AlmosalaApp() {
       </View>
 
       {/* Left Edge (RTL): Custom Action OR Open All-Screens Catalog button */}
-      <View style={{ width: 42, alignItems: 'flex-end' }}>
+      <View style={{ minWidth: 42, alignItems: 'flex-end', justifyContent: 'center' }}>
         {rightAction ? (
           rightAction
         ) : showCatalog ? (
@@ -3806,21 +3806,20 @@ function AlmosalaApp() {
           rightAction={
             <TouchableOpacity
               onPress={() => setKhatmahShowDua(!khatmahShowDua)}
+              accessibilityRole="button"
+              accessibilityLabel="khatmah-dua-toggle"
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#382E28',
-                paddingHorizontal: 10,
-                paddingVertical: 5,
+                width: 38,
+                height: 38,
                 borderRadius: TOKENS.radius.pill,
+                backgroundColor: c.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
                 borderWidth: 1,
-                borderColor: TOKENS.colors.secondary
+                borderColor: c.border
               }}
             >
-              <Feather name="award" size={14} color={TOKENS.colors.primaryDark} style={{ marginLeft: 4 }} />
-              <TextUI size={12} weight="bold" color={TOKENS.colors.primaryDark}>
-                {t('دعاء الختم', 'Dua')}
-              </TextUI>
+              <Feather name="award" size={17} color={TOKENS.colors.primaryDark} />
             </TouchableOpacity>
           }
         />
@@ -9427,17 +9426,17 @@ const ALLAH_99_NAMES = [
           <TouchableOpacity
             onPress={() => setCatalogModalVisible(true)}
             style={{
-              paddingHorizontal: 10,
-              paddingVertical: 5,
+              width: 38,
+              height: 38,
               borderRadius: TOKENS.radius.pill,
               backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C221C',
+              alignItems: 'center',
+              justifyContent: 'center',
               borderWidth: 1,
               borderColor: TOKENS.colors.secondary
             }}
           >
-            <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark}>
-              {t(`الفهرس (${toArabicNumber(ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0))})`, `Catalog (${ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0)})`)}
-            </TextUI>
+            <Feather name="grid" size={17} color={TOKENS.colors.primary} />
           </TouchableOpacity>
         }
       />
@@ -11446,7 +11445,7 @@ const ALLAH_99_NAMES = [
           onBack={goBack}
           rightAction={
             <TouchableOpacity
-              activeOpacity={0.7}
+              activeOpacity={0.75}
               accessibilityRole="button"
               accessibilityLabel="open-surah-picker-header"
               onPress={() => {
@@ -11455,21 +11454,17 @@ const ALLAH_99_NAMES = [
                 triggerHapticFeedback('light');
               }}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#382D24',
-                paddingHorizontal: 10,
-                paddingVertical: 6,
+                width: 38,
+                height: 38,
                 borderRadius: TOKENS.radius.pill,
+                backgroundColor: c.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
                 borderWidth: 1,
-                borderColor: TOKENS.colors.secondary,
-                gap: 4
+                borderColor: c.border
               }}
             >
-              <Feather name="list" size={15} color={TOKENS.colors.primary} />
-              <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
-                {t('السور (١١٤)', 'Surahs (114)')}
-              </TextUI>
+              <Feather name="list" size={18} color={TOKENS.colors.primary} />
             </TouchableOpacity>
           }
         />
