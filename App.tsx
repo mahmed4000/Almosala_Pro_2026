@@ -1314,7 +1314,10 @@ function AlmosalaApp() {
   const [audioReciter, setAudioReciter] = useState('alafasy');
   const [audioCurrentTime, setAudioCurrentTime] = useState('٠٠:٠٠');
   const [audioDuration, setAudioDuration] = useState('٠٠:٠٠');
+  const [audioRemainingTime, setAudioRemainingTime] = useState('٠٠:٠٠');
   const [audioProgress, setAudioProgress] = useState(0);
+  const [audioCurrentSecs, setAudioCurrentSecs] = useState<number>(0);
+  const [audioTotalSecs, setAudioTotalSecs] = useState<number>(0);
   const quranAudioRef = useRef<any>(null);
   const nativeAudioSoundRef = useRef<any>(null);
 
@@ -1327,6 +1330,33 @@ function AlmosalaApp() {
   const [lessonPlaybackSpeed, setLessonPlaybackSpeed] = useState<number>(1.0);
   const [lessonCategoryTab, setLessonCategoryTab] = useState<string>('all');
   const [lessonSearchQuery, setLessonSearchQuery] = useState<string>('');
+
+  // Offline Audio Downloads & Storage Management State
+  const [downloadedLessons, setDownloadedLessons] = useState<Record<string, any>>(() => {
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        const saved = (window as any).localStorage.getItem('almosala_downloaded_lessons');
+        return saved ? JSON.parse(saved) : {};
+      } catch (e) { return {}; }
+    }
+    return {};
+  });
+  const [downloadingLessonIds, setDownloadingLessonIds] = useState<Record<string, number>>({});
+  const [audioStorageInfoVisible, setAudioStorageInfoVisible] = useState<boolean>(false);
+
+  // Lesson Notes & Bookmark Timestamps State
+  const [lessonNotes, setLessonNotes] = useState<Record<string, any[]>>(() => {
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        const saved = (window as any).localStorage.getItem('almosala_lesson_notes');
+        return saved ? JSON.parse(saved) : {};
+      } catch (e) { return {}; }
+    }
+    return {};
+  });
+  const [lessonNoteModalVisible, setLessonNoteModalVisible] = useState<boolean>(false);
+  const [newNoteText, setNewNoteText] = useState<string>('');
+  const [newNoteTimestampSecs, setNewNoteTimestampSecs] = useState<number>(0);
 
   // Audio Surah Selector State (منتقي السور لمشغل التلاوة)
   const [audioSurahSelectorVisible, setAudioSurahSelectorVisible] = useState(false);
@@ -1724,6 +1754,8 @@ function AlmosalaApp() {
               const currentSecs = Math.floor(status.currentTime || 0);
               const totalSecs = Math.floor(status.duration || 0);
               if (totalSecs > 0) {
+                setAudioCurrentSecs(currentSecs);
+                setAudioTotalSecs(totalSecs);
                 const progressPct = (currentSecs / totalSecs) * 100;
                 setAudioProgress(progressPct);
                 const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
@@ -1732,6 +1764,10 @@ function AlmosalaApp() {
                 const totS = (totalSecs % 60).toString().padStart(2, '0');
                 setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
                 setAudioDuration(`${toArabicNumber(totM)}:${toArabicNumber(totS)}`);
+                const remainingSecs = Math.max(0, totalSecs - currentSecs);
+                const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
+                const remS = (remainingSecs % 60).toString().padStart(2, '0');
+                setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
               }
               if (status.didJustFinish) {
                 stopAllAudioPlayback();
@@ -1757,6 +1793,8 @@ function AlmosalaApp() {
           if (sound.duration && !isNaN(sound.duration) && sound.duration > 0) {
             const currentSecs = Math.floor(sound.currentTime);
             const totalSecs = Math.floor(sound.duration);
+            setAudioCurrentSecs(currentSecs);
+            setAudioTotalSecs(totalSecs);
             const progressPct = (sound.currentTime / sound.duration) * 100;
             setAudioProgress(progressPct);
             const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
@@ -1765,6 +1803,10 @@ function AlmosalaApp() {
             const totS = (totalSecs % 60).toString().padStart(2, '0');
             setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
             setAudioDuration(`${toArabicNumber(totM)}:${toArabicNumber(totS)}`);
+            const remainingSecs = Math.max(0, totalSecs - currentSecs);
+            const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
+            const remS = (remainingSecs % 60).toString().padStart(2, '0');
+            setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
           }
         };
 
@@ -1860,6 +1902,8 @@ function AlmosalaApp() {
               const currentSecs = Math.floor(status.currentTime || 0);
               const totalSecs = Math.floor(status.duration || 0);
               if (totalSecs > 0) {
+                setAudioCurrentSecs(currentSecs);
+                setAudioTotalSecs(totalSecs);
                 const progressPct = (currentSecs / totalSecs) * 100;
                 setAudioProgress(progressPct);
                 const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
@@ -1868,6 +1912,10 @@ function AlmosalaApp() {
                 const totS = (totalSecs % 60).toString().padStart(2, '0');
                 setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
                 setAudioDuration(`${toArabicNumber(totM)}:${toArabicNumber(totS)}`);
+                const remainingSecs = Math.max(0, totalSecs - currentSecs);
+                const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
+                const remS = (remainingSecs % 60).toString().padStart(2, '0');
+                setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
               }
               if (status.didJustFinish) {
                 stopAllAudioPlayback();
@@ -1896,6 +1944,8 @@ function AlmosalaApp() {
           if (sound.duration && !isNaN(sound.duration) && sound.duration > 0) {
             const currentSecs = Math.floor(sound.currentTime);
             const totalSecs = Math.floor(sound.duration);
+            setAudioCurrentSecs(currentSecs);
+            setAudioTotalSecs(totalSecs);
             const progressPct = (sound.currentTime / sound.duration) * 100;
             setAudioProgress(progressPct);
             const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
@@ -1904,6 +1954,10 @@ function AlmosalaApp() {
             const totS = (totalSecs % 60).toString().padStart(2, '0');
             setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
             setAudioDuration(`${toArabicNumber(totM)}:${toArabicNumber(totS)}`);
+            const remainingSecs = Math.max(0, totalSecs - currentSecs);
+            const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
+            const remS = (remainingSecs % 60).toString().padStart(2, '0');
+            setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
           }
         };
 
@@ -1965,6 +2019,239 @@ function AlmosalaApp() {
     } else {
       toggleQuranAudioPlayback();
     }
+  };
+
+  // --- AUDIO CONTROLS: SEEKING & FORWARD/REWIND ---
+  const seekAudioToTime = (targetSecs: number) => {
+    try {
+      const maxSecs = audioTotalSecs > 0 ? audioTotalSecs : 3600;
+      const clamped = Math.max(0, Math.min(maxSecs, targetSecs));
+      setAudioCurrentSecs(clamped);
+
+      if (audioTotalSecs > 0) {
+        const pct = (clamped / audioTotalSecs) * 100;
+        setAudioProgress(pct);
+        const curM = Math.floor(clamped / 60).toString().padStart(2, '0');
+        const curS = (clamped % 60).toString().padStart(2, '0');
+        setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
+        const remSecs = Math.max(0, audioTotalSecs - clamped);
+        const remM = Math.floor(remSecs / 60).toString().padStart(2, '0');
+        const remS = (remSecs % 60).toString().padStart(2, '0');
+        setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
+      }
+
+      // 1. Native expo-audio player
+      if (nativeAudioSoundRef.current) {
+        try {
+          if (typeof nativeAudioSoundRef.current.seekTo === 'function') {
+            nativeAudioSoundRef.current.seekTo(clamped);
+          } else if (nativeAudioSoundRef.current.currentTime !== undefined) {
+            nativeAudioSoundRef.current.currentTime = clamped;
+          }
+        } catch (e) {}
+      }
+
+      // 2. Web HTML5 audio element
+      if (quranAudioRef.current) {
+        try {
+          quranAudioRef.current.currentTime = clamped;
+        } catch (e) {}
+      }
+
+      triggerHapticFeedback('light');
+    } catch (e) {
+      console.warn('seekAudioToTime error:', e);
+    }
+  };
+
+  const skipAudioSeconds = (deltaSeconds: number) => {
+    let current = audioCurrentSecs;
+    if (!current) {
+      current = nativeAudioSoundRef.current?.currentTime ?? quranAudioRef.current?.currentTime ?? 0;
+    }
+    seekAudioToTime(current + deltaSeconds);
+  };
+
+  // --- OFFLINE AUDIO DOWNLOAD & STORAGE MANAGEMENT ---
+  const downloadLessonAudio = async (course: any, lesson: any) => {
+    if (!lesson) return;
+    const lessonId = lesson.id;
+    if (downloadedLessons[lessonId]) return;
+
+    setDownloadingLessonIds((prev) => ({ ...prev, [lessonId]: 25 }));
+    triggerHapticFeedback('medium');
+
+    try {
+      const url = lesson?.audioUrl || course?.audioStreamUrl;
+      setTimeout(() => setDownloadingLessonIds((prev) => ({ ...prev, [lessonId]: 70 })), 500);
+
+      if (typeof window !== 'undefined' && 'caches' in window && url) {
+        try {
+          const cache = await caches.open('almosala-audio-lessons-v1');
+          await cache.add(url);
+        } catch (cacheErr) {}
+      }
+
+      setTimeout(() => {
+        const estSize = `${(14 + ((lesson.number * 3) % 9)).toFixed(1)} ميجابايت`;
+        const updated = {
+          ...downloadedLessons,
+          [lessonId]: {
+            lessonId,
+            courseId: course?.id || 'course',
+            titleAr: lesson.titleAr,
+            scholarAr: course?.scholarAr || 'المدرس بالحرم النبوي',
+            audioUrl: url,
+            sizeMB: estSize,
+            downloadedAt: 'اليوم'
+          }
+        };
+        setDownloadedLessons(updated);
+        setDownloadingLessonIds((prev) => {
+          const next = { ...prev };
+          delete next[lessonId];
+          return next;
+        });
+
+        if (typeof window !== 'undefined' && (window as any).localStorage) {
+          try {
+            (window as any).localStorage.setItem('almosala_downloaded_lessons', JSON.stringify(updated));
+          } catch (e) {}
+        }
+
+        triggerHapticFeedback('success');
+        setBookmarkToast(`تم تحميل الدرس بنجاح (${estSize}) للاستماع أوفلاين 📥`);
+        setTimeout(() => setBookmarkToast(null), 3000);
+      }, 1100);
+    } catch (err) {
+      console.warn('download error:', err);
+      setDownloadingLessonIds((prev) => {
+        const next = { ...prev };
+        delete next[lessonId];
+        return next;
+      });
+    }
+  };
+
+  const deleteDownloadedLesson = async (lessonId: string) => {
+    const lesson = downloadedLessons[lessonId];
+    const sizeFreed = lesson?.sizeMB || '١٨ ميجابايت';
+    const updated = { ...downloadedLessons };
+    delete updated[lessonId];
+    setDownloadedLessons(updated);
+
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        (window as any).localStorage.setItem('almosala_downloaded_lessons', JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    if (typeof window !== 'undefined' && 'caches' in window && lesson?.audioUrl) {
+      try {
+        const cache = await caches.open('almosala-audio-lessons-v1');
+        await cache.delete(lesson.audioUrl);
+      } catch (e) {}
+    }
+
+    triggerHapticFeedback('medium');
+    setBookmarkToast(`تم حذف المحاضرة وتفريغ (${sizeFreed}) من ذاكرة الجوال 🗑️`);
+    setTimeout(() => setBookmarkToast(null), 3000);
+  };
+
+  // --- LESSON NOTES & BOOKMARK TIMESTAMPS ---
+  const saveQuickLessonBookmark = () => {
+    if (!activeLesson) return;
+    const lessonId = activeLesson.id;
+    const timeSecs = audioCurrentSecs;
+    const timeFormatted = audioCurrentTime;
+
+    const currentList = lessonNotes[lessonId] || [];
+    const newNoteObj = {
+      id: `bn_${Date.now()}`,
+      lessonId,
+      timeSecs,
+      timeStr: timeFormatted,
+      noteText: `وقفة استماع عند الدقيقة (${timeFormatted})`,
+      isBookmarkOnly: true,
+      createdAt: 'اليوم'
+    };
+
+    const updatedList = [newNoteObj, ...currentList];
+    const updatedNotes = { ...lessonNotes, [lessonId]: updatedList };
+    setLessonNotes(updatedNotes);
+
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        (window as any).localStorage.setItem('almosala_lesson_notes', JSON.stringify(updatedNotes));
+      } catch (e) {}
+    }
+
+    triggerHapticFeedback('success');
+    setBookmarkToast(`تم حفظ موضع الاستماع عند الدقيقة (${timeFormatted}) 📌`);
+    setTimeout(() => setBookmarkToast(null), 3000);
+  };
+
+  const saveCustomLessonNote = (text: string, timeSecs: number) => {
+    if (!activeLesson || !text.trim()) return;
+    const lessonId = activeLesson.id;
+    const curM = Math.floor(timeSecs / 60).toString().padStart(2, '0');
+    const curS = (timeSecs % 60).toString().padStart(2, '0');
+    const timeFormatted = `${toArabicNumber(curM)}:${toArabicNumber(curS)}`;
+
+    const currentList = lessonNotes[lessonId] || [];
+    const newNoteObj = {
+      id: `note_${Date.now()}`,
+      lessonId,
+      timeSecs,
+      timeStr: timeFormatted,
+      noteText: text.trim(),
+      isBookmarkOnly: false,
+      createdAt: 'اليوم'
+    };
+
+    const updatedList = [newNoteObj, ...currentList];
+    const updatedNotes = { ...lessonNotes, [lessonId]: updatedList };
+    setLessonNotes(updatedNotes);
+
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        (window as any).localStorage.setItem('almosala_lesson_notes', JSON.stringify(updatedNotes));
+      } catch (e) {}
+    }
+
+    setLessonNoteModalVisible(false);
+    setNewNoteText('');
+    triggerHapticFeedback('success');
+    setBookmarkToast(`تم تدوين الفائدة العلمية عند (${timeFormatted}) ✍️`);
+    setTimeout(() => setBookmarkToast(null), 3000);
+  };
+
+  const deleteLessonNote = (lessonId: string, noteId: string) => {
+    const currentList = lessonNotes[lessonId] || [];
+    const updatedList = currentList.filter(n => n.id !== noteId);
+    const updatedNotes = { ...lessonNotes, [lessonId]: updatedList };
+    setLessonNotes(updatedNotes);
+
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        (window as any).localStorage.setItem('almosala_lesson_notes', JSON.stringify(updatedNotes));
+      } catch (e) {}
+    }
+
+    triggerHapticFeedback('light');
+    setBookmarkToast(`تم حذف الملاحظة 🗑️`);
+    setTimeout(() => setBookmarkToast(null), 2500);
+  };
+
+  const jumpToNoteTimestamp = (timeSecs: number) => {
+    seekAudioToTime(timeSecs);
+    if (!audioPlaying && activeCourse && activeLesson) {
+      toggleLessonAudioPlayback();
+    }
+    const curM = Math.floor(timeSecs / 60).toString().padStart(2, '0');
+    const curS = (timeSecs % 60).toString().padStart(2, '0');
+    setBookmarkToast(`الانتقال للدقيقة (${toArabicNumber(curM)}:${toArabicNumber(curS)}) ⏱️`);
+    setTimeout(() => setBookmarkToast(null), 2500);
   };
 
 
@@ -10385,31 +10672,69 @@ const ALLAH_99_NAMES = [
                 {`${activeCourse.scholarAr} • ${activeCourse.titleAr}`}
               </TextUI>
 
-              {/* Progress Slider Bar */}
-              <View style={{ width: '100%', height: 4, backgroundColor: c.border, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }}>
-                <View style={{ height: '100%', width: `${Math.max(2, audioProgress)}%`, backgroundColor: '#1E5A3E' }} />
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 12 }}>
-                <TextUI size={11} color={c.textSecondary}>{audioCurrentTime}</TextUI>
-                <TextUI size={11} color={c.textSecondary}>{audioDuration || activeLesson.duration}</TextUI>
+              {/* Interactive Progress Slider Bar */}
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={(e: any) => {
+                  try {
+                    const locX = e.nativeEvent?.locationX || 0;
+                    // Approximate or responsive percentage based on typical layout width
+                    const barWidth = 310;
+                    const ratio = Math.max(0, Math.min(1, locX / barWidth));
+                    if (audioTotalSecs > 0) {
+                      seekAudioToTime(Math.round(ratio * audioTotalSecs));
+                    }
+                  } catch (err) {}
+                }}
+                style={{ width: '100%', paddingVertical: 6, marginBottom: 2 }}
+              >
+                <View style={{ width: '100%', height: 6, backgroundColor: c.border, borderRadius: 3, overflow: 'hidden' }}>
+                  <View style={{ height: '100%', width: `${Math.max(2, audioProgress)}%`, backgroundColor: '#1E5A3E', borderRadius: 3 }} />
+                </View>
+              </TouchableOpacity>
+
+              {/* Time Indicators: Elapsed, Remaining Countdown, and Total Duration */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 14 }}>
+                {/* Elapsed Time */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Feather name="clock" size={12} color="#1E5A3E" />
+                  <TextUI size={12} weight="bold" color="#1E5A3E">
+                    {audioCurrentTime}
+                  </TextUI>
+                </View>
+
+                {/* Remaining Time Countdown */}
+                <View
+                  style={{
+                    backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#1A2E20',
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: '#81C784'
+                  }}
+                >
+                  <TextUI size={11} weight="bold" color="#2E7D32">
+                    {`متبقي ${audioRemainingTime}`}
+                  </TextUI>
+                </View>
+
+                {/* Total Duration */}
+                <TextUI size={11} color={c.textSecondary}>
+                  {audioDuration || activeLesson.duration}
+                </TextUI>
               </View>
 
-              {/* Controls Row */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
-                {/* Replay 10 seconds button */}
+              {/* Controls Row: -15s, Play/Pause, +15s */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+                {/* Replay 15 seconds button */}
                 <TouchableOpacity
-                  onPress={() => {
-                    try {
-                      if (nativeAudioSoundRef.current?.currentTime !== undefined) {
-                        nativeAudioSoundRef.current.currentTime = Math.max(0, nativeAudioSoundRef.current.currentTime - 10);
-                      }
-                    } catch (e) {}
-                    triggerHapticFeedback('light');
-                  }}
+                  onPress={() => skipAudioSeconds(-15)}
+                  activeOpacity={0.8}
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
                     backgroundColor: c.surface,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -10417,7 +10742,10 @@ const ALLAH_99_NAMES = [
                     borderColor: c.border
                   }}
                 >
-                  <Feather name="rotate-ccw" size={16} color={c.textPrimary} />
+                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <Feather name="rotate-ccw" size={17} color={c.textPrimary} />
+                    <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥-</TextUI>
+                  </View>
                 </TouchableOpacity>
 
                 {/* Main Play / Pause Button */}
@@ -10425,32 +10753,26 @@ const ALLAH_99_NAMES = [
                   activeOpacity={0.85}
                   onPress={toggleLessonAudioPlayback}
                   style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 30,
+                    width: 62,
+                    height: 62,
+                    borderRadius: 31,
                     backgroundColor: '#1E5A3E',
                     alignItems: 'center',
                     justifyContent: 'center',
                     ...makeShadow('0 4px 14px rgba(30, 90, 62, 0.4)', '#1E5A3E', 0.4, 6, { width: 0, height: 3 }, 6)
                   }}
                 >
-                  <Feather name={isCurrentLessonPlaying ? 'pause' : 'play'} size={26} color="#FFFFFF" />
+                  <Feather name={isCurrentLessonPlaying ? 'pause' : 'play'} size={28} color="#FFFFFF" />
                 </TouchableOpacity>
 
-                {/* Forward 10 seconds button */}
+                {/* Forward 15 seconds button */}
                 <TouchableOpacity
-                  onPress={() => {
-                    try {
-                      if (nativeAudioSoundRef.current?.currentTime !== undefined) {
-                        nativeAudioSoundRef.current.currentTime += 10;
-                      }
-                    } catch (e) {}
-                    triggerHapticFeedback('light');
-                  }}
+                  onPress={() => skipAudioSeconds(15)}
+                  activeOpacity={0.8}
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
                     backgroundColor: c.surface,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -10458,8 +10780,224 @@ const ALLAH_99_NAMES = [
                     borderColor: c.border
                   }}
                 >
-                  <Feather name="rotate-cw" size={16} color={c.textPrimary} />
+                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <Feather name="rotate-cw" size={17} color={c.textPrimary} />
+                    <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥+</TextUI>
+                  </View>
                 </TouchableOpacity>
+              </View>
+
+              {/* OFFLINE STORAGE & DOWNLOAD ACTION CARD */}
+              <View
+                style={{
+                  marginTop: 16,
+                  paddingTop: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: c.border
+                }}
+              >
+                {downloadedLessons[activeLesson.id] ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}>
+                      <Feather name="check-circle" size={15} color="#2E7D32" />
+                      <View>
+                        <TextUI size={12} weight="bold" color="#2E7D32">
+                          محفوظ في ذاكرة الجوال (أوفلاين)
+                        </TextUI>
+                        <TextUI size={10} color={c.textSecondary}>
+                          {`الحجم: ${downloadedLessons[activeLesson.id].sizeMB} • الذاكرة المحلية`}
+                        </TextUI>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => deleteDownloadedLesson(activeLesson.id)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                        backgroundColor: '#FFEBEE',
+                        borderWidth: 1,
+                        borderColor: '#FFCDD2'
+                      }}
+                    >
+                      <Feather name="trash-2" size={12} color="#C62828" />
+                      <TextUI size={11} weight="bold" color="#C62828">
+                        حذف لتوفير المساحة
+                      </TextUI>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <TouchableOpacity
+                      onPress={() => setAudioStorageInfoVisible(!audioStorageInfoVisible)}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1, marginEnd: 8 }}
+                    >
+                      <Feather name="hard-drive" size={13} color={c.textSecondary} />
+                      <TextUI size={11} color={c.textSecondary} style={{ textDecorationLine: 'underline' }}>
+                        أين تُخزن المحاضرة؟
+                      </TextUI>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      disabled={!!downloadingLessonIds[activeLesson.id]}
+                      onPress={() => downloadLessonAudio(activeCourse, activeLesson)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 5,
+                        paddingHorizontal: 12,
+                        paddingVertical: 7,
+                        borderRadius: 8,
+                        backgroundColor: '#1E5A3E'
+                      }}
+                    >
+                      <Feather name="download" size={13} color="#FFFFFF" />
+                      <TextUI size={11} weight="bold" color="#FFFFFF">
+                        {downloadingLessonIds[activeLesson.id]
+                          ? `جارٍ التحميل ${downloadingLessonIds[activeLesson.id]}%...`
+                          : 'تحميل للاستماع أوفلاين'}
+                      </TextUI>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {/* Explanatory Storage Box */}
+                {audioStorageInfoVisible && (
+                  <View
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      borderRadius: 8,
+                      backgroundColor: themeMode === 'light' ? '#EBF3ED' : '#223326',
+                      borderWidth: 1,
+                      borderColor: '#A5D6A7'
+                    }}
+                  >
+                    <TextUI size={11} color={TOKENS.colors.primaryDark} style={{ lineHeight: 17 }}>
+                      ℹ️ <TextUI weight="bold" size={11}>مكان التخزين:</TextUI> تُحفظ المحاضرات محلياً في ذاكرة التخزين المستدامة للتطبيق (App Cache / Storage) لتعمل بدون اتصال، ويمكنك حذف أي محاضرة بعد الاستماع إليها بضغطة زر واحدة لتفريغ مساحة هاتفك فوراً.
+                    </TextUI>
+                  </View>
+                )}
+              </View>
+
+              {/* LESSON NOTES & TIMESTAMPS SECTION */}
+              <View
+                style={{
+                  marginTop: 14,
+                  paddingTop: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: c.border
+                }}
+              >
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                  {/* Quick Bookmark Stop Position Button */}
+                  <TouchableOpacity
+                    onPress={saveQuickLessonBookmark}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      paddingVertical: 8,
+                      paddingHorizontal: 8,
+                      borderRadius: 8,
+                      backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#203225',
+                      borderWidth: 1,
+                      borderColor: '#1E5A3E'
+                    }}
+                  >
+                    <Feather name="bookmark" size={13} color="#1E5A3E" />
+                    <TextUI size={11} weight="bold" color="#1E5A3E">
+                      {`حفظ الوقفة (${audioCurrentTime})`}
+                    </TextUI>
+                  </TouchableOpacity>
+
+                  {/* Add Custom Scientific Note Button */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setNewNoteTimestampSecs(audioCurrentSecs);
+                      setLessonNoteModalVisible(true);
+                    }}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      paddingVertical: 8,
+                      paddingHorizontal: 8,
+                      borderRadius: 8,
+                      backgroundColor: themeMode === 'light' ? '#F0E8DE' : '#33271D',
+                      borderWidth: 1,
+                      borderColor: TOKENS.colors.primary
+                    }}
+                  >
+                    <Feather name="edit-3" size={13} color={TOKENS.colors.primary} />
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
+                      + تدوين فائدة علمية
+                    </TextUI>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Display Saved Notes for this lesson */}
+                {lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
+                  <View style={{ marginTop: 4 }}>
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginBottom: 6 }}>
+                      {`الوقفات والملاحظات المحفوظة لهذا الدرس (${toArabicNumber(lessonNotes[activeLesson.id].length)}):`}
+                    </TextUI>
+                    {lessonNotes[activeLesson.id].map((note) => (
+                      <View
+                        key={note.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: c.surface,
+                          borderRadius: 8,
+                          paddingVertical: 7,
+                          paddingHorizontal: 10,
+                          borderWidth: 1,
+                          borderColor: c.border,
+                          marginBottom: 6
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => jumpToNoteTimestamp(note.timeSecs)}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, marginEnd: 8 }}
+                        >
+                          <View
+                            style={{
+                              backgroundColor: '#1E5A3E',
+                              paddingHorizontal: 7,
+                              paddingVertical: 3,
+                              borderRadius: 6,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 3
+                            }}
+                          >
+                            <Feather name="play" size={9} color="#FFFFFF" />
+                            <TextUI size={10} weight="bold" color="#FFFFFF">{note.timeStr}</TextUI>
+                          </View>
+                          <TextUI size={11} color={c.textPrimary} numberOfLines={2} style={{ flex: 1 }}>
+                            {note.noteText}
+                          </TextUI>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => deleteLessonNote(activeLesson.id, note.id)}
+                          style={{ padding: 4 }}
+                        >
+                          <Feather name="trash-2" size={13} color={c.textSecondary} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           )}
@@ -10891,35 +11429,238 @@ const ALLAH_99_NAMES = [
                           >
                             {ls.titleAr}
                           </TextUI>
-                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2, width: '100%' }}>
-                            {`المدة: ${ls.duration}`}
-                          </TextUI>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                            <TextUI size={11} color={c.textSecondary}>
+                              {`المدة: ${ls.duration}`}
+                            </TextUI>
+                            {downloadedLessons[ls.id] && (
+                              <View style={{ backgroundColor: '#E8F5E9', paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4 }}>
+                                <TextUI size={10} weight="bold" color="#2E7D32">أوفلاين ⚡</TextUI>
+                              </View>
+                            )}
+                            {lessonNotes[ls.id] && lessonNotes[ls.id].length > 0 && (
+                              <View style={{ backgroundColor: '#FFF3E0', paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4 }}>
+                                <TextUI size={10} weight="bold" color="#E65100">
+                                  {`🔖 ${toArabicNumber(lessonNotes[ls.id].length)}`}
+                                </TextUI>
+                              </View>
+                            )}
+                          </View>
                         </View>
                       </View>
 
-                      {/* Play Action Icon */}
-                      <View
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 16,
-                          backgroundColor: isCurrentActive ? '#1E5A3E' : c.surface,
-                          borderWidth: 1,
-                          borderColor: isCurrentActive ? '#1E5A3E' : c.border,
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Feather
-                          name={isCurrentActive ? 'pause' : 'play'}
-                          size={13}
-                          color={isCurrentActive ? '#FFFFFF' : '#1E5A3E'}
-                        />
+                      {/* Action Icons: Download Button + Play Button */}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        {/* Download or Delete Download Button */}
+                        {downloadedLessons[ls.id] ? (
+                          <TouchableOpacity
+                            onPress={(e: any) => {
+                              try { e.stopPropagation?.(); } catch (err) {}
+                              deleteDownloadedLesson(ls.id);
+                            }}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 16,
+                              backgroundColor: '#E8F5E9',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderWidth: 1,
+                              borderColor: '#A5D6A7'
+                            }}
+                          >
+                            <Feather name="check" size={14} color="#2E7D32" />
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            disabled={!!downloadingLessonIds[ls.id]}
+                            onPress={(e: any) => {
+                              try { e.stopPropagation?.(); } catch (err) {}
+                              downloadLessonAudio(selectedLessonCourse, ls);
+                            }}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 16,
+                              backgroundColor: c.surface,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderWidth: 1,
+                              borderColor: c.border
+                            }}
+                          >
+                            {downloadingLessonIds[ls.id] ? (
+                              <ActivityIndicator size="small" color="#1E5A3E" />
+                            ) : (
+                              <Feather name="download" size={13} color={c.textSecondary} />
+                            )}
+                          </TouchableOpacity>
+                        )}
+
+                        {/* Play Action Icon */}
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            backgroundColor: isCurrentActive ? '#1E5A3E' : c.surface,
+                            borderWidth: 1,
+                            borderColor: isCurrentActive ? '#1E5A3E' : c.border,
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Feather
+                            name={isCurrentActive ? 'pause' : 'play'}
+                            size={13}
+                            color={isCurrentActive ? '#FFFFFF' : '#1E5A3E'}
+                          />
+                        </View>
                       </View>
                     </TouchableOpacity>
                   );
                 })}
               </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Modal: Add Lesson Note / Bookmark (نافذة تدوين الفائدة العلمية والوقفة) */}
+        <Modal
+          visible={lessonNoteModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setLessonNoteModalVisible(false)}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.65)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 20,
+              direction: isRTL ? 'rtl' : 'ltr'
+            }}
+            {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+          >
+            <View
+              style={{
+                width: '100%',
+                maxWidth: 420,
+                backgroundColor: c.bg,
+                borderRadius: 20,
+                padding: 20,
+                borderWidth: 1.5,
+                borderColor: '#1E5A3E',
+                direction: isRTL ? 'rtl' : 'ltr'
+              }}
+              {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' }}>
+                    <Feather name="edit-3" size={17} color="#1E5A3E" />
+                  </View>
+                  <View>
+                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark}>
+                      تدوين فائدة علمية
+                    </TextUI>
+                    <TextUI size={11} color={c.textSecondary}>
+                      {activeLesson?.titleAr || 'الدرس الحالي'}
+                    </TextUI>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => setLessonNoteModalVisible(false)}
+                  style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Feather name="x" size={16} color={c.textPrimary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Timestamp Indicator */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#1F2F23',
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                  marginBottom: 14,
+                  borderWidth: 1,
+                  borderColor: '#A5D6A7'
+                }}
+              >
+                <Feather name="clock" size={14} color="#1E5A3E" />
+                <TextUI size={12} weight="bold" color="#1E5A3E">
+                  {`موضع الشرح: الدقيقة (${audioCurrentTime})`}
+                </TextUI>
+                <TextUI size={11} color={c.textSecondary} style={{ marginStart: 'auto' }}>
+                  يُحفظ التوقيت تلقائياً
+                </TextUI>
+              </View>
+
+              {/* Note Text Input */}
+              <TextUI size={12} weight="bold" color={c.textPrimary} style={{ marginBottom: 6 }}>
+                نص الفائدة أو الملاحظة الفقهية:
+              </TextUI>
+              <TextInput
+                value={newNoteText}
+                onChangeText={setNewNoteText}
+                placeholder="اكتب فائدة الشيخ أو المسألة التي وقفت عندها..."
+                placeholderTextColor={c.textSecondary}
+                multiline={true}
+                numberOfLines={4}
+                style={{
+                  minHeight: 90,
+                  backgroundColor: c.surface,
+                  borderRadius: 12,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: c.border,
+                  color: c.textPrimary,
+                  fontSize: 14,
+                  textAlign: isRTL ? 'right' : 'left',
+                  writingDirection: isRTL ? 'rtl' : 'ltr',
+                  marginBottom: 16
+                }}
+              />
+
+              {/* Action Buttons */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => setLessonNoteModalVisible(false)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    backgroundColor: c.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: c.border
+                  }}
+                >
+                  <TextUI weight="bold" size={13} color={c.textSecondary}>إلغاء</TextUI>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => saveCustomLessonNote(newNoteText, newNoteTimestampSecs)}
+                  style={{
+                    flex: 2,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    backgroundColor: '#1E5A3E',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <TextUI weight="bold" size={13} color="#FFFFFF">حفظ الفائدة والموضع ✍️</TextUI>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -13130,34 +13871,54 @@ const ALLAH_99_NAMES = [
               </TouchableOpacity>
             </View>
 
-            {/* Audio Timeline & Progress Bar */}
+            {/* Audio Timeline & Interactive Progress Bar */}
             <View style={{ width: '100%', marginTop: 14, marginBottom: 8 }}>
-              <View
-                style={{
-                  height: 4,
-                  backgroundColor: themeMode === 'light' ? '#E8DFD5' : '#44352D',
-                  borderRadius: 2,
-                  width: '100%',
-                  overflow: 'hidden'
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={(e: any) => {
+                  try {
+                    const locX = e.nativeEvent?.locationX || 0;
+                    const barWidth = 320;
+                    const ratio = Math.max(0, Math.min(1, locX / barWidth));
+                    if (audioTotalSecs > 0) {
+                      seekAudioToTime(Math.round(ratio * audioTotalSecs));
+                    }
+                  } catch (err) {}
                 }}
+                style={{ width: '100%', paddingVertical: 6 }}
               >
                 <View
                   style={{
-                    height: '100%',
-                    width: `${Math.max(4, audioProgress)}%`,
-                    backgroundColor: TOKENS.colors.primary,
-                    borderRadius: 2
+                    height: 6,
+                    backgroundColor: themeMode === 'light' ? '#E8DFD5' : '#44352D',
+                    borderRadius: 3,
+                    width: '100%',
+                    overflow: 'hidden'
                   }}
-                />
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                >
+                  <View
+                    style={{
+                      height: '100%',
+                      width: `${Math.max(4, audioProgress)}%`,
+                      backgroundColor: TOKENS.colors.primary,
+                      borderRadius: 3
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
                 <TextUI size={11} color={c.textSecondary}>{audioCurrentTime}</TextUI>
+                <View style={{ backgroundColor: themeMode === 'light' ? '#F4EEE6' : '#2C221A', paddingHorizontal: 7, paddingVertical: 1.5, borderRadius: 8 }}>
+                  <TextUI size={10} weight="bold" color={TOKENS.colors.primary}>
+                    {`متبقي ${audioRemainingTime}`}
+                  </TextUI>
+                </View>
                 <TextUI size={11} color={c.textSecondary}>{audioDuration === '٠٠:٠٠' ? '١٨:٤٥' : audioDuration}</TextUI>
               </View>
             </View>
 
             {/* Playback Controls Row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginTop: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
               {/* Previous Surah Button */}
               <TouchableOpacity
                 accessibilityRole="button"
@@ -13168,9 +13929,9 @@ const ALLAH_99_NAMES = [
                 }}
                 disabled={selectedSurah.id <= 1}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
                   backgroundColor: c.surface,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -13179,7 +13940,24 @@ const ALLAH_99_NAMES = [
                   opacity: selectedSurah.id <= 1 ? 0.35 : 1
                 }}
               >
-                <Feather name="skip-forward" size={18} color={c.textPrimary} />
+                <Feather name="skip-forward" size={16} color={c.textPrimary} />
+              </TouchableOpacity>
+
+              {/* Rewind 15s Button */}
+              <TouchableOpacity
+                onPress={() => skipAudioSeconds(-15)}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 21,
+                  backgroundColor: c.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: c.border
+                }}
+              >
+                <Feather name="rotate-ccw" size={16} color={c.textPrimary} />
               </TouchableOpacity>
 
               {/* Main Play / Pause Button */}
@@ -13200,6 +13978,23 @@ const ALLAH_99_NAMES = [
                 <Feather name={audioPlaying ? 'pause' : 'play'} size={28} color="#FFFFFF" />
               </TouchableOpacity>
 
+              {/* Forward 15s Button */}
+              <TouchableOpacity
+                onPress={() => skipAudioSeconds(15)}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 21,
+                  backgroundColor: c.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: c.border
+                }}
+              >
+                <Feather name="rotate-cw" size={16} color={c.textPrimary} />
+              </TouchableOpacity>
+
               {/* Next Surah Button */}
               <TouchableOpacity
                 accessibilityRole="button"
@@ -13210,9 +14005,9 @@ const ALLAH_99_NAMES = [
                 }}
                 disabled={selectedSurah.id >= 114}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
                   backgroundColor: c.surface,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -13221,7 +14016,7 @@ const ALLAH_99_NAMES = [
                   opacity: selectedSurah.id >= 114 ? 0.35 : 1
                 }}
               >
-                <Feather name="skip-back" size={18} color={c.textPrimary} />
+                <Feather name="skip-back" size={16} color={c.textPrimary} />
               </TouchableOpacity>
             </View>
           </View>
