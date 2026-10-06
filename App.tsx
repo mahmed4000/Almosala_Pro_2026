@@ -1359,6 +1359,8 @@ function AlmosalaApp() {
   const [newNoteTimestampSecs, setNewNoteTimestampSecs] = useState<number>(0);
   const [minuteJumpInput, setMinuteJumpInput] = useState<string>('');
   const lastPinchDistRef = useRef<number | null>(null);
+  const isMultiTouchRef = useRef<boolean>(false);
+  const lastMultiTouchTimeRef = useRef<number>(0);
   const [zoomFeedbackPill, setZoomFeedbackPill] = useState<number | null>(null);
   const zoomPillTimeoutRef = useRef<any>(null);
 
@@ -1636,6 +1638,12 @@ function AlmosalaApp() {
   };
 
   const handleOpenAyahTafsir = (surah: any, verse: { ayahNumber: number; arabicNumber: string; text: string }) => {
+    // منع استخراج التفسير تماماً عند وجود إصبعين على الشاشة أو أثناء/بعد حركة التكبير والتصغير
+    const timeSinceMultiTouch = Date.now() - lastMultiTouchTimeRef.current;
+    if (isMultiTouchRef.current || timeSinceMultiTouch < 500) {
+      return;
+    }
+
     const ayahData = {
       surahId: surah.id,
       surahNameAr: surah.nameAr,
@@ -1649,6 +1657,30 @@ function AlmosalaApp() {
     triggerHapticFeedback('light');
     fetchAyahTafsir(surah.id, verse.ayahNumber, selectedTafsir);
   };
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const onGlobalTouch = (e: TouchEvent) => {
+        if (e.touches && e.touches.length >= 2) {
+          isMultiTouchRef.current = true;
+          lastMultiTouchTimeRef.current = Date.now();
+        } else if (e.touches && e.touches.length === 0) {
+          lastMultiTouchTimeRef.current = Date.now();
+          setTimeout(() => {
+            isMultiTouchRef.current = false;
+          }, 450);
+        }
+      };
+      window.addEventListener('touchstart', onGlobalTouch, { passive: true });
+      window.addEventListener('touchmove', onGlobalTouch, { passive: true });
+      window.addEventListener('touchend', onGlobalTouch, { passive: true });
+      return () => {
+        window.removeEventListener('touchstart', onGlobalTouch);
+        window.removeEventListener('touchmove', onGlobalTouch);
+        window.removeEventListener('touchend', onGlobalTouch);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -12842,9 +12874,20 @@ const ALLAH_99_NAMES = [
     const parsedSurahStream = streamSurahs.map((surah: any) => getParsedSurahPages(surah));
 
     // Two-finger Pinch-to-Zoom Gesture Handlers (تكبير وتصغير المصحف بحركة الأصابع)
+    const handlePinchTouchStart = (e: any) => {
+      const touches = e.nativeEvent?.touches;
+      if (touches && touches.length >= 2) {
+        isMultiTouchRef.current = true;
+        lastMultiTouchTimeRef.current = Date.now();
+      }
+    };
+
     const handlePinchTouchMove = (e: any) => {
       const touches = e.nativeEvent?.touches;
-      if (touches && touches.length === 2) {
+      if (touches && touches.length >= 2) {
+        isMultiTouchRef.current = true;
+        lastMultiTouchTimeRef.current = Date.now();
+
         const p1 = touches[0];
         const p2 = touches[1];
         const dx = p1.pageX - p2.pageX;
@@ -12878,8 +12921,15 @@ const ALLAH_99_NAMES = [
       }
     };
 
-    const handlePinchTouchEnd = () => {
-      lastPinchDistRef.current = null;
+    const handlePinchTouchEnd = (e?: any) => {
+      const remainingTouches = e?.nativeEvent?.touches?.length || 0;
+      if (remainingTouches < 2) {
+        lastPinchDistRef.current = null;
+        lastMultiTouchTimeRef.current = Date.now();
+        setTimeout(() => {
+          isMultiTouchRef.current = false;
+        }, 500);
+      }
     };
 
     const handleWheelZoom = (e: any) => {
@@ -12905,6 +12955,7 @@ const ALLAH_99_NAMES = [
     return (
       <View
         style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}
+        onTouchStart={handlePinchTouchStart}
         onTouchMove={handlePinchTouchMove}
         onTouchEnd={handlePinchTouchEnd}
         onTouchCancel={handlePinchTouchEnd}
@@ -13262,6 +13313,7 @@ const ALLAH_99_NAMES = [
         {/* Continuous Stream Holy Quran ScrollView (المصحف ممتد عبر السور) */}
         <ScrollView
           ref={quranScrollViewRef}
+          onTouchStart={handlePinchTouchStart}
           onTouchMove={handlePinchTouchMove}
           onTouchEnd={handlePinchTouchEnd}
           onTouchCancel={handlePinchTouchEnd}
@@ -13375,7 +13427,15 @@ const ALLAH_99_NAMES = [
                             key={`surah-${surah.id}-ayah-p${pIdx}-${vIdx}-${v.ayahNumber}`}
                             testID={isMarked ? 'reading-bookmark-target' : undefined}
                             {...({ id: Platform.OS === 'web' && isMarked ? 'reading-bookmark-target' : undefined } as any)}
-                            onPress={() => handleOpenAyahTafsir(surah, v)}
+                            onPress={(e) => {
+                              const touches = (e as any)?.nativeEvent?.touches;
+                              if (touches && touches.length > 1) {
+                                isMultiTouchRef.current = true;
+                                lastMultiTouchTimeRef.current = Date.now();
+                                return;
+                              }
+                              handleOpenAyahTafsir(surah, v);
+                            }}
                             style={{
                               backgroundColor: isSelected
                                 ? (themeMode === 'light' ? 'rgba(198, 146, 85, 0.25)' : 'rgba(198, 146, 85, 0.35)')
