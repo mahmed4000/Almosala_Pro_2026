@@ -133,14 +133,29 @@ function computeQiblaBearing(lat: number, lng: number): number {
 }
 
 const getReciterAudioUrl = (reciterId: string, surahId: number): string => {
+  const pad = surahId.toString().padStart(3, '0');
   if (reciterId === 'abdulbasit') {
     return `https://download.quranicaudio.com/qdc/abdul_baset/murattal/${surahId}.mp3`;
+  }
+  if (reciterId === 'abdulbasit_mujawwad') {
+    return `https://download.quranicaudio.com/qdc/abdul_baset/mujawwad/${surahId}.mp3`;
+  }
+  if (reciterId === 'minshawi') {
+    return `https://download.quranicaudio.com/qdc/siddiq_minshawi/murattal/${surahId}.mp3`;
+  }
+  if (reciterId === 'shuraim') {
+    return `https://cdn.mp3quran.net/audio/saud-shuraim/r1/${pad}.mp3`;
+  }
+  if (reciterId === 'yasser_dosari') {
+    return `https://cdn.mp3quran.net/audio/yasser-dosari/r1/${pad}.mp3`;
+  }
+  if (reciterId === 'baijan') {
+    return `https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/${pad}.mp3`;
   }
   if (reciterId === 'alhusary') {
     return `https://download.quranicaudio.com/qdc/khalil_al_husary/murattal/${surahId}.mp3`;
   }
   if (reciterId === 'almuaiqly') {
-    const pad = surahId.toString().padStart(3, '0');
     return `https://cdn.mp3quran.net/audio/maher-muaiqly/r1/${pad}.mp3`;
   }
   if (reciterId === 'alghamdi') {
@@ -3320,7 +3335,12 @@ function AlmosalaApp() {
   const FloatingMiniPlayer = () => {
     const recitersList = [
       { id: 'alafasy', nameAr: 'مشاري العفاسي' },
-      { id: 'abdulbasit', nameAr: 'عبد الباسط عبد الصمد' },
+      { id: 'minshawi', nameAr: 'محمد صديق المنشاوي' },
+      { id: 'abdulbasit', nameAr: 'عبد الباسط (مرتل)' },
+      { id: 'abdulbasit_mujawwad', nameAr: 'عبد الباسط (مجود)' },
+      { id: 'shuraim', nameAr: 'سعود الشريم' },
+      { id: 'yasser_dosari', nameAr: 'ياسر الدوسري' },
+      { id: 'baijan', nameAr: 'عبد الله البعيجان (النبوي)' },
       { id: 'almuaiqly', nameAr: 'ماهر المعيقلي' },
       { id: 'alhusary', nameAr: 'محمود خليل الحصري' },
       { id: 'alghamdi', nameAr: 'سعد الغامدي' }
@@ -9607,7 +9627,7 @@ const ALLAH_99_NAMES = [
         />
         <TappableRow
           title={t('التلاوات الصوتية والقراء', 'Audio Recitations')}
-          subtitle={t('العفاسي، عبد الباسط، المعيقلي', 'Alafasy, Abdul Basit, Al-Muaiqly')}
+          subtitle={t('المنشاوي، عبد الباسط، الشريم، الدوسري، البعيجان، العفاسي...', 'Minshawi, Abdul Basit, Shuraim, Al-Dosari, Baijan...')}
           icon="volume-2"
           onPress={() => navigate('QuranAudio')}
         />
@@ -11430,7 +11450,12 @@ const ALLAH_99_NAMES = [
   const renderQuranAudio = () => {
     const reciters = [
       { id: 'alafasy', name: t('الشيخ مشاري بن راشد العفاسي', 'Mishary Rashid Alafasy'), riwayah: 'حفص عن عاصم' },
-      { id: 'abdulbasit', name: t('الشيخ عبد الباسط عبد الصمد (مرتل)', 'Abdul Basit Abdul Samad'), riwayah: 'المصحف المرتل' },
+      { id: 'minshawi', name: t('الشيخ محمد صديق المنشاوي', 'Muhammad Siddiq Al-Minshawi'), riwayah: 'المصحف المرتل' },
+      { id: 'abdulbasit', name: t('الشيخ عبد الباسط عبد الصمد (مرتل)', 'Abdul Basit Abdul Samad (Murattal)'), riwayah: 'المصحف المرتل' },
+      { id: 'abdulbasit_mujawwad', name: t('الشيخ عبد الباسط عبد الصمد (مجود)', 'Abdul Basit Abdul Samad (Mujawwad)'), riwayah: 'المصحف المجود' },
+      { id: 'shuraim', name: t('الشيخ سعود الشريم', 'Saud Al-Shuraim'), riwayah: 'إمام المسجد الحرام سابقاً' },
+      { id: 'yasser_dosari', name: t('الشيخ ياسر الدوسري', 'Yasser Al-Dosari'), riwayah: 'إمام المسجد الحرام' },
+      { id: 'baijan', name: t('الشيخ عبد الله البعيجان', 'Abdullah Al-Baijan'), riwayah: 'إمام وخطيب المسجد النبوي الشريف' },
       { id: 'almuaiqly', name: t('الشيخ ماهر المعيقلي', 'Maher Al-Muaiqly'), riwayah: 'إمام المسجد الحرام' },
       { id: 'alhusary', name: t('الشيخ محمود خليل الحصري', 'Mahmoud Khalil Al-Husary'), riwayah: 'شيخ عموم المقارئ' },
       { id: 'alghamdi', name: t('الشيخ سعد الغامدي', 'Saad Al-Ghamdi'), riwayah: 'تلاوة نجدية خاشعة' }
