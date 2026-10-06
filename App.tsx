@@ -15,7 +15,8 @@ import {
   Modal,
   Share,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  I18nManager
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -2979,7 +2980,18 @@ function AlmosalaApp() {
       fontWeight = undefined;
     }
 
-    const alignment = align || (isRTL ? 'right' : 'left');
+    const flatStyle = StyleSheet.flatten(style) || {};
+    const explicitAlign = align || flatStyle.textAlign;
+    const targetAlign = explicitAlign || (isRTL ? 'right' : 'left');
+
+    // On iOS native, React Native's RCTTextAttributes flips 'left' <-> 'right' when layout direction is RTL.
+    // Hence, to produce a true right-aligned Arabic text on iOS native when I18nManager.isRTL is active,
+    // we must supply 'left', which UIKit converts into NSTextAlignmentRight.
+    const resolvedAlignment = (targetAlign === 'center' || targetAlign === 'justify')
+      ? targetAlign
+      : (Platform.OS === 'web'
+          ? targetAlign
+          : (I18nManager.isRTL ? (targetAlign === 'right' ? 'left' : 'right') : targetAlign));
 
     return (
       <Text
@@ -2991,11 +3003,13 @@ function AlmosalaApp() {
             ...(fontWeight ? { fontWeight } : {}),
             fontSize: size,
             color: color || c.textPrimary,
-            textAlign: alignment,
             writingDirection: isRTL ? 'rtl' : 'ltr',
             lineHeight: quran ? size * 1.85 : size * 1.45
           },
-          style
+          style,
+          {
+            textAlign: resolvedAlignment
+          }
         ]}
       >
         {children}
@@ -3613,7 +3627,7 @@ function AlmosalaApp() {
               backgroundColor: currentAudioType === 'lesson' ? '#1E5A3E' : TOKENS.colors.primary,
               alignItems: 'center',
               justifyContent: 'center',
-              marginLeft: 10
+              marginEnd: 10
             }}
           >
             <Feather name={audioPlaying ? 'pause' : 'play'} size={18} color="#FFFFFF" />
@@ -3625,7 +3639,7 @@ function AlmosalaApp() {
             style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: currentAudioType === 'lesson' ? '#1E5A3E' : '#2E7D32', marginLeft: 6 }} />
+              <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: currentAudioType === 'lesson' ? '#1E5A3E' : '#2E7D32', marginEnd: 6 }} />
               <TextUI weight="bold" size={13} color={c.textPrimary} numberOfLines={1}>
                 {currentAudioType === 'lesson' && activeLesson
                   ? activeLesson.titleAr
@@ -3653,7 +3667,7 @@ function AlmosalaApp() {
               stopAllAudioPlayback();
               setAudioMiniPlayerDismissed(true);
             }}
-            style={{ padding: 6, marginRight: 4 }}
+            style={{ padding: 6, marginStart: 4 }}
           >
             <Feather name="x" size={18} color={c.textSecondary} />
           </TouchableOpacity>
@@ -10217,7 +10231,7 @@ const ALLAH_99_NAMES = [
                 borderColor: TOKENS.colors.secondary
               }}
             >
-              <Feather name="search" size={16} color={TOKENS.colors.primary} style={{ marginLeft: 8 }} />
+              <Feather name="search" size={16} color={TOKENS.colors.primary} style={{ marginEnd: 8 }} />
               <TextInput
                 value={lessonSearchQuery === ' ' ? '' : lessonSearchQuery}
                 onChangeText={(text) => setLessonSearchQuery(text)}
@@ -10229,7 +10243,8 @@ const ALLAH_99_NAMES = [
                   fontSize: 14,
                   fontFamily: 'Tajawal_500Medium',
                   color: c.textPrimary,
-                  textAlign: isRTL ? 'right' : 'left'
+                  textAlign: Platform.OS === 'web' ? (isRTL ? 'right' : 'left') : (I18nManager.isRTL ? 'left' : (isRTL ? 'right' : 'left')),
+                  writingDirection: isRTL ? 'rtl' : 'ltr'
                 }}
                 autoFocus={lessonSearchQuery === ' '}
               />
@@ -10482,14 +10497,14 @@ const ALLAH_99_NAMES = [
                   }}
                 >
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                    <View style={{ flex: 1, marginEnd: 10 }}>
+                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark}>
                         {chair.chairTitleAr}
                       </TextUI>
-                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2 }}>
                         {chair.scholarAr}
                       </TextUI>
-                      <TextUI size={11} color={c.textSecondary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={11} color={c.textSecondary}>
                         {chair.roleAr}
                       </TextUI>
                     </View>
@@ -10520,19 +10535,19 @@ const ALLAH_99_NAMES = [
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="book-open" size={13} color={TOKENS.colors.secondary} />
-                      <TextUI size={12} weight="bold" color={c.textPrimary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} weight="bold" color={c.textPrimary}>
                         {`${t('المتن المشروح:', 'Taught Book:')} ${chair.bookAr}`}
                       </TextUI>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="clock" size={13} color="#1E5A3E" />
-                      <TextUI size={12} color="#1E5A3E" weight="medium" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} color="#1E5A3E" weight="medium">
                         {chair.timingAr}
                       </TextUI>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="map-pin" size={13} color={TOKENS.colors.primary} />
-                      <TextUI size={12} color={c.textSecondary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} color={c.textSecondary}>
                         {chair.locationAr}
                       </TextUI>
                     </View>
@@ -10591,17 +10606,17 @@ const ALLAH_99_NAMES = [
                     ...makeShadow('0 4px 12px rgba(30,90,62,0.25)', '#1E5A3E', 0.25, 6, { width: 0, height: 2 }, 4)
                   }}
                 >
-                  <View style={{ flex: 1, marginLeft: 10 }}>
+                  <View style={{ flex: 1, marginEnd: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <Feather name="radio" size={14} color="#C69255" />
-                      <TextUI size={12} weight="bold" color="#C69255" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} weight="bold" color="#C69255">
                         {t('كراسي الحرم النبوي الحية', "Prophet's Mosque Live Chairs")}
                       </TextUI>
                     </View>
-                    <TextUI weight="bold" size={15} color="#FFFFFF" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                    <TextUI weight="bold" size={15} color="#FFFFFF">
                       {t('جدول ومواقع مجالس العلم بالمسجد النبوي الشريف', 'Schedule & Locations of Daily Classes')}
                     </TextUI>
-                    <TextUI size={11} color="rgba(255,255,255,0.8)" style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                    <TextUI size={11} color="rgba(255,255,255,0.8)" style={{ marginTop: 2 }}>
                       {t('٧ كراسي علمية كبرى لكبار أئمة ومدرسي الحرم • انقر للاطلاع', '7 major scholarly chairs • Tap to view schedule')}
                     </TextUI>
                   </View>
@@ -10615,7 +10630,7 @@ const ALLAH_99_NAMES = [
                       justifyContent: 'center'
                     }}
                   >
-                    <Feather name="chevron-left" size={18} color="#FFFFFF" />
+                    <Feather name={isRTL ? 'chevron-left' : 'chevron-right'} size={18} color="#FFFFFF" />
                   </View>
                 </TouchableOpacity>
               )}
@@ -10682,18 +10697,18 @@ const ALLAH_99_NAMES = [
                       </View>
                     </View>
 
-                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4 }}>
                       {course.titleAr}
                     </TextUI>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <Feather name="user" size={13} color={TOKENS.colors.secondary} />
-                      <TextUI size={13} weight="bold" color={c.textPrimary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={13} weight="bold" color={c.textPrimary}>
                         {course.scholarAr}
                       </TextUI>
                     </View>
 
-                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12 }}>
                       {course.descriptionAr}
                     </TextUI>
 
@@ -10776,14 +10791,14 @@ const ALLAH_99_NAMES = [
               {selectedLessonCourse && (
                 <View style={{ marginBottom: 14 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                    <View style={{ flex: 1, marginEnd: 10 }}>
+                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2 }}>
                         {`سلسلة علمية • ${selectedLessonCourse.categoryAr}`}
                       </TextUI>
-                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark}>
                         {selectedLessonCourse.titleAr}
                       </TextUI>
-                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2 }}>
                         {`${selectedLessonCourse.scholarAr} • ${selectedLessonCourse.roleAr}`}
                       </TextUI>
                     </View>
@@ -10838,7 +10853,7 @@ const ALLAH_99_NAMES = [
                         marginBottom: 6
                       }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginLeft: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginEnd: 10 }}>
                         {/* Number / Play Indicator Badge */}
                         <View
                           style={{
@@ -10848,7 +10863,7 @@ const ALLAH_99_NAMES = [
                             backgroundColor: isCurrentActive ? '#1E5A3E' : (themeMode === 'light' ? '#F0E8DE' : '#2B2019'),
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginLeft: 10
+                            marginEnd: 10
                           }}
                         >
                           {isCurrentActive ? (
@@ -10866,11 +10881,10 @@ const ALLAH_99_NAMES = [
                             size={14}
                             color={isCurrentActive ? '#1E5A3E' : c.textPrimary}
                             numberOfLines={2}
-                            style={{ textAlign: isRTL ? 'right' : 'left' }}
                           >
                             {ls.titleAr}
                           </TextUI>
-                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2 }}>
                             {`المدة: ${ls.duration}`}
                           </TextUI>
                         </View>
