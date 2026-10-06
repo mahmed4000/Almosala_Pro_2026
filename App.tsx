@@ -1204,6 +1204,231 @@ function getParsedSurahPages(surah: any) {
   return result;
 }
 
+// ========================================================
+// --- MATHEMATICAL & LIVE PRAYER TIME CALCULATION ENGINE ---
+// ========================================================
+
+function parseTimeString(timeStr: string): { hours: number; minutes: number } {
+  if (!timeStr) return { hours: 0, minutes: 0 };
+  const normalized = timeStr
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString())
+    .replace(/[\u0660-\u0669]/g, d => (d.charCodeAt(0) - 0x0660).toString())
+    .trim();
+
+  const isPM = normalized.includes('م') || /pm/i.test(normalized);
+  const isAM = normalized.includes('ص') || /am/i.test(normalized);
+
+  const clean = normalized.replace(/[^\d:]/g, '');
+  const [hStr, mStr] = clean.split(':');
+  let h = parseInt(hStr, 10) || 0;
+  const m = parseInt(mStr, 10) || 0;
+
+  if (isPM && h < 12) h += 12;
+  if (isAM && h === 12) h = 0;
+
+  return { hours: h, minutes: m };
+}
+
+function calculateSolarPrayerTimes(lat: number, lng: number, date = new Date()) {
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
+  const B = (360 / 365) * (dayOfYear - 81) * (Math.PI / 180);
+  const EqT = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  const delta = 23.45 * Math.sin((360 / 365) * (dayOfYear - 81) * (Math.PI / 180));
+  const deltaRad = (delta * Math.PI) / 180;
+  const latRad = (lat * Math.PI) / 180;
+  const tzOffsetHours = -date.getTimezoneOffset() / 60;
+  const noon = 12 + tzOffsetHours - lng / 15 - EqT / 60;
+
+  const hourAngle = (angleDeg: number) => {
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const cosHA = (Math.sin(angleRad) - Math.sin(latRad) * Math.sin(deltaRad)) / (Math.cos(latRad) * Math.cos(deltaRad));
+    if (cosHA > 1) return 0;
+    if (cosHA < -1) return 180;
+    return (Math.acos(cosHA) * 180) / Math.PI;
+  };
+
+  const haSunset = hourAngle(-0.833) / 15;
+  const haFajr = hourAngle(-18.5) / 15;
+  const asrAlt = Math.atan(1 / (1 + Math.tan(Math.abs(latRad - deltaRad)))) * (180 / Math.PI);
+  const haAsr = hourAngle(asrAlt) / 15;
+  const haIsha = hourAngle(-17) / 15;
+
+  const toTimeObj = (decHours: number) => {
+    let h = Math.floor(decHours);
+    let m = Math.round((decHours - h) * 60);
+    if (m >= 60) { h += 1; m -= 60; }
+    h = (h + 24) % 24;
+    return { hours: h, minutes: m };
+  };
+
+  return {
+    fajr: toTimeObj(noon - haFajr),
+    sunrise: toTimeObj(noon - haSunset),
+    dhuhr: toTimeObj(noon + (2 / 60)),
+    asr: toTimeObj(noon + haAsr),
+    maghrib: toTimeObj(noon + haSunset),
+    isha: toTimeObj(noon + haIsha)
+  };
+}
+
+const formatPrayerTime = (hours: number, minutes: number) => {
+  const period = hours >= 12 ? 'م' : 'ص';
+  let h12 = hours % 12;
+  if (h12 === 0) h12 = 12;
+  const hFormatted = toArabicNumber(h12.toString().padStart(2, '0'));
+  const mFormatted = toArabicNumber(minutes.toString().padStart(2, '0'));
+  return `${hFormatted}:${mFormatted} ${period}`;
+};
+
+async function getAccuratePrayerTimes(lat: number, lng: number, date = new Date(), method: string = 'umm_al_qura') {
+  const methodCode = method === 'umm_al_qura' ? 4 : (method === 'egypt' ? 5 : 3);
+  const dateStr = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${methodCode}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data && json.data.timings) {
+        const t = json.data.timings;
+        const parseAndFormat = (time24: string) => {
+          const [hStr, mStr] = time24.split(':');
+          const h = parseInt(hStr, 10);
+          const m = parseInt(mStr, 10);
+          return formatPrayerTime(h, m);
+        };
+
+        return {
+          fajr: parseAndFormat(t.Fajr),
+          sunrise: parseAndFormat(t.Sunrise),
+          dhuhr: parseAndFormat(t.Dhuhr),
+          asr: parseAndFormat(t.Asr),
+          maghrib: parseAndFormat(t.Maghrib),
+          isha: parseAndFormat(t.Isha)
+        };
+      }
+    }
+  } catch (err) {
+    // Fall back to offline astronomical formula
+  }
+
+  const solar = calculateSolarPrayerTimes(lat, lng, date);
+  return {
+    fajr: formatPrayerTime(solar.fajr.hours, solar.fajr.minutes),
+    sunrise: formatPrayerTime(solar.sunrise.hours, solar.sunrise.minutes),
+    dhuhr: formatPrayerTime(solar.dhuhr.hours, solar.dhuhr.minutes),
+    asr: formatPrayerTime(solar.asr.hours, solar.asr.minutes),
+    maghrib: formatPrayerTime(solar.maghrib.hours, solar.maghrib.minutes),
+    isha: formatPrayerTime(solar.isha.hours, solar.isha.minutes)
+  };
+}
+
+interface NextPrayerResult {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  time: string;
+  isTomorrow: boolean;
+  diffSeconds: number;
+  countdownText: string;
+  progress: number;
+}
+
+function calculateNextPrayerAndCountdown(prayers: any[], now: Date = new Date()): NextPrayerResult {
+  const fivePrayers = prayers.filter(p => p.id !== 'sunrise');
+  if (!fivePrayers || fivePrayers.length === 0) {
+    return {
+      id: 'fajr',
+      nameAr: 'صلاة الفجر',
+      nameEn: 'Fajr',
+      time: '٠٤:٥٢ ص',
+      isTomorrow: false,
+      diffSeconds: 0,
+      countdownText: '٠٠:٠٠:٠٠',
+      progress: 0.5
+    };
+  }
+
+  let nextP = null;
+  let targetDate: Date | null = null;
+  let prevDate: Date | null = null;
+
+  for (let i = 0; i < fivePrayers.length; i++) {
+    const p = fivePrayers[i];
+    const { hours, minutes } = parseTimeString(p.time);
+    const d = new Date(now);
+    d.setHours(hours, minutes, 0, 0);
+
+    if (d.getTime() > now.getTime()) {
+      nextP = p;
+      targetDate = d;
+      if (i > 0) {
+        const prevP = fivePrayers[i - 1];
+        const prevT = parseTimeString(prevP.time);
+        prevDate = new Date(now);
+        prevDate.setHours(prevT.hours, prevT.minutes, 0, 0);
+      } else {
+        const lastP = fivePrayers[fivePrayers.length - 1];
+        const lastT = parseTimeString(lastP.time);
+        prevDate = new Date(now);
+        prevDate.setDate(prevDate.getDate() - 1);
+        prevDate.setHours(lastT.hours, lastT.minutes, 0, 0);
+      }
+      break;
+    }
+  }
+
+  let isTomorrow = false;
+  if (!nextP) {
+    isTomorrow = true;
+    nextP = fivePrayers[0];
+    const { hours, minutes } = parseTimeString(fivePrayers[0].time);
+    targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() + 1);
+    targetDate.setHours(hours, minutes, 0, 0);
+
+    const ishaP = fivePrayers[fivePrayers.length - 1];
+    const ishaT = parseTimeString(ishaP.time);
+    prevDate = new Date(now);
+    prevDate.setHours(ishaT.hours, ishaT.minutes, 0, 0);
+  }
+
+  const diffSeconds = targetDate ? Math.max(0, Math.floor((targetDate.getTime() - now.getTime()) / 1000)) : 0;
+  const hh = Math.floor(diffSeconds / 3600);
+  const mm = Math.floor((diffSeconds % 3600) / 60);
+  const ss = diffSeconds % 60;
+
+  const countdownText = `${toArabicNumber(hh.toString().padStart(2, '0'))}:${toArabicNumber(mm.toString().padStart(2, '0'))}:${toArabicNumber(ss.toString().padStart(2, '0'))}`;
+
+  let progress = 0.5;
+  if (prevDate && targetDate) {
+    const totalSpan = targetDate.getTime() - prevDate.getTime();
+    const remaining = targetDate.getTime() - now.getTime();
+    if (totalSpan > 0) {
+      progress = Math.max(0, Math.min(1, remaining / totalSpan));
+    }
+  }
+
+  const rawName = nextP.nameAr || '';
+  const prayerNameAr = rawName.startsWith('صلاة') ? rawName : `صلاة ${rawName}`;
+
+  return {
+    id: nextP.id,
+    nameAr: prayerNameAr,
+    nameEn: nextP.nameEn,
+    time: nextP.time,
+    isTomorrow,
+    diffSeconds,
+    countdownText,
+    progress
+  };
+}
+
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 48 : (Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0);
 
 function AlmosalaApp() {
@@ -1231,6 +1456,15 @@ function AlmosalaApp() {
   const [calculationMethod, setCalculationMethod] = useState('mwl');
   const [asrMethod, setAsrMethod] = useState('majority');
   const [currentCity, setCurrentCity] = useState(CITIES[0]);
+  const [countdownText, setCountdownText] = useState('٠٠:٠٠:٠٠');
+  const [countdownProgress, setCountdownProgress] = useState(0.5);
+  const [nextPrayerInfo, setNextPrayerInfo] = useState({
+    id: 'fajr',
+    nameAr: 'صلاة الفجر',
+    nameEn: 'Fajr',
+    time: '٠٤:٥٢ ص',
+    isTomorrow: false
+  });
   const [adhanReciter, setAdhanReciter] = useState('makkah');
   const [hapticEnabled, setHapticEnabled] = useState(true);
   const [autoSaveProgress, setAutoSaveProgress] = useState(true);
@@ -2349,57 +2583,116 @@ function AlmosalaApp() {
   const [deviceHeading, setDeviceHeading] = useState(0);
   const [hasMagnetometer, setHasMagnetometer] = useState(false);
 
-  // Request & Fetch Live GPS Location
-  const fetchLiveGpsLocation = async () => {
+  // Request & Fetch Live GPS Location (تحديد الموقع الدقيق عبر الـ GPS وحساب المواقيت)
+  const fetchLiveGpsLocation = async (silent: boolean = false) => {
     try {
-      setGpsLoading(true);
+      if (!silent) setGpsLoading(true);
       setGpsError(null);
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setGpsError(t('تم رفض إذن الموقع، يمكنك الاختيار يدوياً', 'Location permission denied'));
-        setGpsLoading(false);
+
+      let lat: number | null = null;
+      let lng: number | null = null;
+
+      // 1. Try Native Expo Location
+      try {
+        let { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          const req = await Location.requestForegroundPermissionsAsync();
+          status = req.status;
+        }
+
+        if (status === 'granted') {
+          let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+        }
+      } catch (expoLocErr) {
+        console.log('Expo location check:', expoLocErr);
+      }
+
+      // 2. Try Web Geolocation API fallback
+      if (lat === null && typeof navigator !== 'undefined' && navigator.geolocation) {
+        try {
+          const webPos: any = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
+          });
+          lat = webPos.coords.latitude;
+          lng = webPos.coords.longitude;
+        } catch (webErr) {
+          console.log('Web geolocation check:', webErr);
+        }
+      }
+
+      if (lat === null || lng === null) {
+        if (!silent) {
+          setGpsError(t('يرجى تفعيل خدمة الموقع (GPS) وتأكيد إذن الوصول', 'Please enable GPS and grant permission'));
+          setGpsLoading(false);
+        }
         return false;
       }
 
-      let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = loc.coords;
+      const latitude = lat;
+      const longitude = lng;
 
+      // 3. Reverse Geocode City & Country Name in Arabic
       let detectedCity = t('موقعي الحالي', 'My Live Location');
-      let detectedCountry = t('الموقع الفعلي', 'GPS Coordinates');
+      let detectedCountry = '';
 
       try {
         let geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
         if (geocode && geocode.length > 0) {
-          detectedCity = geocode[0].city || geocode[0].district || geocode[0].region || detectedCity;
-          detectedCountry = geocode[0].country || detectedCountry;
+          const g = geocode[0];
+          detectedCity = g.city || g.subregion || g.district || g.region || detectedCity;
+          detectedCountry = g.country || '';
         }
       } catch (geoErr) {}
+
+      // OpenStreetMap Nominatim reverse geocode fallback
+      if (detectedCity === t('موقعي الحالي', 'My Live Location')) {
+        try {
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ar`);
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            const addr = geoData.address;
+            detectedCity = addr?.city || addr?.town || addr?.state || addr?.county || detectedCity;
+            detectedCountry = addr?.country || detectedCountry;
+          }
+        } catch (e) {}
+      }
+
+      // 4. Calculate Accurate Prayer Times for this location and date
+      const calculatedTimings = await getAccuratePrayerTimes(latitude, longitude, new Date(), calculationMethod);
 
       const qiblaAngle = computeQiblaBearing(latitude, longitude);
       const distanceKm = computeDistanceToKaaba(latitude, longitude);
 
+      const prayersArray = [
+        { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: calculatedTimings.fajr, isNext: false, icon: 'sunrise' },
+        { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: calculatedTimings.sunrise, isNext: false, icon: 'sun' },
+        { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: calculatedTimings.dhuhr, isNext: false, icon: 'sun' },
+        { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: calculatedTimings.asr, isNext: false, icon: 'clock' },
+        { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: calculatedTimings.maghrib, isNext: false, icon: 'sunset' },
+        { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: calculatedTimings.isha, isNext: false, icon: 'moon' }
+      ];
+
+      const nextRes = calculateNextPrayerAndCountdown(prayersArray, new Date());
+
       const liveCityObj = {
         id: 'gps_live',
-        nameAr: `${detectedCity} (GPS)`,
-        nameEn: `${detectedCity} (GPS)`,
-        country: detectedCountry,
+        nameAr: `${detectedCity}`,
+        nameEn: `${detectedCity}`,
+        country: detectedCountry || (isRTL ? 'الموقع الفعلي' : 'GPS Location'),
         lat: `${parseFloat(latitude.toFixed(4))}°`,
         lng: `${parseFloat(longitude.toFixed(4))}°`,
+        latitude,
+        longitude,
         qiblaAngle,
         qiblaTextAr: `${toArabicNumber(qiblaAngle)}° نحو الكعبة المشرفة`,
         qiblaTextEn: `${qiblaAngle}° to Kaaba`,
         distanceToMakkah: `${toArabicNumber(distanceKm.toLocaleString('ar-SA'))} كم`,
-        nextPrayerNameAr: 'العصر',
-        nextPrayerNameEn: 'Asr',
-        nextPrayerTime: '٠٣:٣٨ م',
-        prayers: [
-          { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: '٠٤:١٢ ص', isNext: false, icon: 'sunrise' },
-          { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: '٠٥:٤٠ ص', isNext: false, icon: 'sun' },
-          { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: '١٢:٠٥ م', isNext: false, icon: 'sun' },
-          { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: '٠٣:٣٨ م', isNext: true, icon: 'clock' },
-          { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: '٠٦:٢٢ م', isNext: false, icon: 'sunset' },
-          { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: '٠٧:٥٢ م', isNext: false, icon: 'moon' }
-        ]
+        nextPrayerNameAr: nextRes.nameAr,
+        nextPrayerNameEn: nextRes.nameEn,
+        nextPrayerTime: nextRes.time,
+        prayers: prayersArray
       };
 
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -2415,11 +2708,39 @@ function AlmosalaApp() {
       return true;
     } catch (err) {
       console.warn('GPS Error:', err);
-      setGpsLoading(false);
-      setGpsError(t('تعذر جلب إحداثيات GPS تلقائياً', 'Could not fetch GPS automatically'));
+      if (!silent) {
+        setGpsLoading(false);
+        setGpsError(t('تعذر جلب إحداثيات GPS تلقائياً، تأكد من الاتصال وتفعيل الموقع', 'Could not fetch GPS automatically'));
+      }
       return false;
     }
   };
+
+  // Real-time live countdown timer (تحديث عداد الصلاة القادمة كل ثانية تلقائياً)
+  useEffect(() => {
+    const updateCountdown = () => {
+      const prayers = currentCity.prayers || [];
+      const res = calculateNextPrayerAndCountdown(prayers, new Date());
+      setCountdownText(res.countdownText);
+      setCountdownProgress(res.progress);
+      setNextPrayerInfo({
+        id: res.id,
+        nameAr: res.nameAr,
+        nameEn: res.nameEn,
+        time: res.time,
+        isTomorrow: res.isTomorrow
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [currentCity]);
+
+  // Startup: Attempt live GPS location on app load
+  useEffect(() => {
+    fetchLiveGpsLocation(true).catch(() => {});
+  }, []);
 
   const prevAlignedRef = useRef(false);
 
@@ -2580,7 +2901,36 @@ function AlmosalaApp() {
           }
         } else if (savedCityId) {
           const found = CITIES.find((c) => c.id === savedCityId);
-          if (found) setCurrentCity(found);
+          if (found) {
+            const latNum = parseFloat(found.lat);
+            const lngNum = parseFloat(found.lng);
+            const solar = calculateSolarPrayerTimes(latNum, lngNum, new Date());
+            setCurrentCity({
+              ...found,
+              prayers: [
+                { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: formatPrayerTime(solar.fajr.hours, solar.fajr.minutes), isNext: false, icon: 'sunrise' },
+                { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: formatPrayerTime(solar.sunrise.hours, solar.sunrise.minutes), isNext: false, icon: 'sun' },
+                { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: formatPrayerTime(solar.dhuhr.hours, solar.dhuhr.minutes), isNext: false, icon: 'sun' },
+                { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: formatPrayerTime(solar.asr.hours, solar.asr.minutes), isNext: false, icon: 'clock' },
+                { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: formatPrayerTime(solar.maghrib.hours, solar.maghrib.minutes), isNext: false, icon: 'sunset' },
+                { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: formatPrayerTime(solar.isha.hours, solar.isha.minutes), isNext: false, icon: 'moon' }
+              ]
+            });
+          }
+        } else {
+          // Default Makkah with today's calculated timings
+          const solar = calculateSolarPrayerTimes(21.42, 39.82, new Date());
+          setCurrentCity({
+            ...CITIES[0],
+            prayers: [
+              { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: formatPrayerTime(solar.fajr.hours, solar.fajr.minutes), isNext: false, icon: 'sunrise' },
+              { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: formatPrayerTime(solar.sunrise.hours, solar.sunrise.minutes), isNext: false, icon: 'sun' },
+              { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: formatPrayerTime(solar.dhuhr.hours, solar.dhuhr.minutes), isNext: false, icon: 'sun' },
+              { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: formatPrayerTime(solar.asr.hours, solar.asr.minutes), isNext: false, icon: 'clock' },
+              { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: formatPrayerTime(solar.maghrib.hours, solar.maghrib.minutes), isNext: false, icon: 'sunset' },
+              { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: formatPrayerTime(solar.isha.hours, solar.isha.minutes), isNext: false, icon: 'moon' }
+            ]
+          });
         }
         const savedBells = localStorage.getItem('almosala_bells');
         if (savedBells) setPrayerBells(JSON.parse(savedBells));
@@ -2955,14 +3305,23 @@ function AlmosalaApp() {
     return null;
   };
 
-  const CircularCountdownGauge = ({ remainingText = '٠١:٢٤:٣٦', label = 'متبقي' }) => {
+  const CircularCountdownGauge = ({
+    remainingText = '٠٠:٠٠:٠٠',
+    label = 'متبقي للأذان',
+    progress = 0.5
+  }: {
+    remainingText?: string;
+    label?: string;
+    progress?: number;
+  }) => {
     if (Platform.OS === 'web') {
       const size = 88;
       const strokeWidth = 5;
       const center = size / 2;
       const radius = center - strokeWidth - 2;
       const circumference = 2 * Math.PI * radius;
-      const strokeDashoffset = circumference * 0.35;
+      const safeProgress = Math.max(0.04, Math.min(0.98, progress));
+      const strokeDashoffset = circumference * (1 - safeProgress);
 
       return (
         <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -2985,19 +3344,20 @@ function AlmosalaApp() {
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               fill="none"
+              style={{ transition: 'stroke-dashoffset 0.8s ease' }}
             />
           </svg>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <TextUI size={10} color="#D8A868" weight="medium">{label}</TextUI>
-            <TextUI size={13} color="#FFFFFF" weight="bold" style={{ marginTop: 1 }}>{remainingText}</TextUI>
+            <TextUI size={9.5} color="#D8A868" weight="medium">{label}</TextUI>
+            <TextUI size={12.5} color="#FFFFFF" weight="bold" style={{ marginTop: 1 }}>{remainingText}</TextUI>
           </View>
         </View>
       );
     }
     return (
       <View style={{ alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, borderColor: '#C69255' }}>
-        <TextUI size={10} color="#D8A868" weight="medium">{label}</TextUI>
-        <TextUI size={13} color="#FFFFFF" weight="bold">{remainingText}</TextUI>
+        <TextUI size={9.5} color="#D8A868" weight="medium">{label}</TextUI>
+        <TextUI size={12.5} color="#FFFFFF" weight="bold">{remainingText}</TextUI>
       </View>
     );
   };
@@ -5099,14 +5459,20 @@ function AlmosalaApp() {
   // --- MODULE 2: HOME SCREEN (Contextual) ---
   // ==========================================
   const renderHome = () => {
-    const prayers = currentCity.prayers || [
-      { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: '٠٤:١٢ ص', isNext: false, icon: 'sunrise' },
-      { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: '٠٥:٤٠ ص', isNext: false, icon: 'sun' },
-      { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: '١٢:٠٥ م', isNext: false, icon: 'sun' },
-      { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: '٠٣:٣٨ م', isNext: true, icon: 'clock' },
-      { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: '٠٦:٢٢ م', isNext: false, icon: 'sunset' },
-      { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: '٠٧:٥٢ م', isNext: false, icon: 'moon' }
+    const allPrayers = currentCity.prayers || [
+      { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: '٠٤:٥٢ ص', isNext: false, icon: 'sunrise' },
+      { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: '٠٦:٠٨ ص', isNext: false, icon: 'sun' },
+      { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: '١٢:١٨ م', isNext: false, icon: 'sun' },
+      { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: '٠٣:٤٥ م', isNext: true, icon: 'clock' },
+      { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: '٠٦:٢٨ م', isNext: false, icon: 'sunset' },
+      { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: '٠٧:٥٨ م', isNext: false, icon: 'moon' }
     ];
+
+    const sunrisePrayer = allPrayers.find((p: any) => p.id === 'sunrise');
+    const fivePrayers = allPrayers
+      .filter((p: any) => p.id !== 'sunrise')
+      .map((p: any) => ({ ...p, isNext: p.id === nextPrayerInfo.id }));
+    const prayers = allPrayers.map((p: any) => ({ ...p, isNext: p.id === nextPrayerInfo.id }));
 
     const toggleBell = (prayerId: string) => {
       setPrayerBells((prev) => {
@@ -5218,7 +5584,7 @@ function AlmosalaApp() {
                 maxWidth: '52%'
               }}
             >
-              <Feather name="map-pin" size={11} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
+              <Feather name={currentCity.id === 'gps_live' ? 'crosshair' : 'map-pin'} size={11} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
               <TextUI size={11} weight="medium" color={TOKENS.colors.primary} numberOfLines={1}>
                 {`${isRTL ? currentCity.nameAr : currentCity.nameEn} • ${t('تغيير', 'Change')}`}
               </TextUI>
@@ -5297,19 +5663,20 @@ function AlmosalaApp() {
                   </TextUI>
                 </View>
 
-                <TextUI weight="bold" size={34} color="#FFFFFF" style={{ marginTop: 2 }}>
-                  {isRTL ? currentCity.nextPrayerNameAr : `${currentCity.nextPrayerNameEn} Prayer`}
+                <TextUI weight="bold" size={32} color="#FFFFFF" style={{ marginTop: 2 }}>
+                  {isRTL ? nextPrayerInfo.nameAr : `${nextPrayerInfo.nameEn} Prayer`}
                 </TextUI>
 
-                <TextUI size={15} color="#F5ECE1" weight="medium" style={{ marginTop: 2 }}>
-                  {`${t('موعد الأذان:', 'Adhan Time:')} ${currentCity.nextPrayerTime}`}
+                <TextUI size={14} color="#F5ECE1" weight="medium" style={{ marginTop: 2 }}>
+                  {`${t('موعد الأذان:', 'Adhan Time:')} ${nextPrayerInfo.time}${nextPrayerInfo.isTomorrow ? (isRTL ? ' (غداً)' : ' (Tomorrow)') : ''}`}
                 </TextUI>
               </View>
 
               {/* Left Side: Circular Countdown Gauge */}
               <CircularCountdownGauge
-                remainingText="٠١:٢٤:٣٦"
+                remainingText={countdownText}
                 label={t('متبقي للأذان', 'Remaining')}
+                progress={countdownProgress}
               />
             </View>
 
@@ -5327,7 +5694,7 @@ function AlmosalaApp() {
               }}
             >
               <TouchableOpacity
-                onPress={() => toggleBell('asr')}
+                onPress={() => toggleBell(nextPrayerInfo.id)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -5340,13 +5707,13 @@ function AlmosalaApp() {
                 }}
               >
                 <Feather
-                  name={prayerBells.asr ? 'bell' : 'bell-off'}
+                  name={prayerBells[nextPrayerInfo.id as keyof typeof prayerBells] ? 'bell' : 'bell-off'}
                   size={14}
                   color={TOKENS.colors.secondary}
                   style={{ marginLeft: 6 }}
                 />
                 <TextUI size={12} weight="medium" color="#FFFFFF">
-                  {prayerBells.asr ? t('تنبيه الأذان: مفعّل', 'Adhan Alert: On') : t('تنبيه الأذان: صامت', 'Adhan: Muted')}
+                  {prayerBells[nextPrayerInfo.id as keyof typeof prayerBells] ? t('تنبيه الأذان: مفعّل', 'Adhan Alert: On') : t('تنبيه الأذان: صامت', 'Adhan: Muted')}
                 </TextUI>
               </TouchableOpacity>
 
@@ -5373,25 +5740,48 @@ function AlmosalaApp() {
               paddingHorizontal: 2
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="clock" size={15} color={TOKENS.colors.primary} style={{ marginLeft: 6 }} />
-              <TextUI weight="bold" size={15}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Feather name="clock" size={15} color={TOKENS.colors.primary} />
+              <TextUI weight="bold" size={14.5}>
                 {t('مواقيت صلوات اليوم', "Today's Prayers")}
               </TextUI>
+              {sunrisePrayer && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 3,
+                    backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.12)' : 'rgba(255, 255, 255, 0.08)',
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: TOKENS.radius.pill
+                  }}
+                >
+                  <Feather name="sun" size={10} color={TOKENS.colors.secondary} />
+                  <TextUI size={9.5} color={TOKENS.colors.primary} weight="medium">
+                    {`${t('الشروق', 'Sunrise')}: ${sunrisePrayer.time.replace(' ص', '').replace(' م', '')} ص`}
+                  </TextUI>
+                </View>
+              )}
             </View>
             <TouchableOpacity onPress={() => navigate('PrayerTimes')}>
-              <TextUI size={12} color={TOKENS.colors.primary} weight="medium">
+              <TextUI size={11.5} color={TOKENS.colors.primary} weight="medium">
                 {t('التفاصيل والتقويم ◀', 'Details & Calendar ◀')}
               </TextUI>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingHorizontal: 1 }}
+          {/* Unified 5-Prayer Cards Row (جميع الصلوات الخمس في شريط واحد دون اختفاء أي صلاة) */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'stretch',
+              justifyContent: 'space-between',
+              width: '100%',
+              gap: 4
+            }}
           >
-            {prayers.map((p) => {
+            {fivePrayers.map((p) => {
               const isNext = p.isNext;
               return (
                 <TouchableOpacity
@@ -5399,9 +5789,9 @@ function AlmosalaApp() {
                   activeOpacity={0.8}
                   onPress={() => navigate('PrayerTimes')}
                   style={{
-                    width: 76,
-                    paddingVertical: 10,
-                    paddingHorizontal: 6,
+                    flex: 1,
+                    paddingVertical: 9,
+                    paddingHorizontal: 2,
                     borderRadius: TOKENS.radius.md,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -5413,66 +5803,68 @@ function AlmosalaApp() {
                     ...(isNext ? makeShadow('0 4px 12px rgba(140, 94, 60, 0.25)', '#8C5E3C', 0.25, 4, { width: 0, height: 2 }, 4) : {})
                   }}
                 >
-                  {isNext ? (
+                  {isNext && (
                     <View
                       style={{
                         backgroundColor: TOKENS.colors.secondary,
-                        paddingHorizontal: 7,
-                        paddingVertical: 1.5,
+                        paddingHorizontal: 4,
+                        paddingVertical: 1,
                         borderRadius: TOKENS.radius.pill,
-                        marginBottom: 4
+                        marginBottom: 3
                       }}
                     >
-                      <TextUI size={9} weight="bold" color="#FFFFFF">
+                      <TextUI size={8} weight="bold" color="#FFFFFF">
                         {t('القادمة', 'Next')}
                       </TextUI>
                     </View>
-                  ) : null}
+                  )}
                   <Feather
                     name={p.icon as any}
-                    size={18}
+                    size={15}
                     color={isNext ? '#FFFFFF' : TOKENS.colors.primary}
-                    style={{ marginBottom: 4 }}
+                    style={{ marginBottom: 3 }}
                   />
                   <TextUI
                     weight={isNext ? 'bold' : 'medium'}
-                    size={13}
+                    size={11.5}
                     color={isNext ? '#FFFFFF' : c.textPrimary}
-                    style={{ marginBottom: 4 }}
+                    style={{ marginBottom: 2 }}
+                    numberOfLines={1}
                   >
                     {isRTL ? p.nameAr : p.nameEn}
                   </TextUI>
                   <TextUI
                     weight="bold"
-                    size={12}
+                    size={11}
                     color={isNext ? '#F5ECE1' : TOKENS.colors.primaryDark}
+                    numberOfLines={1}
                   >
                     {p.time.replace(' ص', '').replace(' م', '')}
                   </TextUI>
                   <TextUI
-                    size={10}
+                    size={9}
                     color={isNext ? 'rgba(255,255,255,0.85)' : c.textSecondary}
                     style={{ marginTop: 1 }}
                   >
-                    {p.time.includes('ص') ? t('صباحاً', 'AM') : t('مساءً', 'PM')}
+                    {p.time.includes('ص') ? t('ص', 'AM') : t('م', 'PM')}
                   </TextUI>
                   <TouchableOpacity
                     onPress={(e) => {
                       e.stopPropagation?.();
                       toggleBell(p.id);
                     }}
-                    style={{ marginTop: 6, padding: 3 }}
+                    style={{ marginTop: 4, padding: 2 }}
                   >
                     <Feather
                       name={prayerBells[p.id] ? 'bell' : 'bell-off'}
-                      size={13}
+                      size={12}
                       color={isNext ? TOKENS.colors.secondary : (prayerBells[p.id] ? TOKENS.colors.primary : c.textSecondary)}
                     />
                   </TouchableOpacity>
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
         </View>
 
         {/* 4. PRIORITY 3: Quick Worship & Duties 4-Grid (شبكة الخدمات اليومية الذكية) */}
@@ -6487,7 +6879,7 @@ function AlmosalaApp() {
   // --- MODULE 3: PRAYER SERVICES ------------
   // ==========================================
   const renderPrayerTimes = () => {
-    const prayers = currentCity.prayers || [
+    const rawPrayers = currentCity.prayers || [
       { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: '٠٤:١٢ ص', isNext: false, icon: 'sunrise' },
       { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: '٠٥:٤٠ ص', isNext: false, icon: 'sun' },
       { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: '١٢:٠٥ م', isNext: false, icon: 'sun' },
@@ -6495,6 +6887,7 @@ function AlmosalaApp() {
       { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: '٠٦:٢٢ م', isNext: false, icon: 'sunset' },
       { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: '٠٧:٥٢ م', isNext: false, icon: 'moon' }
     ];
+    const prayers = rawPrayers.map((p: any) => ({ ...p, isNext: p.id === nextPrayerInfo.id }));
 
     return (
       <View style={{ flex: 1, backgroundColor: c.bg }}>
@@ -6622,16 +7015,16 @@ function AlmosalaApp() {
                 }}
               >
                 <TextUI size={12} color={TOKENS.colors.secondary} weight="bold">
-                  {`${t('الصلاة القادمة:', 'Next Prayer:')} ${isRTL ? currentCity.nextPrayerNameAr : currentCity.nextPrayerNameEn}`}
+                  {`${t('الصلاة القادمة:', 'Next Prayer:')} ${isRTL ? nextPrayerInfo.nameAr : nextPrayerInfo.nameEn}`}
                 </TextUI>
               </View>
 
               <TextUI weight="bold" size={42} color="#FFFFFF" style={{ marginVertical: 2 }}>
-                ٠١:٢٤:٣٦
+                {countdownText}
               </TextUI>
 
               <TextUI size={14} color="rgba(255, 255, 255, 0.85)">
-                {`${t('متبقي حتى أذان العصر', 'Remaining until Asr')} (${currentCity.nextPrayerTime})`}
+                {`${t('متبقي حتى أذان', 'Remaining until')} ${isRTL ? nextPrayerInfo.nameAr : nextPrayerInfo.nameEn} (${nextPrayerInfo.time})${nextPrayerInfo.isTomorrow ? (isRTL ? ' - غداً' : ' - Tomorrow') : ''}`}
               </TextUI>
             </LinearGradient>
           </View>
@@ -12438,8 +12831,22 @@ const ALLAH_99_NAMES = [
               badge={isSelected ? t('المحددة', 'Active') : null}
               badgeColor={themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28'}
               icon="map-pin"
-              onPress={() => {
-                setCurrentCity(city);
+              onPress={async () => {
+                const latNum = parseFloat(city.lat);
+                const lngNum = parseFloat(city.lng);
+                const timings = await getAccuratePrayerTimes(latNum, lngNum, new Date(), calculationMethod);
+                const updatedCity = {
+                  ...city,
+                  prayers: [
+                    { id: 'fajr', nameAr: 'الفجر', nameEn: 'Fajr', time: timings.fajr, isNext: false, icon: 'sunrise' },
+                    { id: 'sunrise', nameAr: 'الشروق', nameEn: 'Sunrise', time: timings.sunrise, isNext: false, icon: 'sun' },
+                    { id: 'dhuhr', nameAr: 'الظهر', nameEn: 'Dhuhr', time: timings.dhuhr, isNext: false, icon: 'sun' },
+                    { id: 'asr', nameAr: 'العصر', nameEn: 'Asr', time: timings.asr, isNext: false, icon: 'clock' },
+                    { id: 'maghrib', nameAr: 'المغرب', nameEn: 'Maghrib', time: timings.maghrib, isNext: false, icon: 'sunset' },
+                    { id: 'isha', nameAr: 'العشاء', nameEn: 'Isha', time: timings.isha, isNext: false, icon: 'moon' }
+                  ]
+                };
+                setCurrentCity(updatedCity);
                 savePref('almosala_city', city.id);
                 goBack();
               }}
