@@ -1188,7 +1188,7 @@ function AlmosalaApp() {
   const [themeMode, setThemeMode] = useState('light'); // 'light' | 'dark'
   const [lang, setLang] = useState('ar');               // 'ar' | 'en'
   const [selectedRiwayah, setSelectedRiwayah] = useState('hafs');
-  const [quranFontSize, setQuranFontSize] = useState(34); // 26, 32, 38, 44
+  const [quranFontSize, setQuranFontSize] = useState(22); // 22, 26, 32, 38, 44
   const [calculationMethod, setCalculationMethod] = useState('mwl');
   const [asrMethod, setAsrMethod] = useState('majority');
   const [currentCity, setCurrentCity] = useState(CITIES[0]);
@@ -2470,12 +2470,12 @@ function AlmosalaApp() {
       <View
         style={{
           width: '100%',
-          minHeight: 106,
-          marginBottom: 24,
+          minHeight: 78,
+          marginBottom: 16,
           position: 'relative',
           justifyContent: 'center',
           paddingHorizontal: 16,
-          paddingVertical: 12
+          paddingVertical: 6
         }}
       >
         <MushafSurahFrame themeMode={themeMode} />
@@ -2488,7 +2488,7 @@ function AlmosalaApp() {
             justifyContent: 'space-between',
             width: '100%',
             paddingHorizontal: 12,
-            paddingTop: 4
+            paddingTop: 2
           }}
         >
           {/* Right Badge: Classification (مَكِّيَّةٌ / مَدَنِيَّةٌ) */}
@@ -2496,9 +2496,9 @@ function AlmosalaApp() {
             style={{
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: 64,
-              paddingVertical: 5,
-              paddingHorizontal: 8,
+              minWidth: 56,
+              paddingVertical: 3,
+              paddingHorizontal: 7,
               borderRadius: 6,
               backgroundColor: isLight ? 'rgba(198, 146, 85, 0.12)' : 'rgba(212, 163, 115, 0.15)',
               borderWidth: 1,
@@ -2508,7 +2508,7 @@ function AlmosalaApp() {
             <TextUI
               quran
               weight="bold"
-              size={14}
+              size={12.5}
               color={isLight ? '#5D3A22' : '#EAD29A'}
             >
               {surah.type === 'مكية' ? 'مَكِّيَّةٌ' : 'مَدَنِيَّةٌ'}
@@ -2517,12 +2517,12 @@ function AlmosalaApp() {
 
           {/* Center: The Grand Surah Calligraphy (سُورَةُ الكَهْفِ) */}
           <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1, paddingHorizontal: 4 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <TextUI size={13} color={TOKENS.colors.secondary}>۞</TextUI>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <TextUI size={11} color={TOKENS.colors.secondary}>۞</TextUI>
               <TextUI
                 quran
                 weight="bold"
-                size={27}
+                size={22}
                 color={isLight ? '#3E2010' : '#FFF2D6'}
                 style={{
                   letterSpacing: 0.5,
@@ -2537,7 +2537,7 @@ function AlmosalaApp() {
               >
                 {`سُورَةُ ${nameTashkeel}`}
               </TextUI>
-              <TextUI size={13} color={TOKENS.colors.secondary}>۞</TextUI>
+              <TextUI size={11} color={TOKENS.colors.secondary}>۞</TextUI>
             </View>
           </View>
 
@@ -2546,9 +2546,9 @@ function AlmosalaApp() {
             style={{
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: 64,
-              paddingVertical: 5,
-              paddingHorizontal: 8,
+              minWidth: 56,
+              paddingVertical: 3,
+              paddingHorizontal: 7,
               borderRadius: 6,
               backgroundColor: isLight ? 'rgba(198, 146, 85, 0.12)' : 'rgba(212, 163, 115, 0.15)',
               borderWidth: 1,
@@ -2558,7 +2558,7 @@ function AlmosalaApp() {
             <TextUI
               quran
               weight="bold"
-              size={13}
+              size={12}
               color={isLight ? '#5D3A22' : '#EAD29A'}
             >
               {`آيَاتُهَا ${versesAr}`}
@@ -2567,10 +2567,10 @@ function AlmosalaApp() {
         </View>
 
         {/* Bottom Subtle Ribbon: Juz & Order Metadata */}
-        <View style={{ alignItems: 'center', marginTop: 6 }}>
+        <View style={{ alignItems: 'center', marginTop: 2 }}>
           <TextUI
             quran
-            size={12}
+            size={10.5}
             color={isLight ? '#8C6C54' : '#C8B29E'}
           >
             {`الجُزْءُ ${juzAr} • تَرْتِيبُهَا ${orderAr}`}
@@ -10416,7 +10416,7 @@ const ALLAH_99_NAMES = [
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setQuranFontSize((prev: number) => Math.max(22, prev - 2));
+                    setQuranFontSize((prev: number) => Math.max(16, prev - 2));
                     triggerHapticFeedback('light');
                   }}
                   style={{
@@ -10442,7 +10442,7 @@ const ALLAH_99_NAMES = [
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    setQuranFontSize((prev: number) => Math.min(52, prev + 2));
+                    setQuranFontSize((prev: number) => Math.min(44, prev + 2));
                     triggerHapticFeedback('light');
                   }}
                   style={{
@@ -11997,10 +11997,11 @@ const ALLAH_99_NAMES = [
           </TextUI>
 
           {[
-            { size: 26, label: t('صغير (26 pt)', 'Small (26 pt)') },
-            { size: 32, label: t('متوسط (32 pt)', 'Medium (32 pt)') },
-            { size: 38, label: t('كبير (38 pt)', 'Large (38 pt)') },
-            { size: 44, label: t('كبير جداً (44 pt)', 'Extra Large (44 pt)') }
+            { size: 22, label: t('الأساسي القياسي (22 pt)', 'Standard Default (22 pt)') },
+            { size: 26, label: t('متوسط (26 pt)', 'Medium (26 pt)') },
+            { size: 32, label: t('كبير (32 pt)', 'Large (32 pt)') },
+            { size: 38, label: t('كبير جداً (38 pt)', 'Extra Large (38 pt)') },
+            { size: 44, label: t('أقصى حجم (44 pt)', 'Maximum (44 pt)') }
           ].map((s) => {
             const isSelected = quranFontSize === s.size;
             return (
