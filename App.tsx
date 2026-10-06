@@ -2115,8 +2115,43 @@ function AlmosalaApp() {
 
   const toggleQuranAudioPlayback = () => {
     if (audioPlaying) {
-      stopAllAudioPlayback();
+      // Real pause without destroying player or resetting playback position
+      try {
+        if (nativeAudioSoundRef.current) {
+          nativeAudioSoundRef.current.pause();
+        }
+      } catch (e) {}
+      try {
+        if (quranAudioRef.current) {
+          quranAudioRef.current.pause();
+        }
+      } catch (e) {}
+      setAudioPlaying(false);
     } else {
+      // Resume if player is already loaded and paused
+      const hasActiveNative = !!nativeAudioSoundRef.current;
+      const hasActiveWeb = !!quranAudioRef.current;
+      if (currentAudioType === 'quran' && (hasActiveNative || hasActiveWeb)) {
+        try {
+          if (nativeAudioSoundRef.current) {
+            nativeAudioSoundRef.current.play();
+            setAudioPlaying(true);
+            triggerHapticFeedback('light');
+            return;
+          }
+        } catch (e) {}
+        try {
+          if (quranAudioRef.current) {
+            const p = quranAudioRef.current.play();
+            if (p !== undefined) {
+              p.catch(() => {});
+            }
+            setAudioPlaying(true);
+            triggerHapticFeedback('light');
+            return;
+          }
+        } catch (e) {}
+      }
       playQuranSurah(selectedSurah.id, audioReciter);
     }
     triggerHapticFeedback('light');
@@ -2145,16 +2180,25 @@ function AlmosalaApp() {
     triggerHapticFeedback('light');
   };
 
-  const playLessonAudio = async (course: any, lesson: any) => {
+  const playLessonAudio = async (course: any, lesson: any, startAtSecs: number = 0) => {
     try {
       stopAllAudioPlayback();
       setCurrentAudioType('lesson');
       setActiveCourse(course);
       setActiveLesson(lesson);
       setAudioPlaying(true);
-      setAudioProgress(0);
-      setAudioCurrentTime('٠٠:٠٠');
       setAudioDuration(lesson?.duration || '٤٥ دقيقة');
+
+      if (startAtSecs > 0) {
+        setAudioCurrentSecs(startAtSecs);
+        const curM = Math.floor(startAtSecs / 60).toString().padStart(2, '0');
+        const curS = (startAtSecs % 60).toString().padStart(2, '0');
+        setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
+      } else {
+        setAudioProgress(0);
+        setAudioCurrentTime('٠٠:٠٠');
+        setAudioCurrentSecs(0);
+      }
 
       const url = lesson?.audioUrl || course?.audioStreamUrl;
 
@@ -2174,6 +2218,15 @@ function AlmosalaApp() {
           nativeAudioSoundRef.current = player;
           if (lessonPlaybackSpeed !== 1.0) {
             try { player.playbackRate = lessonPlaybackSpeed; } catch (e) {}
+          }
+          if (startAtSecs > 0) {
+            try {
+              if (typeof player.seekTo === 'function') {
+                player.seekTo(startAtSecs);
+              } else if (player.currentTime !== undefined) {
+                player.currentTime = startAtSecs;
+              }
+            } catch (e) {}
           }
           player.addListener('playbackStatusUpdate', (status: any) => {
             if (status) {
@@ -2216,6 +2269,9 @@ function AlmosalaApp() {
         sound.volume = 1.0;
         if (lessonPlaybackSpeed !== 1.0) {
           try { sound.playbackRate = lessonPlaybackSpeed; } catch (e) {}
+        }
+        if (startAtSecs > 0) {
+          try { sound.currentTime = startAtSecs; } catch (e) {}
         }
 
         sound.ontimeupdate = () => {
@@ -2266,12 +2322,52 @@ function AlmosalaApp() {
 
   const toggleLessonAudioPlayback = () => {
     if (audioPlaying) {
-      stopAllAudioPlayback();
-    } else if (activeCourse && activeLesson) {
-      playLessonAudio(activeCourse, activeLesson);
-    } else if (PROPHET_MOSQUE_COURSES.length > 0) {
-      const c0 = PROPHET_MOSQUE_COURSES[0];
-      playLessonAudio(c0, c0.lessons[0]);
+      // Seamless Pause without losing position or destroying player
+      try {
+        if (nativeAudioSoundRef.current) {
+          nativeAudioSoundRef.current.pause();
+        }
+      } catch (e) {}
+      try {
+        if (quranAudioRef.current) {
+          quranAudioRef.current.pause();
+        }
+      } catch (e) {}
+      setAudioPlaying(false);
+    } else {
+      // Seamless Resume from the exact paused second
+      const hasActiveNative = !!nativeAudioSoundRef.current;
+      const hasActiveWeb = !!quranAudioRef.current;
+
+      if (currentAudioType === 'lesson' && (hasActiveNative || hasActiveWeb)) {
+        try {
+          if (nativeAudioSoundRef.current) {
+            nativeAudioSoundRef.current.play();
+            setAudioPlaying(true);
+            triggerHapticFeedback('light');
+            return;
+          }
+        } catch (e) {}
+        try {
+          if (quranAudioRef.current) {
+            const p = quranAudioRef.current.play();
+            if (p !== undefined) {
+              p.catch(() => {});
+            }
+            setAudioPlaying(true);
+            triggerHapticFeedback('light');
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // If player wasn't initialized yet, start from previous audioCurrentSecs (or 0)
+      if (activeCourse && activeLesson) {
+        playLessonAudio(activeCourse, activeLesson, audioCurrentSecs || 0);
+      } else if (PROPHET_MOSQUE_COURSES.length > 0) {
+        const c0 = PROPHET_MOSQUE_COURSES[0];
+        playLessonAudio(c0, c0.lessons[0], audioCurrentSecs || 0);
+      }
     }
     triggerHapticFeedback('light');
   };
