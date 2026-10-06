@@ -2016,6 +2016,17 @@ function AlmosalaApp() {
   }, []);
 
   useEffect(() => {
+    if (!activeCourse && typeof PROPHET_MOSQUE_COURSES !== 'undefined' && PROPHET_MOSQUE_COURSES.length > 0) {
+      const defaultCourse = PROPHET_MOSQUE_COURSES[0];
+      setActiveCourse(defaultCourse);
+      setSelectedLessonCourse(defaultCourse);
+      if (defaultCourse.lessons && defaultCourse.lessons.length > 0) {
+        setActiveLesson(defaultCourse.lessons[0]);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).__triggerAyahTafsir = (ayahNum: number, surahId?: number) => {
         const targetSurah = surahId ? (SURAHS.find((s: any) => s.id === surahId) || selectedSurah) : selectedSurah;
@@ -11934,7 +11945,7 @@ const ALLAH_99_NAMES = [
                   borderTopColor: c.border
                 }}
               >
-                {downloadedLessons[activeLesson.id] ? (
+                {activeLesson?.id && downloadedLessons[activeLesson.id] ? (
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}>
                       <Feather name="check-circle" size={15} color="#2E7D32" />
@@ -11943,12 +11954,12 @@ const ALLAH_99_NAMES = [
                           محفوظ في ذاكرة الجوال (أوفلاين)
                         </TextUI>
                         <TextUI size={10} color={c.textSecondary}>
-                          {`الحجم: ${downloadedLessons[activeLesson.id].sizeMB} • الذاكرة المحلية`}
+                          {`الحجم: ${downloadedLessons[activeLesson.id]?.sizeMB || '0'} • الذاكرة المحلية`}
                         </TextUI>
                       </View>
                     </View>
                     <TouchableOpacity
-                      onPress={() => deleteDownloadedLesson(activeLesson.id)}
+                      onPress={() => activeLesson?.id && deleteDownloadedLesson(activeLesson.id)}
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -11980,8 +11991,8 @@ const ALLAH_99_NAMES = [
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      disabled={!!downloadingLessonIds[activeLesson.id]}
-                      onPress={() => downloadLessonAudio(activeCourse, activeLesson)}
+                      disabled={!activeLesson?.id || !!downloadingLessonIds[activeLesson.id]}
+                      onPress={() => activeCourse && activeLesson && downloadLessonAudio(activeCourse, activeLesson)}
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -11994,7 +12005,7 @@ const ALLAH_99_NAMES = [
                     >
                       <Feather name="download" size={13} color="#FFFFFF" />
                       <TextUI size={11} weight="bold" color="#FFFFFF">
-                        {downloadingLessonIds[activeLesson.id]
+                        {activeLesson?.id && downloadingLessonIds[activeLesson.id]
                           ? `جارٍ التحميل ${downloadingLessonIds[activeLesson.id]}%...`
                           : 'تحميل للاستماع أوفلاين'}
                       </TextUI>
@@ -12082,7 +12093,7 @@ const ALLAH_99_NAMES = [
                 </View>
 
                 {/* Display Saved Notes for this lesson */}
-                {lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
+                {activeLesson?.id && lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
                   <View style={{ marginTop: 4 }}>
                     <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginBottom: 6 }}>
                       {`الوقفات والملاحظات المحفوظة لهذا الدرس (${toArabicNumber(lessonNotes[activeLesson.id].length)}):`}
@@ -12127,7 +12138,7 @@ const ALLAH_99_NAMES = [
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => deleteLessonNote(activeLesson.id, note.id)}
+                          onPress={() => activeLesson?.id && deleteLessonNote(activeLesson.id, note.id)}
                           style={{ padding: 4 }}
                         >
                           <Feather name="trash-2" size={13} color={c.textSecondary} />
@@ -12848,10 +12859,11 @@ const ALLAH_99_NAMES = [
           presentationStyle="fullScreen"
           onRequestClose={() => setIsLessonPageOpen(false)}
         >
-          <View
-            style={{ flex: 1, backgroundColor: c.bg, direction: isRTL ? 'rtl' : 'ltr' }}
-            {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
-          >
+          {isLessonPageOpen && activeLesson && activeCourse ? (
+            <View
+              style={{ flex: 1, backgroundColor: c.bg, direction: isRTL ? 'rtl' : 'ltr' }}
+              {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+            >
             {/* Lesson Page Header */}
             <Header
               title={t('صفحة الدرس', 'Lesson Page')}
@@ -13244,7 +13256,7 @@ const ALLAH_99_NAMES = [
 
                 {/* Offline Storage Download Bar */}
                 <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: c.border, marginBottom: 14 }}>
-                  {downloadedLessons[activeLesson.id] ? (
+                  {activeLesson?.id && downloadedLessons[activeLesson.id] ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}>
                         <Feather name="check-circle" size={15} color="#2E7D32" />
@@ -13253,12 +13265,12 @@ const ALLAH_99_NAMES = [
                             محفوظ في ذاكرة الجوال (أوفلاين)
                           </TextUI>
                           <TextUI size={10} color={c.textSecondary}>
-                            {`الحجم: ${downloadedLessons[activeLesson.id].sizeMB} • الذاكرة المحلية`}
+                            {`الحجم: ${downloadedLessons[activeLesson.id]?.sizeMB || '0'} • الذاكرة المحلية`}
                           </TextUI>
                         </View>
                       </View>
                       <TouchableOpacity
-                        onPress={() => deleteDownloadedLesson(activeLesson.id)}
+                        onPress={() => activeLesson?.id && deleteDownloadedLesson(activeLesson.id)}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -13283,8 +13295,8 @@ const ALLAH_99_NAMES = [
                         {`استمع في أي وقت بدون إنترنت`}
                       </TextUI>
                       <TouchableOpacity
-                        disabled={!!downloadingLessonIds[activeLesson.id]}
-                        onPress={() => downloadLessonAudio(activeCourse, activeLesson)}
+                        disabled={!activeLesson?.id || !!downloadingLessonIds[activeLesson.id]}
+                        onPress={() => activeCourse && activeLesson && downloadLessonAudio(activeCourse, activeLesson)}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -13297,7 +13309,7 @@ const ALLAH_99_NAMES = [
                       >
                         <Feather name="download" size={13} color="#FFFFFF" />
                         <TextUI size={11} weight="bold" color="#FFFFFF">
-                          {downloadingLessonIds[activeLesson.id]
+                          {activeLesson?.id && downloadingLessonIds[activeLesson.id]
                             ? `جارٍ التحميل ${downloadingLessonIds[activeLesson.id]}%...`
                             : 'تحميل للاستماع أوفلاين'}
                         </TextUI>
@@ -13357,7 +13369,7 @@ const ALLAH_99_NAMES = [
                 </View>
 
                 {/* Saved notes list */}
-                {lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
+                {activeLesson?.id && lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
                   <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: c.border }}>
                     <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginBottom: 6 }}>
                       {`الوقفات والفوائد المحفوظة (${toArabicNumber(lessonNotes[activeLesson.id].length)}):`}
@@ -13394,7 +13406,7 @@ const ALLAH_99_NAMES = [
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => deleteLessonNote(activeLesson.id, note.id)}
+                          onPress={() => activeLesson?.id && deleteLessonNote(activeLesson.id, note.id)}
                           style={{ padding: 4 }}
                         >
                           <Feather name="trash" size={13} color={c.textSecondary} />
@@ -13566,6 +13578,7 @@ const ALLAH_99_NAMES = [
               </View>
             </ScrollView>
           </View>
+          ) : null}
         </Modal>
       </View>
     );
