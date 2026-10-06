@@ -25,8 +25,13 @@ import { Magnetometer } from 'expo-sensors';
 import * as Notifications from 'expo-notifications';
 import { createAudioPlayer, setAudioModeAsync as setExpoAudioModeAsync } from 'expo-audio';
 
-// Safe Notification Handler
+// Safe Notification Handler & RTL Init
 if (Platform.OS !== 'web') {
+  try {
+    I18nManager.allowRTL(true);
+    I18nManager.forceRTL(true);
+  } catch (e) {}
+
   try {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -2984,14 +2989,15 @@ function AlmosalaApp() {
     const explicitAlign = align || flatStyle.textAlign;
     const targetAlign = explicitAlign || (isRTL ? 'right' : 'left');
 
-    // On iOS native, React Native's RCTTextAttributes flips 'left' <-> 'right' when layout direction is RTL.
-    // Hence, to produce a true right-aligned Arabic text on iOS native when I18nManager.isRTL is active,
-    // we must supply 'left', which UIKit converts into NSTextAlignmentRight.
-    const resolvedAlignment = (targetAlign === 'center' || targetAlign === 'justify')
-      ? targetAlign
-      : (Platform.OS === 'web'
-          ? targetAlign
-          : (I18nManager.isRTL ? (targetAlign === 'right' ? 'left' : 'right') : targetAlign));
+    // On iOS native in an RTL app, React Native's RCTTextAttributes flips 'left' and 'right':
+    // - To render on the visual RIGHT: pass 'right' on web, and 'left' on native (which RN flips to right)
+    // - To render on the visual LEFT: pass 'left' on web, and 'right' on native (which RN flips to left)
+    let resolvedAlignment: any = targetAlign;
+    if (targetAlign === 'right') {
+      resolvedAlignment = Platform.OS === 'web' ? 'right' : 'left';
+    } else if (targetAlign === 'left') {
+      resolvedAlignment = Platform.OS === 'web' ? 'left' : 'right';
+    }
 
     return (
       <Text
@@ -10243,7 +10249,7 @@ const ALLAH_99_NAMES = [
                   fontSize: 14,
                   fontFamily: 'Tajawal_500Medium',
                   color: c.textPrimary,
-                  textAlign: Platform.OS === 'web' ? (isRTL ? 'right' : 'left') : (I18nManager.isRTL ? 'left' : (isRTL ? 'right' : 'left')),
+                  textAlign: isRTL ? 'right' : 'left',
                   writingDirection: isRTL ? 'rtl' : 'ltr'
                 }}
                 autoFocus={lessonSearchQuery === ' '}
@@ -10498,13 +10504,13 @@ const ALLAH_99_NAMES = [
                 >
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <View style={{ flex: 1, marginEnd: 10 }}>
-                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark}>
+                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ width: '100%' }}>
                         {chair.chairTitleAr}
                       </TextUI>
-                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2 }}>
+                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2, width: '100%' }}>
                         {chair.scholarAr}
                       </TextUI>
-                      <TextUI size={11} color={c.textSecondary}>
+                      <TextUI size={11} color={c.textSecondary} style={{ width: '100%' }}>
                         {chair.roleAr}
                       </TextUI>
                     </View>
@@ -10697,18 +10703,18 @@ const ALLAH_99_NAMES = [
                       </View>
                     </View>
 
-                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4 }}>
+                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4, width: '100%' }}>
                       {course.titleAr}
                     </TextUI>
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, width: '100%' }}>
                       <Feather name="user" size={13} color={TOKENS.colors.secondary} />
                       <TextUI size={13} weight="bold" color={c.textPrimary}>
                         {course.scholarAr}
                       </TextUI>
                     </View>
 
-                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12 }}>
+                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12, width: '100%' }}>
                       {course.descriptionAr}
                     </TextUI>
 
@@ -10792,13 +10798,13 @@ const ALLAH_99_NAMES = [
                 <View style={{ marginBottom: 14 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <View style={{ flex: 1, marginEnd: 10 }}>
-                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2 }}>
+                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2, width: '100%' }}>
                         {`سلسلة علمية • ${selectedLessonCourse.categoryAr}`}
                       </TextUI>
-                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark}>
+                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ width: '100%' }}>
                         {selectedLessonCourse.titleAr}
                       </TextUI>
-                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2 }}>
+                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2, width: '100%' }}>
                         {`${selectedLessonCourse.scholarAr} • ${selectedLessonCourse.roleAr}`}
                       </TextUI>
                     </View>
@@ -10881,10 +10887,11 @@ const ALLAH_99_NAMES = [
                             size={14}
                             color={isCurrentActive ? '#1E5A3E' : c.textPrimary}
                             numberOfLines={2}
+                            style={{ width: '100%' }}
                           >
                             {ls.titleAr}
                           </TextUI>
-                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2 }}>
+                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2, width: '100%' }}>
                             {`المدة: ${ls.duration}`}
                           </TextUI>
                         </View>

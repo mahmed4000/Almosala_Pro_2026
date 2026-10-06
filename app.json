@@ -14,6 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "supportsRTL": true,
       "bundleIdentifier": "com.almosala.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "يحتاج تطبيق رفيق المسلم إلى تحديد موقعك الجغرافي لحساب مواقيت الصلاة بدقة وتحديد اتجاه القبلة نحو مكة المكرمة.",
@@ -26,6 +27,7 @@
       }
     },
     "android": {
+      "supportsRTL": true,
       "package": "com.almosala.app",
       "versionCode": 2027,
       "adaptiveIcon": {
