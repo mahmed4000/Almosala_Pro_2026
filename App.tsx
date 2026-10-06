@@ -22,6 +22,7 @@ import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { Magnetometer } from 'expo-sensors';
 import * as Notifications from 'expo-notifications';
+import { Audio as ExpoAudio } from 'expo-av';
 
 // Safe Notification Handler
 if (Platform.OS !== 'web') {
@@ -33,6 +34,15 @@ if (Platform.OS !== 'web') {
         shouldSetBadge: false,
       }),
     });
+  } catch (e) {}
+
+  try {
+    ExpoAudio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false
+    }).catch(() => {});
   } catch (e) {}
 }
 import { LinearGradient } from 'expo-linear-gradient';
@@ -151,6 +161,15 @@ const getReciterAudioUrl = (reciterId: string, surahId: number): string => {
   }
   if (reciterId === 'baijan') {
     return `https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/${pad}.mp3`;
+  }
+  if (reciterId === 'burhaji') {
+    return `https://cdn.mp3quran.net/audio/muhammad-burhaji/r1/${pad}.mp3`;
+  }
+  if (reciterId === 'ahmad_hudhaifi') {
+    return `https://cdn.mp3quran.net/audio/ahmad-hudhaifi/r1/${pad}.mp3`;
+  }
+  if (reciterId === 'abdulmohsen_qasim') {
+    return `https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/${pad}.mp3`;
   }
   if (reciterId === 'alhusary') {
     return `https://download.quranicaudio.com/qdc/khalil_al_husary/murattal/${surahId}.mp3`;
@@ -1292,6 +1311,7 @@ function AlmosalaApp() {
   const [audioDuration, setAudioDuration] = useState('٠٠:٠٠');
   const [audioProgress, setAudioProgress] = useState(0);
   const quranAudioRef = useRef<any>(null);
+  const nativeAudioSoundRef = useRef<any>(null);
 
   // Audio Surah Selector State (منتقي السور لمشغل التلاوة)
   const [audioSurahSelectorVisible, setAudioSurahSelectorVisible] = useState(false);
@@ -1615,9 +1635,19 @@ function AlmosalaApp() {
   };
 
   // ==========================================
-  // BULLETPROOF SINGLETON QURAN AUDIO CONTROLLER
+  // BULLETPROOF SINGLETON QURAN AUDIO CONTROLLER (NATIVE + WEB)
   // ==========================================
   const stopAllAudioPlayback = () => {
+    // 1. Unload Native Sound
+    try {
+      if (nativeAudioSoundRef.current) {
+        const soundToStop = nativeAudioSoundRef.current;
+        nativeAudioSoundRef.current = null;
+        soundToStop.stopAsync().then(() => soundToStop.unloadAsync()).catch(() => {});
+      }
+    } catch (e) {}
+
+    // 2. Unload Web Sound
     try {
       if (quranAudioRef.current) {
         quranAudioRef.current.ontimeupdate = null;
@@ -1630,7 +1660,7 @@ function AlmosalaApp() {
       }
     } catch (e) {}
 
-    // On Web: forcefully pause and unload any orphan audio elements in the DOM
+    // 3. On Web: forcefully pause and unload any orphan audio elements in the DOM
     if (typeof document !== 'undefined') {
       try {
         const audioNodes = document.querySelectorAll('audio');
@@ -1650,17 +1680,63 @@ function AlmosalaApp() {
     setAudioPlaying(false);
   };
 
-  const playQuranSurah = (surahId: number, reciterId: string) => {
+  const playQuranSurah = async (surahId: number, reciterId: string) => {
     try {
-      // 1. Unconditionally terminate ALL existing audio streams first
+      // 1. Terminate all previous audio instances first
       stopAllAudioPlayback();
 
+      const url = getReciterAudioUrl(reciterId, surahId);
+      setAudioPlaying(true);
+
+      // --- NATIVE ENVIRONMENT (iOS / Android / Expo Go) ---
+      if (Platform.OS !== 'web') {
+        try {
+          await ExpoAudio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false
+          });
+        } catch (e) {}
+
+        const { sound } = await ExpoAudio.Sound.createAsync(
+          { uri: url },
+          { shouldPlay: true, volume: 1.0, progressUpdateIntervalMillis: 500 },
+          (status) => {
+            if (status.isLoaded) {
+              if (status.durationMillis && status.durationMillis > 0) {
+                const currentSecs = Math.floor((status.positionMillis || 0) / 1000);
+                const totalSecs = Math.floor(status.durationMillis / 1000);
+                const progressPct = ((status.positionMillis || 0) / status.durationMillis) * 100;
+                setAudioProgress(progressPct);
+                const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
+                const curS = (currentSecs % 60).toString().padStart(2, '0');
+                const totM = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+                const totS = (totalSecs % 60).toString().padStart(2, '0');
+                setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
+                setAudioDuration(`${toArabicNumber(totM)}:${toArabicNumber(totS)}`);
+              }
+              if (status.didJustFinish) {
+                stopAllAudioPlayback();
+                setAudioProgress(100);
+              }
+            }
+          }
+        );
+
+        nativeAudioSoundRef.current = sound;
+        return;
+      }
+
+      // --- WEB ENVIRONMENT (Browsers) ---
       if (typeof window !== 'undefined' && typeof Audio !== 'undefined') {
-        const url = getReciterAudioUrl(reciterId, surahId);
-        const sound = new Audio(url);
+        const sound = new Audio();
+        sound.src = url;
+        sound.preload = 'auto';
+        sound.volume = 1.0;
 
         sound.ontimeupdate = () => {
-          if (sound.duration) {
+          if (sound.duration && !isNaN(sound.duration) && sound.duration > 0) {
             const currentSecs = Math.floor(sound.currentTime);
             const totalSecs = Math.floor(sound.duration);
             const progressPct = (sound.currentTime / sound.duration) * 100;
@@ -1680,24 +1756,22 @@ function AlmosalaApp() {
         };
 
         sound.onerror = (e) => {
-          console.warn('Audio playback error:', e);
+          console.warn('Web audio playback error:', e);
           stopAllAudioPlayback();
         };
 
         quranAudioRef.current = sound;
-        setAudioPlaying(true);
 
         const playPromise = sound.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
             console.warn('Playback prevented or interrupted:', err);
-            stopAllAudioPlayback();
+            setAudioPlaying(false);
           });
         }
-      } else {
-        setAudioPlaying(true);
       }
     } catch (e) {
+      console.warn('playQuranSurah error:', e);
       setAudioPlaying(false);
     }
   };
@@ -3341,6 +3415,9 @@ function AlmosalaApp() {
       { id: 'shuraim', nameAr: 'سعود الشريم' },
       { id: 'yasser_dosari', nameAr: 'ياسر الدوسري' },
       { id: 'baijan', nameAr: 'عبد الله البعيجان (النبوي)' },
+      { id: 'burhaji', nameAr: 'محمد أحمد برهجي' },
+      { id: 'ahmad_hudhaifi', nameAr: 'أحمد الحذيفي' },
+      { id: 'abdulmohsen_qasim', nameAr: 'عبد المحسن القاسم' },
       { id: 'almuaiqly', nameAr: 'ماهر المعيقلي' },
       { id: 'alhusary', nameAr: 'محمود خليل الحصري' },
       { id: 'alghamdi', nameAr: 'سعد الغامدي' }
@@ -9627,7 +9704,7 @@ const ALLAH_99_NAMES = [
         />
         <TappableRow
           title={t('التلاوات الصوتية والقراء', 'Audio Recitations')}
-          subtitle={t('المنشاوي، عبد الباسط، الشريم، الدوسري، البعيجان، العفاسي...', 'Minshawi, Abdul Basit, Shuraim, Al-Dosari, Baijan...')}
+          subtitle={t('برهجي، الحذيفي، القاسم، المنشاوي، عبد الباسط، الشريم، الدوسري...', 'Barhaji, Al-Hudhaifi, Al-Qasim, Minshawi, Abdul Basit, Shuraim...')}
           icon="volume-2"
           onPress={() => navigate('QuranAudio')}
         />
@@ -11456,6 +11533,9 @@ const ALLAH_99_NAMES = [
       { id: 'shuraim', name: t('الشيخ سعود الشريم', 'Saud Al-Shuraim'), riwayah: 'إمام المسجد الحرام سابقاً' },
       { id: 'yasser_dosari', name: t('الشيخ ياسر الدوسري', 'Yasser Al-Dosari'), riwayah: 'إمام المسجد الحرام' },
       { id: 'baijan', name: t('الشيخ عبد الله البعيجان', 'Abdullah Al-Baijan'), riwayah: 'إمام وخطيب المسجد النبوي الشريف' },
+      { id: 'burhaji', name: t('الشيخ محمد أحمد برهجي', 'Muhammad Ahmad Barhaji'), riwayah: 'حفص عن عاصم (مرتل)' },
+      { id: 'ahmad_hudhaifi', name: t('الشيخ د. أحمد بن علي الحذيفي', 'Ahmad Al-Hudhaifi'), riwayah: 'إمام وخطيب المسجد النبوي الشريف' },
+      { id: 'abdulmohsen_qasim', name: t('الشيخ د. عبد المحسن القاسم', 'Abdul Mohsen Al-Qasim'), riwayah: 'إمام وخطيب المسجد النبوي الشريف' },
       { id: 'almuaiqly', name: t('الشيخ ماهر المعيقلي', 'Maher Al-Muaiqly'), riwayah: 'إمام المسجد الحرام' },
       { id: 'alhusary', name: t('الشيخ محمود خليل الحصري', 'Mahmoud Khalil Al-Husary'), riwayah: 'شيخ عموم المقارئ' },
       { id: 'alghamdi', name: t('الشيخ سعد الغامدي', 'Saad Al-Ghamdi'), riwayah: 'تلاوة نجدية خاشعة' }
