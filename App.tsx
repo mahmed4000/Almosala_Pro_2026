@@ -10303,44 +10303,52 @@ const ALLAH_99_NAMES = [
               </View>
 
               {/* Action Icons */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 {/* Full-Screen Toggle Button */}
                 <TouchableOpacity
+                  activeOpacity={0.75}
                   onPress={() => {
                     setQuranReaderFullScreen(true);
                     triggerHapticFeedback('medium');
                   }}
                   style={{
-                    flexDirection: 'row',
+                    width: 34,
+                    height: 34,
+                    borderRadius: 17,
+                    backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
                     alignItems: 'center',
-                    gap: 5,
-                    paddingHorizontal: 9,
-                    paddingVertical: 5,
-                    borderRadius: TOKENS.radius.pill,
-                    backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.12)' : 'rgba(212, 163, 115, 0.15)',
+                    justifyContent: 'center',
                     borderWidth: 1,
-                    borderColor: 'rgba(198, 146, 85, 0.35)',
-                    marginRight: 4
+                    borderColor: 'rgba(198, 146, 85, 0.3)'
                   }}
                 >
-                  <Feather name="maximize-2" size={13} color={TOKENS.colors.primary} />
-                  <TextUI size={10.5} weight="bold" color={TOKENS.colors.primary}>
-                    {t('ملء الشاشة', 'Full Screen')}
-                  </TextUI>
+                  <Feather name="maximize-2" size={15} color={TOKENS.colors.primary} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  activeOpacity={0.75}
                   onPress={() => openVerseCardShare({
                     text: (parsedSurahStream[0]?.pages[0]?.verses[0]?.text || selectedSurah.nameAr).slice(0, 160),
                     surahName: `سورة ${selectedSurah.nameAr}`,
                     ayahNumber: '١',
                     tafsir: `تلاوة من سورة ${selectedSurah.nameAr} كاملة بمصحف المدينة المنورة.`
                   })}
-                  style={{ padding: 6 }}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 17,
+                    backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(198, 146, 85, 0.3)'
+                  }}
                 >
-                  <Feather name="share-2" size={16} color={TOKENS.colors.primary} />
+                  <Feather name="share-2" size={15} color={TOKENS.colors.primary} />
                 </TouchableOpacity>
+
                 <TouchableOpacity
+                  activeOpacity={0.75}
                   onPress={() => {
                     if (readingBookmark) {
                       if (Platform.OS === 'web') {
@@ -10369,29 +10377,23 @@ const ALLAH_99_NAMES = [
                     }
                   }}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 3,
-                    paddingHorizontal: 7,
-                    paddingVertical: 4,
-                    borderRadius: TOKENS.radius.pill,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 17,
                     backgroundColor: readingBookmark?.surahId === selectedSurah.id
-                      ? (themeMode === 'light' ? 'rgba(198, 146, 85, 0.16)' : 'rgba(212, 163, 115, 0.22)')
-                      : 'transparent',
-                    borderWidth: readingBookmark?.surahId === selectedSurah.id ? 1 : 0,
-                    borderColor: 'rgba(198, 146, 85, 0.4)'
+                      ? (themeMode === 'light' ? 'rgba(198, 146, 85, 0.22)' : 'rgba(212, 163, 115, 0.3)')
+                      : (themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28'),
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(198, 146, 85, 0.3)'
                   }}
                 >
                   <Feather
                     name="bookmark"
-                    size={17}
-                    color={(readingBookmark?.surahId === selectedSurah.id || isBookmarked) ? TOKENS.colors.secondary : c.textSecondary}
+                    size={15}
+                    color={(readingBookmark?.surahId === selectedSurah.id || isBookmarked) ? TOKENS.colors.secondary : TOKENS.colors.primary}
                   />
-                  {readingBookmark?.surahId === selectedSurah.id && (
-                    <TextUI size={10.5} weight="bold" color={TOKENS.colors.primaryDark}>
-                      {toArabicNumber(readingBookmark?.ayahNumber || 1)}
-                    </TextUI>
-                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -10471,11 +10473,11 @@ const ALLAH_99_NAMES = [
                   }}
                 >
                   {[
-                    { speed: 0.5, label: t('٠.٥x أبطأ', '0.5x') },
-                    { speed: 1, label: t('١x هادئ', '1x') },
-                    { speed: 2, label: t('٢x عادي', '2x') },
-                    { speed: 3, label: t('٣x سريع', '3x') },
-                    { speed: 4, label: t('٤x فائق', '4x') }
+                    { speed: 0.5, label: '٠.٥x' },
+                    { speed: 1, label: '١x' },
+                    { speed: 2, label: '٢x' },
+                    { speed: 3, label: '٣x' },
+                    { speed: 4, label: '٤x' }
                   ].map(s => {
                     const isSelected = quranScrollSpeed === s.speed;
                     return (
@@ -10486,14 +10488,14 @@ const ALLAH_99_NAMES = [
                           triggerHapticFeedback('light');
                         }}
                         style={{
-                          paddingVertical: 2.5,
-                          paddingHorizontal: 5,
+                          paddingVertical: 2,
+                          paddingHorizontal: 4.5,
                           borderRadius: TOKENS.radius.pill,
                           backgroundColor: isSelected ? TOKENS.colors.primary : 'transparent'
                         }}
                       >
                         <TextUI
-                          size={8.8}
+                          size={9}
                           weight={isSelected ? 'bold' : 'regular'}
                           color={isSelected ? '#FFFFFF' : c.textSecondary}
                         >
@@ -10515,15 +10517,15 @@ const ALLAH_99_NAMES = [
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 4,
-                    paddingVertical: 5,
-                    paddingHorizontal: 9,
+                    paddingVertical: 4.5,
+                    paddingHorizontal: 8,
                     borderRadius: TOKENS.radius.pill,
                     backgroundColor: quranAutoScroll ? '#C62828' : TOKENS.colors.primary,
                     ...(quranAutoScroll ? makeShadow('0 2px 8px rgba(198, 40, 40, 0.4)', '#C62828', 0.4, 4, { width: 0, height: 2 }, 4) : makeShadow('0 2px 8px rgba(198, 146, 85, 0.3)', '#C69255', 0.3, 4, { width: 0, height: 2 }, 4))
                   }}
                 >
                   <Feather name={quranAutoScroll ? 'pause' : 'play'} size={11} color="#FFFFFF" />
-                  <TextUI size={10.5} weight="bold" color="#FFFFFF">
+                  <TextUI size={10} weight="bold" color="#FFFFFF">
                     {quranAutoScroll ? t('إيقاف', 'Stop') : t('تمرير', 'Scroll')}
                   </TextUI>
                 </TouchableOpacity>
@@ -10585,19 +10587,9 @@ const ALLAH_99_NAMES = [
                   ...makeShadow('0 4px 16px rgba(93, 58, 34, 0.06)', '#5D3A22', 0.08, 6, { width: 0, height: 2 }, 3)
                 }}
               >
-                {/* Interactive Ayah Hint Banner (Only shown once at very top) */}
-                {sIdx === 0 && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, gap: 6, opacity: 0.85 }}>
-                    <Feather name="info" size={13} color={TOKENS.colors.primary} />
-                    <TextUI size={11.5} weight="medium" color={TOKENS.colors.primary}>
-                      {t('المصحف ممتد • تدفق مستمر عبر السور والآيات تلقائياً', 'Extended Quran • Continuous flow across Surahs')}
-                    </TextUI>
-                  </View>
-                )}
-
                 {/* Pages of this Surah (Lazy sliced to streamPageCount) */}
                 {pages.slice(0, streamPageCount).map((page, pIdx) => (
-                  <View key={`surah-${surah.id}-page-${pIdx}`} style={{ width: '100%' }}>
+                  <View key={`surah-${surah.id}-page-${pIdx}`} style={{ width: '100%', alignItems: 'center' }}>
                     {/* Subtle Authentic Madinah Mushaf Page Divider */}
                     {pIdx > 0 && (
                       <View
@@ -10635,15 +10627,15 @@ const ALLAH_99_NAMES = [
                       </View>
                     )}
 
-                    {/* Verses of this Page */}
+                    {/* Verses of this Page (Centered as in Holy Quran) */}
                     <TextUI
                       quran
-                      align={Platform.OS === 'web' ? 'justify' : 'right'}
+                      align="center"
                       size={quranFontSize}
                       color={c.textPrimary}
                       style={{
                         lineHeight: quranFontSize * 1.95,
-                        textAlign: Platform.OS === 'web' ? 'justify' : 'right'
+                        textAlign: 'center'
                       }}
                     >
                       {page.verses.map((v, vIdx) => {
@@ -10668,6 +10660,7 @@ const ALLAH_99_NAMES = [
                             {v.badge ? (
                               <Text
                                 style={{
+                                  fontSize: Math.round(quranFontSize * 0.68),
                                   color: isMarked ? '#C69255' : (isSelected ? TOKENS.colors.primaryDark : TOKENS.colors.primary),
                                   fontWeight: 'bold'
                                 }}
