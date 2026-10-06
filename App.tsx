@@ -1755,8 +1755,8 @@ function AlmosalaApp() {
         nameAr: `${detectedCity} (GPS)`,
         nameEn: `${detectedCity} (GPS)`,
         country: detectedCountry,
-        lat: parseFloat(latitude.toFixed(4)),
-        lng: parseFloat(longitude.toFixed(4)),
+        lat: `${parseFloat(latitude.toFixed(4))}°`,
+        lng: `${parseFloat(longitude.toFixed(4))}°`,
         qiblaAngle,
         qiblaTextAr: `${toArabicNumber(qiblaAngle)}° نحو الكعبة المشرفة`,
         qiblaTextEn: `${qiblaAngle}° to Kaaba`,
@@ -1774,6 +1774,13 @@ function AlmosalaApp() {
         ]
       };
 
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          localStorage.setItem('almosala_gps_city', JSON.stringify(liveCityObj));
+          localStorage.setItem('almosala_city', 'gps_live');
+        } catch (e) {}
+      }
+
       setCurrentCity(liveCityObj);
       setGpsLoading(false);
       triggerHapticFeedback('success');
@@ -1786,7 +1793,9 @@ function AlmosalaApp() {
     }
   };
 
-    // Helper to update heading and sync alignment state smoothly
+  const prevAlignedRef = useRef(false);
+
+  // Helper to update heading and sync alignment state smoothly
   const handleUpdateHeading = (rawAngle: number) => {
     const heading = ((Math.round(rawAngle) % 360) + 360) % 360;
     setDeviceHeading(heading);
@@ -1795,40 +1804,91 @@ function AlmosalaApp() {
     let diff = (heading - target) % 360;
     if (diff < -180) diff += 360;
     if (diff > 180) diff -= 360;
-    if (Math.abs(diff) <= 4) {
+    const isNowAligned = Math.abs(diff) <= 4;
+    if (isNowAligned) {
       setQiblaState('aligned');
-      triggerHapticFeedback('success');
+      if (!prevAlignedRef.current) {
+        triggerHapticFeedback('success');
+        prevAlignedRef.current = true;
+      }
     } else {
       setQiblaState('calibrating');
+      prevAlignedRef.current = false;
     }
   };
 
-  // Magnetometer Compass Listener for Qibla Screen
+  // Live Location & Compass Heading Listener for Qibla Screen
   useEffect(() => {
-    let sub: any = null;
+    let headingSub: Location.LocationSubscription | null = null;
+    let magSub: any = null;
+    let isCancelled = false;
+
     if (screen === 'Qibla') {
       if (typeof window !== 'undefined') {
         (window as any).__setQiblaHeading = (deg: number) => {
           handleUpdateHeading(deg);
         };
       }
-      try {
-        Magnetometer.isAvailableAsync().then((avail) => {
+
+      // Auto-trigger GPS detection if city is still default Makkah (qiblaAngle = 0)
+      if (currentCity.id === 'makkah') {
+        fetchLiveGpsLocation().catch(() => {});
+      }
+
+      const subscribeCompass = async () => {
+        // 1. Attempt native Location.watchHeadingAsync (True/Magnetic North with iOS & Android sensor fusion)
+        try {
+          const perm = await Location.getForegroundPermissionsAsync();
+          if (perm.status !== 'granted') {
+            const req = await Location.requestForegroundPermissionsAsync();
+            if (req.status === 'granted' && currentCity.id === 'makkah') {
+              fetchLiveGpsLocation().catch(() => {});
+            }
+          }
+
+          headingSub = await Location.watchHeadingAsync((headingData) => {
+            if (isCancelled) return;
+            // Prefer calibrated trueHeading if available (>= 0), fallback to magnetic heading
+            const heading = (headingData.trueHeading != null && headingData.trueHeading >= 0)
+              ? headingData.trueHeading
+              : headingData.magHeading;
+            if (typeof heading === 'number' && !isNaN(heading)) {
+              handleUpdateHeading(heading);
+              setHasMagnetometer(true);
+            }
+          });
+          return;
+        } catch (watchErr) {
+          console.log('Location.watchHeadingAsync unavailable, falling back:', watchErr);
+        }
+
+        // 2. Fallback to raw Magnetometer sensor if watchHeadingAsync is unsupported
+        try {
+          const avail = await Magnetometer.isAvailableAsync();
+          if (isCancelled) return;
           setHasMagnetometer(avail);
           if (avail) {
             Magnetometer.setUpdateInterval(100);
-            sub = Magnetometer.addListener((data) => {
-              let angle = Math.atan2(-data.y, data.x) * (180 / Math.PI);
+            magSub = Magnetometer.addListener((data) => {
+              if (isCancelled) return;
+              // Flat portrait phone: y points forward, x points right. Heading = atan2(x, y)
+              let angle = Math.atan2(data.x, data.y) * (180 / Math.PI);
               if (angle < 0) angle += 360;
               handleUpdateHeading(angle);
             });
           }
-        }).catch(() => {});
-      } catch (e) {}
+        } catch (magErr) {
+          console.log('Magnetometer listener error:', magErr);
+        }
+      };
+
+      subscribeCompass();
     }
 
     return () => {
-      if (sub && sub.remove) sub.remove();
+      isCancelled = true;
+      if (headingSub && headingSub.remove) headingSub.remove();
+      if (magSub && magSub.remove) magSub.remove();
     };
   }, [screen, currentCity]);
 
@@ -1883,7 +1943,14 @@ function AlmosalaApp() {
         const savedLang = localStorage.getItem('almosala_lang');
         if (savedLang) setLang(savedLang);
         const savedCityId = localStorage.getItem('almosala_city');
-        if (savedCityId) {
+        if (savedCityId === 'gps_live') {
+          const savedGps = localStorage.getItem('almosala_gps_city');
+          if (savedGps) {
+            try {
+              setCurrentCity(JSON.parse(savedGps));
+            } catch (e) {}
+          }
+        } else if (savedCityId) {
           const found = CITIES.find((c) => c.id === savedCityId);
           if (found) setCurrentCity(found);
         }
@@ -6540,6 +6607,98 @@ function AlmosalaApp() {
           }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Current Location & GPS Quick Bar */}
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 360,
+              backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2A201A',
+              borderRadius: 14,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              marginBottom: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderWidth: 1,
+              borderColor: themeMode === 'light' ? 'rgba(140, 94, 60, 0.2)' : 'rgba(216, 185, 138, 0.2)'
+            }}
+          >
+            <View style={{ flex: 1, marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Feather name="map-pin" size={13} color={TOKENS.colors.primary} />
+                <TextUI weight="bold" size={13} color={TOKENS.colors.primary} numberOfLines={1}>
+                  {isRTL ? currentCity.nameAr : currentCity.nameEn}
+                </TextUI>
+              </View>
+              <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2 }}>
+                {`${t('المسافة للكعبة:', 'Distance:')} ${currentCity.distanceToMakkah || '٠ كم'}`}
+              </TextUI>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <TouchableOpacity
+                disabled={gpsLoading}
+                onPress={() => fetchLiveGpsLocation()}
+                style={{
+                  backgroundColor: TOKENS.colors.primary,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+              >
+                {gpsLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Feather name="crosshair" size={12} color="#FFFFFF" />
+                )}
+                <TextUI size={11} weight="bold" color="#FFFFFF">
+                  {gpsLoading ? t('تحديد...', 'Locating...') : t('GPS', 'GPS')}
+                </TextUI>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigate('LocationSettings')}
+                style={{
+                  backgroundColor: c.surface,
+                  borderWidth: 1,
+                  borderColor: c.border,
+                  paddingHorizontal: 8,
+                  paddingVertical: 6,
+                  borderRadius: 8
+                }}
+              >
+                <Feather name="sliders" size={12} color={c.textPrimary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Gentle Advisory Note if location is still default Makkah */}
+          {currentCity.id === 'makkah' && (
+            <View
+              style={{
+                width: '100%',
+                maxWidth: 360,
+                backgroundColor: themeMode === 'light' ? '#FEF3C7' : '#451A03',
+                borderRadius: 10,
+                padding: 10,
+                marginBottom: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#F59E0B'
+              }}
+            >
+              <Feather name="info" size={15} color="#D97706" style={{ marginLeft: 6 }} />
+              <TextUI size={11} color={themeMode === 'light' ? '#92400E' : '#FDE68A'} style={{ flex: 1 }}>
+                {t('الموقع مضبوط على مكة المكرمة افتراضياً. اضغط GPS لتحديد اتجاه القبلة من موقعك الفعلي بدقة.', 'Set to Makkah by default. Tap GPS for accurate Qibla from your actual location.')}
+              </TextUI>
+            </View>
+          )}
+
           {/* Top Header Card */}
           <View style={{ alignItems: 'center', marginBottom: 2 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -6565,49 +6724,89 @@ function AlmosalaApp() {
               )}
             </View>
 
-            <TextUI size={15} weight="medium" style={{ marginTop: 4 }}>
+            <TextUI size={14} weight="medium" style={{ marginTop: 2 }}>
               {isRTL ? (currentCity.qiblaTextAr || 'في رحاب الكعبة المشرفة') : (currentCity.qiblaTextEn || 'Facing Makkah')}
             </TextUI>
-            <TextUI size={13} color={c.textSecondary} style={{ marginTop: 2 }}>
-              {`${t('المسافة إلى المسجد الحرام:', 'Distance to Masjid al-Haram:')} ${currentCity.distanceToMakkah || '٠ كم'}`}
+            <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2 }}>
+              {`${t('توجيه الهاتف الحالي:', 'Phone Heading:')} ${toArabicNumber(deviceHeading)}°`}
             </TextUI>
           </View>
 
           {/* Dynamic Reactive Outer Ring & Compass Bezel */}
-          <View
-            nativeID="qibla-compass-bezel"
-            style={{
-              width: compassDiameter,
-              height: compassDiameter,
-              borderRadius: compassDiameter / 2,
-              backgroundColor: isAligned ? 'rgba(16, 185, 129, 0.08)' : c.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: isAligned ? 3.5 : 2.5,
-              borderColor: isAligned ? '#10B981' : 'rgba(217, 119, 6, 0.65)',
-              borderStyle: isAligned ? 'solid' : 'dashed',
-              marginVertical: 16,
-              position: 'relative',
-              shadowColor: isAligned ? '#10B981' : '#000000',
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: isAligned ? 0.45 : 0.15,
-              shadowRadius: isAligned ? 18 : 6,
-              elevation: isAligned ? 8 : 3
-            }}
-          >
-            {/* Cardinal Points on Static Outer Rim */}
-            <View style={{ position: 'absolute', top: 8, left: 0, right: 0, alignItems: 'center' }}>
-              <TextUI size={12} weight="bold" color={isAligned ? '#10B981' : TOKENS.colors.primary}>ش (N)</TextUI>
+          <View style={{ position: 'relative', alignItems: 'center', marginVertical: 12 }}>
+            {/* Top Fixed Forward Marker / Lubber Line (12 o'clock) */}
+            <View
+              style={{
+                position: 'absolute',
+                top: -10,
+                zIndex: 25,
+                alignItems: 'center'
+              }}
+            >
+              <View
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeftWidth: 8,
+                  borderRightWidth: 8,
+                  borderTopWidth: 12,
+                  borderLeftColor: 'transparent',
+                  borderRightColor: 'transparent',
+                  borderTopColor: isAligned ? '#10B981' : TOKENS.colors.primary,
+                  shadowColor: isAligned ? '#10B981' : TOKENS.colors.primary,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.6,
+                  shadowRadius: 3
+                }}
+              />
             </View>
-            <View style={{ position: 'absolute', bottom: 8, left: 0, right: 0, alignItems: 'center' }}>
-              <TextUI size={12} weight="bold" color={c.textSecondary}>ج (S)</TextUI>
-            </View>
-            <View style={{ position: 'absolute', right: 6, top: '50%', transform: [{ translateY: -9 }] }}>
-              <TextUI size={12} weight="bold" color={c.textSecondary}>ق (E)</TextUI>
-            </View>
-            <View style={{ position: 'absolute', left: 6, top: '50%', transform: [{ translateY: -9 }] }}>
-              <TextUI size={12} weight="bold" color={c.textSecondary}>غ (W)</TextUI>
-            </View>
+
+            <View
+              nativeID="qibla-compass-bezel"
+              style={{
+                width: compassDiameter,
+                height: compassDiameter,
+                borderRadius: compassDiameter / 2,
+                backgroundColor: isAligned ? 'rgba(16, 185, 129, 0.08)' : c.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: isAligned ? 3.5 : 2.5,
+                borderColor: isAligned ? '#10B981' : 'rgba(217, 119, 6, 0.65)',
+                borderStyle: isAligned ? 'solid' : 'dashed',
+                position: 'relative',
+                shadowColor: isAligned ? '#10B981' : '#000000',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: isAligned ? 0.45 : 0.15,
+                shadowRadius: isAligned ? 18 : 6,
+                elevation: isAligned ? 8 : 3
+              }}
+            >
+              {/* Rotating Compass Rose Dial (Cardinal directions rotate with -deviceHeading to match real world) */}
+              <View
+                style={{
+                  position: 'absolute',
+                  width: compassDiameter,
+                  height: compassDiameter,
+                  borderRadius: compassDiameter / 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{ rotate: `-${deviceHeading}deg` }]
+                }}
+              >
+                {/* Cardinal Points on Rotating Outer Rim */}
+                <View style={{ position: 'absolute', top: 6, left: 0, right: 0, alignItems: 'center' }}>
+                  <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>ش (N)</TextUI>
+                </View>
+                <View style={{ position: 'absolute', bottom: 6, left: 0, right: 0, alignItems: 'center' }}>
+                  <TextUI size={12} weight="bold" color={c.textSecondary}>ج (S)</TextUI>
+                </View>
+                <View style={{ position: 'absolute', right: 6, top: '50%', transform: [{ translateY: -9 }] }}>
+                  <TextUI size={12} weight="bold" color={c.textSecondary}>ق (E)</TextUI>
+                </View>
+                <View style={{ position: 'absolute', left: 6, top: '50%', transform: [{ translateY: -9 }] }}>
+                  <TextUI size={12} weight="bold" color={c.textSecondary}>غ (W)</TextUI>
+                </View>
+              </View>
 
             {/* Inner Dial Face */}
             <LinearGradient
@@ -6822,6 +7021,7 @@ function AlmosalaApp() {
               </View>
             </LinearGradient>
           </View>
+        </View>
 
           {/* Dynamic Reactive Alignment Status Banner */}
           <View style={{ width: '100%', alignItems: 'center', marginTop: 4 }}>
