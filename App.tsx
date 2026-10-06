@@ -1186,7 +1186,7 @@ const ALL_APP_SCREENS = [
       { id: 'Ruqyah', titleAr: 'الرقية الشرعية الكاملة من القرآن والسنة', titleEn: 'Comprehensive Legal Ruqyah', badge: 'شفاء', icon: 'shield' },
       { id: 'Hadith40', titleAr: 'الأربعون النووية مع الشرح والفوائد', titleEn: "An-Nawawi's 40 Hadiths", badge: 'حديث', icon: 'book' },
       { id: 'AllahNames', titleAr: 'أسماء الله الحسنى الـ ٩٩ ومعانيها', titleEn: '99 Beautiful Names of Allah', badge: 'أسماء', icon: 'award' },
-      { id: 'ProphetLessons', titleAr: 'دروس وكراسي الحرم النبوي الشريف', titleEn: "Prophet's Mosque Lessons & Chairs", badge: 'دروس', icon: 'book-open' }
+      { id: 'ProphetLessons', titleAr: 'دروس وكراسي الحرمين الشريفين (المكي والنبوي)', titleEn: "Two Holy Mosques Lessons & Chairs", badge: 'الحرمين', icon: 'book-open' }
     ]
   },
   {
@@ -1651,7 +1651,10 @@ function AlmosalaApp() {
   const quranAudioRef = useRef<any>(null);
   const nativeAudioSoundRef = useRef<any>(null);
 
-  // Prophet's Mosque Scholarly Lessons State
+  // Two Holy Mosques Scholarly Lessons State (دروس وكراسي الحرمين الشريفين: المكي والنبوي)
+  const [selectedMosque, setSelectedMosque] = useState<'prophet' | 'makkah'>('prophet');
+  const [isLessonPageOpen, setIsLessonPageOpen] = useState<boolean>(false);
+  const lessonsScrollRef = useRef<any>(null);
   const [currentAudioType, setCurrentAudioType] = useState<'quran' | 'lesson'>('quran');
   const [activeCourse, setActiveCourse] = useState<any>(() => (typeof PROPHET_MOSQUE_COURSES !== 'undefined' ? PROPHET_MOSQUE_COURSES[0] : null));
   const [activeLesson, setActiveLesson] = useState<any>(() => (typeof PROPHET_MOSQUE_COURSES !== 'undefined' && PROPHET_MOSQUE_COURSES[0]?.lessons ? PROPHET_MOSQUE_COURSES[0].lessons[0] : null));
@@ -6668,7 +6671,7 @@ function AlmosalaApp() {
               <View style={{ flex: 1, alignItems: 'flex-start' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                   <TextUI weight="bold" size={14} color="#1E5A3E">
-                    {t('دروس الحرم النبوي الشريف', "Prophet's Mosque Scholarly Lessons")}
+                    {t('دروس وكراسي الحرمين الشريفين', "Two Holy Mosques Scholarly Lessons")}
                   </TextUI>
                   <View
                     style={{
@@ -9970,6 +9973,268 @@ const PROPHET_MOSQUE_COURSES = [
   }
 ];
 
+// ==========================================
+// --- DATA: دروس وكراسي المسجد الحرام بمكة المكرمة ---
+// ==========================================
+const MAKKAH_MOSQUE_SCHEDULE = [
+  {
+    id: 'makkah_chair_tafsir_humaid',
+    chairTitleAr: 'كرسي التفسير وأصول التدبر',
+    chairTitleEn: 'Quran Tafsir & Contemplation Chair',
+    bookAr: 'تفسير آيات الأحكام وتدبر القرآن العظيم',
+    scholarAr: 'الشيخ د. صالح بن عبد الله بن حميد',
+    roleAr: 'المستشار بالديوان الملكي وإمام وخطيب المسجد الحرام',
+    timingAr: 'أسبوعياً بعد صلاة العشاء',
+    timingCategory: 'isha',
+    locationAr: 'المسجد الحرام • صحن المطاف أمام الكعبة المشرفة',
+    badge: 'كرسي الحرم المكي',
+    color: '#8C5E3C'
+  },
+  {
+    id: 'makkah_chair_sunnah_sudais',
+    chairTitleAr: 'كرسي السنة النبوية وجوامع الكلم',
+    chairTitleEn: 'Prophetic Sunnah & Hadith Chair',
+    bookAr: 'شرح صحيح مسلم وجوامع الكلم النبوية',
+    scholarAr: 'الشيخ د. عبد الرحمن بن عبد العزيز السديس',
+    roleAr: 'رئيس الشؤون الدينية وإمام وخطيب المسجد الحرام',
+    timingAr: 'أسبوعياً بعد صلاة المغرب',
+    timingCategory: 'maghrib',
+    locationAr: 'المسجد الحرام • الرواق السعودي (أمام باب الملك فهد)',
+    badge: 'مجلس أسبوعي مباشر',
+    color: '#1E5A3E'
+  },
+  {
+    id: 'makkah_chair_usul_bukhari',
+    chairTitleAr: 'كرسي أصول الفقه ومقاصد الشريعة',
+    chairTitleEn: 'Usul al-Fiqh & Sharia Objectives Chair',
+    bookAr: 'شرح الورقات وقواعد الاستنباط الأصولية',
+    scholarAr: 'الشيخ د. حسن بن عبد الحميد بخاري',
+    roleAr: 'المدرس بالمسجد الحرام وعميد معهد اللغة العربية',
+    timingAr: 'أيام الإثنين والأربعاء بعد صلاة المغرب',
+    timingCategory: 'maghrib',
+    locationAr: 'المسجد الحرام • توسعة الملك عبد الله (الرواق الشمالي)',
+    badge: 'أصول الفقه',
+    color: '#2E4C38'
+  },
+  {
+    id: 'makkah_chair_fiqh_baleelah',
+    chairTitleAr: 'كرسي الفقه الحنبلي والعبادات',
+    chairTitleEn: 'Hanbali Fiqh & Acts of Worship Chair',
+    bookAr: 'شرح عمدة الفقه للإمام ابن قدامة',
+    scholarAr: 'الشيخ د. بندر بن عبد العزيز بليلة',
+    roleAr: 'إمام وخطيب المسجد الحرام • عضو هيئة كبار العلماء',
+    timingAr: 'أيام الأحد والثلاثاء بعد صلاة العصر',
+    timingCategory: 'asr',
+    locationAr: 'المسجد الحرام • الرواق الأرضي جوار باب العمرة',
+    badge: 'فقه العبادات',
+    color: '#7B5E28'
+  },
+  {
+    id: 'makkah_chair_hedayat_dawsari',
+    chairTitleAr: 'كرسي الهدايات القرآنية ومقاصد السور',
+    chairTitleEn: 'Quranic Guidance & Surah Objectives Chair',
+    bookAr: 'هدايات الآيات ومعالم التربية الإيمانية',
+    scholarAr: 'الشيخ د. ياسر بن راشد الدوسري',
+    roleAr: 'إمام وخطيب المسجد الحرام بمكة المكرمة',
+    timingAr: 'أسبوعياً بعد صلاة العصر',
+    timingCategory: 'asr',
+    locationAr: 'المسجد الحرام • التوسعة السعودية الثالثة',
+    badge: 'هدايات القرآن',
+    color: '#1B5E20'
+  }
+];
+
+const MAKKAH_MOSQUE_COURSES = [
+  {
+    id: 'course_ibanah_sudais',
+    titleAr: 'شرح كتاب الإبانة عن شريعة الفرقة الناجية',
+    titleEn: 'Explanation of Al-Ibanah by Ibn Battah',
+    scholarAr: 'الشيخ د. عبد الرحمن بن عبد العزيز السديس',
+    roleAr: 'رئيس الشؤون الدينية وإمام وخطيب المسجد الحرام',
+    categoryAr: 'العقيدة',
+    categoryEn: 'Creed',
+    badge: 'كرسي الرواق السعودي',
+    descriptionAr: 'شرح مؤصل لكتاب الإبانة الصغرى للإمام ابن بطة العكبري، ألقي برحاب المسجد الحرام بمكة في بيان منهج السلف الصالح.',
+    lessonsCount: 10,
+    audioStreamUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/01.mp3',
+    lessons: [
+      { id: 'ms_01', number: 1, titleAr: 'مقدمة الكتاب والتحذير من البدع والافتراق ولزوم السنة', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/01.mp3' },
+      { id: 'ms_02', number: 2, titleAr: 'باب الأمر بلزوم الجماعة ومجانبة أهل الزيغ والأهواء', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/02.mp3' },
+      { id: 'ms_03', number: 3, titleAr: 'باب الإيمان بالقدر خيره وشره والإقرار بحكمة الله البالغة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/03.mp3' },
+      { id: 'ms_04', number: 4, titleAr: 'باب القرآن كلام الله غير مخلوق منه بدأ وإليه يعود', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/04.mp3' },
+      { id: 'ms_05', number: 5, titleAr: 'باب الإيمان بالرؤية يوم القيامة والحوض والشفاعة العظمى', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/05a.mp3' },
+      { id: 'ms_06', number: 6, titleAr: 'باب صفات الله عز وجل وإثبات ما أثبته لنفسه بلا تمثيل', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/06.mp3' },
+      { id: 'ms_07', number: 7, titleAr: 'باب فضائل الصحابة الكرام والخلافة الراشدة ومكانتهم', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/07.mp3' },
+      { id: 'ms_08', number: 8, titleAr: 'باب السمع والطاعة لأئمة المسلمين وأثرها في استقرار الأمة', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/08.mp3' },
+      { id: 'ms_09', number: 9, titleAr: 'باب الكف عن الفتن وصيانة اللسان والقلب عن الخوض فيها', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/09.mp3' },
+      { id: 'ms_10', number: 10, titleAr: 'خاتمة المتن في الوصية باتباع السنن والاعتصام بالوحيين', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/10.mp3' }
+    ]
+  },
+  {
+    id: 'course_zad_maad_sudais',
+    titleAr: 'شرح زاد المعاد في هدي خير العباد لابن القيم',
+    titleEn: 'Explanation of Zad Al-Maad by Ibn Al-Qayyim',
+    scholarAr: 'الشيخ د. عبد الرحمن بن عبد العزيز السديس',
+    roleAr: 'رئيس الشؤون الدينية وإمام وخطيب المسجد الحرام',
+    categoryAr: 'سيرة ورقائق',
+    categoryEn: 'Seerah & Heart Softeners',
+    badge: 'هدي النبوة بمكة',
+    descriptionAr: 'دروس مباركة في معالم الهدي النبوي الشريف في العبادات والمعاملات والأخلاق من جوار الكعبة المشرفة.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/02.mp3',
+    lessons: [
+      { id: 'zm_01', number: 1, titleAr: 'معالم الهدي النبوي في العبادة والذكر ومحاسن الشريعة', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/02.mp3' },
+      { id: 'zm_02', number: 2, titleAr: 'هديه ﷺ في الطهارة والصلاة وخشوع المناجاة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/03.mp3' },
+      { id: 'zm_03', number: 3, titleAr: 'هديه ﷺ في صلاة الجمعة والعيدين وأدعية الاستسقاء', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/04.mp3' },
+      { id: 'zm_04', number: 4, titleAr: 'هديه ﷺ في الصيام وتفطير الصائمين وقيام رمضان', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/05a.mp3' },
+      { id: 'zm_05', number: 5, titleAr: 'هديه ﷺ في الحج والعمرة والوقوف بعرفات والطواف', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/06.mp3' },
+      { id: 'zm_06', number: 6, titleAr: 'هديه ﷺ في التعامل مع الناس والرحمة بالمؤمنين', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/07.mp3' },
+      { id: 'zm_07', number: 7, titleAr: 'هديه ﷺ في الطب النبوي والرقية الشرعية والشفاء', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/08.mp3' },
+      { id: 'zm_08', number: 8, titleAr: 'هديه ﷺ في الأذكار الجامعة ودعاء تفريج الكروب', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/09.mp3' }
+    ]
+  },
+  {
+    id: 'course_qawaid_fiqh_humaid',
+    titleAr: 'شرح القواعد والضوابط الفقهية الكبرى',
+    titleEn: 'Explanation of Major Fiqh Maxims',
+    scholarAr: 'الشيخ د. صالح بن عبد الله بن حميد',
+    roleAr: 'المستشار بالديوان الملكي وإمام وخطيب المسجد الحرام',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh',
+    badge: 'كرسي صحن المطاف',
+    descriptionAr: 'تحرير فقهي رصين للقواعد الفقهية الخمس الكبرى وتطبيقاتها المعاصرة، ألقي في رحاب الكعبة المشرفة.',
+    lessonsCount: 10,
+    audioStreamUrl: 'https://archive.org/download/05_20211026/01.mp3',
+    lessons: [
+      { id: 'qh_01', number: 1, titleAr: 'مقدمة القواعد الفقهية: نشأتها وتدوينها وأهميتها للفقيه', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/01.mp3' },
+      { id: 'qh_02', number: 2, titleAr: 'القاعدة الأولى: الأمور بمقاصدها وتطبيقات النية في الشريعة', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/02.mp3' },
+      { id: 'qh_03', number: 3, titleAr: 'تطبيقات قاعدة الأمور بمقاصدها في العبادات والمعاملات المالية', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/03.mp3' },
+      { id: 'qh_04', number: 4, titleAr: 'القاعدة الثانية: اليقين لا يزول بالشك وأدلتها من الكتاب والسنة', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/04.mp3' },
+      { id: 'qh_05', number: 5, titleAr: 'تطبيقات قاعدة اليقين في الطهارة والصلاة والطلاق والعقود', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/05.mp3' },
+      { id: 'qh_06', number: 6, titleAr: 'القاعدة الثالثة: المشقة تجلب التيسير ورخص الشريعة الغراء', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/06.mp3' },
+      { id: 'qh_07', number: 7, titleAr: 'القاعدة الرابعة: الضرر يزال وقواعد الضرورات والحاجات', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/07.mp3' },
+      { id: 'qh_08', number: 8, titleAr: 'تطبيقات درء المفاسد وجلب المصالح في النوازل المعاصرة', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/08.mp3' },
+      { id: 'qh_09', number: 9, titleAr: 'القاعدة الخامسة: العادة محكمة وضوابط الأعراف والتقاليد', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/01.mp3' },
+      { id: 'qh_10', number: 10, titleAr: 'القواعد الكلية التابعة وخاتمة المباحث الفقهية الشاملة', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/02.mp3' }
+    ]
+  },
+  {
+    id: 'course_tafsir_tadabbur_humaid',
+    titleAr: 'مجالس في تدبر القرآن العظيم وأصول التفسير',
+    titleEn: 'Meditative Tafsir & Hermeneutics Assemblies',
+    scholarAr: 'الشيخ د. صالح بن عبد الله بن حميد',
+    roleAr: 'المستشار بالديوان الملكي وإمام وخطيب المسجد الحرام',
+    categoryAr: 'التفسير',
+    categoryEn: 'Tafsir',
+    badge: 'تدبر القرآن بمكة',
+    descriptionAr: 'مجالس علمية تربوية في استنباط هدايات التنزيل الحكيم وتفسير آيات الأحكام والمواعظ الربانية.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/017.mp3',
+    lessons: [
+      { id: 'th_01', number: 1, titleAr: 'قواعد وأصول في تدبر كتاب الله ومعرفة معاني التنزيل', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/017.mp3' },
+      { id: 'th_02', number: 2, titleAr: 'هدايات سورة الفاتحة ومفاتيح الهداية والسعادة في الدارين', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/018.mp3' },
+      { id: 'th_03', number: 3, titleAr: 'تدبر آيات التوحيد ودلائل عظمة الخالق في سورة الأنعام', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/019.mp3' },
+      { id: 'th_04', number: 4, titleAr: 'قصة كليم الله موسى عليه السلام في القرآن والعبر المستفادة', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/020.mp3' },
+      { id: 'th_05', number: 5, titleAr: 'مقاصد وهدايات سورة الإسراء وبني إسرائيل وحرمة المسجد الأقصى', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/021.mp3' },
+      { id: 'th_06', number: 6, titleAr: 'معالم سورة النور في حفظ المجتمع وعفة الأسرة والأخلاق', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/022.mp3' },
+      { id: 'th_07', number: 7, titleAr: 'لطائف سورة الزمر في الإخلاص والتوحيد وأهوال القيامة', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/023.mp3' },
+      { id: 'th_08', number: 8, titleAr: 'هدايات قصار المفصل والتربية الإيمانية في جزء عم', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/024.mp3' }
+    ]
+  },
+  {
+    id: 'course_tawheed_juhany',
+    titleAr: 'شرح كتاب التوحيد وأصول العقيدة السليمة',
+    titleEn: 'Explanation of Kitab At-Tawheed by Al-Juhany',
+    scholarAr: 'الشيخ د. عبد الله بن عواد الجهني',
+    roleAr: 'إمام وخطيب المسجد الحرام بمكة المكرمة',
+    categoryAr: 'العقيدة',
+    categoryEn: 'Creed',
+    badge: 'كرسي الحرم المكي الشريف',
+    descriptionAr: 'شرح ميسر لأبواب التوحيد وحق الله على العبيد ونبذ الشرك والخرافات ألقي في رحاب المسجد الحرام.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_01.mp3',
+    lessons: [
+      { id: 'tj_01', number: 1, titleAr: 'فضل التوحيد وما يكفر من الذنوب وحقيقة الاستسلام لله', duration: '٤٣ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_01.mp3' },
+      { id: 'tj_02', number: 2, titleAr: 'من حقق التوحيد دخل الجنة بغير حساب ولا عذاب', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_02.mp3' },
+      { id: 'tj_03', number: 3, titleAr: 'الخوف من الشرك والتحذير من صغار الشرك والرياء', duration: '٤١ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_03.mp3' },
+      { id: 'tj_04', number: 4, titleAr: 'الدعاء إلى شهادة أن لا إله إلا الله وفضل هداية الناس', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_04.mp3' },
+      { id: 'tj_05', number: 5, titleAr: 'تفسير كلمة التوحيد ونفي الشريك في العبادة والمحبة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_05.mp3' },
+      { id: 'tj_06', number: 6, titleAr: 'النهي عن التبرك بالأشجار والأحجار والأماكن بلا دليل شرعي', duration: '٣٩ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_06.mp3' },
+      { id: 'tj_07', number: 7, titleAr: 'إخلاص النذر والذبح والدعاء والاستغاثة لله جل في علاه', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_07.mp3' },
+      { id: 'tj_08', number: 8, titleAr: 'الشفاعة المثبتة والمنفية وعظمة رب العالمين يوم القيامة', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_08.mp3' }
+    ]
+  },
+  {
+    id: 'course_qudsi_ghazzawi',
+    titleAr: 'شرح الأحاديث القدسية وجوامع الكلم النبوية',
+    titleEn: 'Explanation of Hadith Qudsi & Comprehensive Sayings',
+    scholarAr: 'الشيخ د. فيصل بن جميل غزاوي',
+    roleAr: 'إمام وخطيب المسجد الحرام بمكة المكرمة',
+    categoryAr: 'الحديث',
+    categoryEn: 'Hadith',
+    badge: 'أحاديث القدسية بمكة',
+    descriptionAr: 'شرح بياني إيماني لأحاديث الوحي الإلهي القدسي الواردة عن النبي ﷺ في سعة رحمة الله وعفوه ومحبته للمؤمنين.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3',
+    lessons: [
+      { id: 'fg_01', number: 1, titleAr: 'حديث يا عبادي إني حرمت الظلم على نفسي وجعلته بينكم محرماً', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3' },
+      { id: 'fg_02', number: 2, titleAr: 'حديث يا عبادي كلكم ضال إلا من هديته وحديث الاستغفار', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/02.mp3' },
+      { id: 'fg_03', number: 3, titleAr: 'حديث أنا عند ظن عبدي بي وأنا معه إذا ذكرني', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/03.mp3' },
+      { id: 'fg_04', number: 4, titleAr: 'حديث من عادى لي ولياً فقد آذنته بالحرب وفضل النوافل', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/04.mp3' },
+      { id: 'fg_05', number: 5, titleAr: 'حديث الكبرياء ردائي والعظمة إزاري فمن نازعني عذبته', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/05.mp3' },
+      { id: 'fg_06', number: 6, titleAr: 'حديث أعددت لعبادي الصالحين ما لا عين رأت ولا أذن سمعت', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/06.mp3' },
+      { id: 'fg_07', number: 7, titleAr: 'حديث المتحابون في جلالي لهم منابر من نور يوم القيامة', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/07.mp3' },
+      { id: 'fg_08', number: 8, titleAr: 'حديث يا ابن آدم لو بلغت ذنوبك عنان السماء ثم استغفرتني غفرت لك', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/08.mp3' }
+    ]
+  },
+  {
+    id: 'course_fiqh_siyam_baleelah',
+    titleAr: 'شرح أحكام الصيام والزكاة والعبادات من عمدة الفقه',
+    titleEn: 'Fiqh of Fasting & Zakat by Baleelah',
+    scholarAr: 'الشيخ د. بندر بن عبد العزيز بليلة',
+    roleAr: 'إمام المسجد الحرام • عضو هيئة كبار العلماء',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh',
+    badge: 'مجلس الفقه الحنبلي',
+    descriptionAr: 'شرح تأصيلي فقهي لأبواب الصيام والزكاة والاعتكاف ومناسك الحج، ألقي بجوار باب العمرة بالمسجد الحرام.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/omdat_alahkam/01.mp3',
+    lessons: [
+      { id: 'bb_01', number: 1, titleAr: 'كتاب الصيام: شروط وجوب صوم رمضان وثبوت دخول الشهر', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/01.mp3' },
+      { id: 'bb_02', number: 2, titleAr: 'مفطرات الصيام ومفسداته وما يكره ويستحب للصائم', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/02.mp3' },
+      { id: 'bb_03', number: 3, titleAr: 'أحكام قضاء الصيام والكفارة وأصحاب الأعذار الشرعية', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/03.mp3' },
+      { id: 'bb_04', number: 4, titleAr: 'صيام التطوع والأيام الفاضلة وأحكام الاعتكاف وليلة القدر', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/04.mp3' },
+      { id: 'bb_05', number: 5, titleAr: 'كتاب الزكاة: شروط وجوب الزكاة وأنصبتها في الأموال والذهب', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/05.mp3' },
+      { id: 'bb_06', number: 6, titleAr: 'زكاة عروض التجارة والأسهم وزكاة الفطر ومصارف الزكاة الثمانية', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/06.mp3' },
+      { id: 'bb_07', number: 7, titleAr: 'كتاب الحج: شروط الاستطاعة والمواقيت المكانية والإحرام', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/07.mp3' },
+      { id: 'bb_08', number: 8, titleAr: 'صفة أعمال الحج والعمرة خطوة بخطوة وأحكام الفدية', duration: '٦٢ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/08.mp3' }
+    ]
+  },
+  {
+    id: 'course_waraqat_usul_bukhari',
+    titleAr: 'شرح متن الورقات لإمام الحرمين في أصول الفقه',
+    titleEn: 'Explanation of Al-Waraqat in Usul al-Fiqh',
+    scholarAr: 'الشيخ د. حسن بن عبد الحميد بخاري',
+    roleAr: 'المدرس بالمسجد الحرام وعميد معهد اللغة العربية',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh & Principles',
+    badge: 'كرسي أصول الفقه بمكة',
+    descriptionAr: 'شرح منهجي بديع لمتن الورقات في أصول الفقه، يجمع بين دقة القواعد الأصولية وجمال البيان واللسان العربي.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3',
+    lessons: [
+      { id: 'hb_01', number: 1, titleAr: 'مقدمة في تعريف أصول الفقه وأبواب الفقه والأحكام الشرعية', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3' },
+      { id: 'hb_02', number: 2, titleAr: 'أقسام الكلام: الحقيقة والمجاز والأمر والنهي ودلالاتهما', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/2-Mstawa1_01.mp3' },
+      { id: 'hb_03', number: 3, titleAr: 'العام والخاص ومخصصات العموم المتصلة والمنفصلة', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_01.mp3' },
+      { id: 'hb_04', number: 4, titleAr: 'المجمل والمبين والظاهر والمؤول وأفعال النبي ﷺ ودلالتها', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_02.mp3' },
+      { id: 'hb_05', number: 5, titleAr: 'النسخ وشروطه وأقسامه في القرآن الكريم والسنة المطهرة', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_03.mp3' },
+      { id: 'hb_06', number: 6, titleAr: 'الإجماع وحجيته وأقوال الصحابة وخبر الواحد والتوتر', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_04.mp3' },
+      { id: 'hb_07', number: 7, titleAr: 'القياس وأركانه الأربعة: الأصل والفرع والعلة والحكم', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_01.mp3' },
+      { id: 'hb_08', number: 8, titleAr: 'شروط المفتي والمستفتي وأحكام التقليد والاجتهاد وخاتمة المتن', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_02.mp3' }
+    ]
+  }
+];
+
 const ALLAH_99_NAMES = [
   { id: 1, nameAr: 'الله', nameEn: 'Allah', meaningAr: 'الإله الحق الجامع لصفات الألوهية المستحق للعبادة وحده دون سواه.', verse: '﴿ هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ ﴾' },
   { id: 2, nameAr: 'الرَّحْمَنُ', nameEn: 'Ar-Rahman', meaningAr: 'واسع الرحمة الشاملة لجميع الخلائق في الدنيا ومفيض النعم.', verse: '﴿ الرَّحْمَٰنُ عَلَى الْعَرْشِ اسْتَوَىٰ ﴾' },
@@ -11129,12 +11394,15 @@ const ALLAH_99_NAMES = [
   };
 
   // ==========================================
-  // --- MODULE: PROPHET'S MOSQUE LESSONS (دروس الحرم النبوي الشريف) ---
+  // --- MODULE: TWO HOLY MOSQUES LESSONS (دروس الحرمين الشريفين: المكي والنبوي) ---
   // ==========================================
   const renderProphetMosqueLessons = () => {
+    const currentCourses = selectedMosque === 'makkah' ? MAKKAH_MOSQUE_COURSES : PROPHET_MOSQUE_COURSES;
+    const currentSchedule = selectedMosque === 'makkah' ? MAKKAH_MOSQUE_SCHEDULE : PROPHET_MOSQUE_SCHEDULE;
+
     const tabs = [
-      { id: 'all', titleAr: 'كافة السلاسل', titleEn: 'All Series', count: PROPHET_MOSQUE_COURSES.length },
-      { id: 'schedule', titleAr: 'كراسي الحرم الحية', titleEn: 'Live Chairs', count: PROPHET_MOSQUE_SCHEDULE.length },
+      { id: 'all', titleAr: 'كافة السلاسل', titleEn: 'All Series', count: currentCourses.length },
+      { id: 'schedule', titleAr: selectedMosque === 'makkah' ? 'كراسي الحرم المكي' : 'كراسي المسجد النبوي', titleEn: 'Live Chairs', count: currentSchedule.length },
       { id: 'العقيدة', titleAr: 'العقيدة', titleEn: 'Creed' },
       { id: 'الحديث', titleAr: 'الحديث', titleEn: 'Hadith' },
       { id: 'الفقه', titleAr: 'الفقه', titleEn: 'Fiqh' },
@@ -11142,7 +11410,7 @@ const ALLAH_99_NAMES = [
       { id: 'سيرة ورقائق', titleAr: 'السيرة والرقائق', titleEn: 'Seerah' }
     ];
 
-    const filteredCourses = PROPHET_MOSQUE_COURSES.filter((course) => {
+    const filteredCourses = currentCourses.filter((course) => {
       const matchesTab = lessonCategoryTab === 'all' || course.categoryAr === lessonCategoryTab;
       const matchesSearch =
         !lessonSearchQuery.trim() ||
@@ -11161,7 +11429,7 @@ const ALLAH_99_NAMES = [
       >
         {/* Top Header */}
         <Header
-          title={t('دروس الحرم النبوي الشريف', "Prophet's Mosque Lessons")}
+          title={selectedMosque === 'makkah' ? t('دروس المسجد الحرام بمكة', 'Grand Mosque of Makkah Lessons') : t('دروس المسجد النبوي الشريف', "Prophet's Mosque Lessons")}
           onBack={goBack}
           rightAction={
             <TouchableOpacity
@@ -11185,6 +11453,78 @@ const ALLAH_99_NAMES = [
             </TouchableOpacity>
           }
         />
+
+        {/* Mosque Switcher Segment (الحرم المكي 🕋 / الحرم النبوي 🕌) */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              backgroundColor: themeMode === 'light' ? '#EAE5DB' : '#2A2018',
+              borderRadius: TOKENS.radius.lg,
+              padding: 4,
+              borderWidth: 1,
+              borderColor: 'rgba(198, 146, 85, 0.3)'
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setSelectedMosque('makkah');
+                setLessonCategoryTab('all');
+                triggerHapticFeedback('light');
+              }}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 9,
+                borderRadius: TOKENS.radius.md,
+                backgroundColor: selectedMosque === 'makkah' ? (themeMode === 'light' ? '#FFFFFF' : '#3A2C21') : 'transparent',
+                gap: 6,
+                ...(selectedMosque === 'makkah' ? makeShadow('0 2px 8px rgba(0,0,0,0.1)', '#000', 0.1, 4, { width: 0, height: 2 }, 2) : {})
+              }}
+            >
+              <TextUI size={15}>🕋</TextUI>
+              <TextUI
+                size={13}
+                weight={selectedMosque === 'makkah' ? 'bold' : 'medium'}
+                color={selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : c.textSecondary}
+              >
+                {t('دروس الحرم المكي', 'Grand Mosque of Makkah')}
+              </TextUI>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setSelectedMosque('prophet');
+                setLessonCategoryTab('all');
+                triggerHapticFeedback('light');
+              }}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 9,
+                borderRadius: TOKENS.radius.md,
+                backgroundColor: selectedMosque === 'prophet' ? (themeMode === 'light' ? '#FFFFFF' : '#3A2C21') : 'transparent',
+                gap: 6,
+                ...(selectedMosque === 'prophet' ? makeShadow('0 2px 8px rgba(0,0,0,0.1)', '#000', 0.1, 4, { width: 0, height: 2 }, 2) : {})
+              }}
+            >
+              <TextUI size={15}>🕌</TextUI>
+              <TextUI
+                size={13}
+                weight={selectedMosque === 'prophet' ? 'bold' : 'medium'}
+                color={selectedMosque === 'prophet' ? '#1E5A3E' : c.textSecondary}
+              >
+                {t('دروس الحرم النبوي', "Prophet's Mosque")}
+              </TextUI>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Search Bar Input (When Active) */}
         {lessonSearchQuery !== '' && (
@@ -11310,12 +11650,20 @@ const ALLAH_99_NAMES = [
 
               {/* Status Row */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setIsLessonPageOpen(true);
+                    triggerHapticFeedback('light');
+                  }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                >
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isCurrentLessonPlaying ? '#2E7D32' : c.textSecondary }} />
                   <TextUI size={11} weight="bold" color="#1E5A3E">
                     {isCurrentLessonPlaying ? t('مجلس علمي قيد الاستماع', 'Now Playing Lesson') : t('الدرس المحدد', 'Selected Lesson')}
                   </TextUI>
-                </View>
+                  <Feather name="maximize-2" size={12} color="#1E5A3E" />
+                </TouchableOpacity>
 
                 {/* Speed Selector Chips */}
                 <View style={{ flexDirection: 'row', gap: 4 }}>
@@ -11340,13 +11688,21 @@ const ALLAH_99_NAMES = [
                 </View>
               </View>
 
-              {/* Lesson Title & Course */}
-              <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ textAlign: 'center', marginBottom: 4 }}>
-                {activeLesson.titleAr}
-              </TextUI>
-              <TextUI size={13} color={c.textSecondary} style={{ textAlign: 'center', marginBottom: 12 }}>
-                {`${activeCourse.scholarAr} • ${activeCourse.titleAr}`}
-              </TextUI>
+              {/* Lesson Title & Course (Tapping opens dedicated Lesson Page) */}
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => {
+                  setIsLessonPageOpen(true);
+                  triggerHapticFeedback('light');
+                }}
+              >
+                <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ textAlign: 'center', marginBottom: 4 }}>
+                  {activeLesson.titleAr}
+                </TextUI>
+                <TextUI size={13} color={c.textSecondary} style={{ textAlign: 'center', marginBottom: 12 }}>
+                  {`${activeCourse.scholarAr} • ${activeCourse.titleAr}`}
+                </TextUI>
+              </TouchableOpacity>
 
               {/* Interactive Progress Slider Bar */}
               <TouchableOpacity
@@ -11883,9 +12239,9 @@ const ALLAH_99_NAMES = [
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => {
-                      const matchedCourse = PROPHET_MOSQUE_COURSES.find(
+                      const matchedCourse = currentCourses.find(
                         (cs) => cs.scholarAr.includes(chair.scholarAr.split(' ')[2] || '') || cs.titleAr.includes(chair.bookAr.split(' ')[0] || '')
-                      ) || PROPHET_MOSQUE_COURSES[0];
+                      ) || currentCourses[0];
                       setSelectedLessonCourse(matchedCourse);
                       setLessonModalVisible(true);
                       triggerHapticFeedback('light');
@@ -11922,7 +12278,7 @@ const ALLAH_99_NAMES = [
                     triggerHapticFeedback('light');
                   }}
                   style={{
-                    backgroundColor: '#1E5A3E',
+                    backgroundColor: selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E',
                     borderRadius: TOKENS.radius.lg,
                     padding: 16,
                     marginBottom: 16,
@@ -11936,14 +12292,14 @@ const ALLAH_99_NAMES = [
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <Feather name="radio" size={14} color="#C69255" />
                       <TextUI size={12} weight="bold" color="#C69255">
-                        {t('كراسي الحرم النبوي الحية', "Prophet's Mosque Live Chairs")}
+                        {selectedMosque === 'makkah' ? t('كراسي الحرم المكي الحية', 'Grand Mosque Live Chairs') : t('كراسي الحرم النبوي الحية', "Prophet's Mosque Live Chairs")}
                       </TextUI>
                     </View>
                     <TextUI weight="bold" size={15} color="#FFFFFF">
-                      {t('جدول ومواقع مجالس العلم بالمسجد النبوي الشريف', 'Schedule & Locations of Daily Classes')}
+                      {selectedMosque === 'makkah' ? t('جدول ومواقع مجالس العلم بالمسجد الحرام بمكة', 'Schedule & Locations of Classes in Grand Mosque') : t('جدول ومواقع مجالس العلم بالمسجد النبوي الشريف', 'Schedule & Locations of Daily Classes')}
                     </TextUI>
                     <TextUI size={11} color="rgba(255,255,255,0.8)" style={{ marginTop: 2 }}>
-                      {t('٧ كراسي علمية كبرى لكبار أئمة ومدرسي الحرم • انقر للاطلاع', '7 major scholarly chairs • Tap to view schedule')}
+                      {`${toArabicNumber(currentSchedule.length)} ${t('كراسي علمية كبرى لكبار أئمة ومدرسي الحرم • انقر للاطلاع', 'major scholarly chairs • Tap to view schedule')}`}
                     </TextUI>
                   </View>
                   <View
@@ -12056,11 +12412,45 @@ const ALLAH_99_NAMES = [
                         </TextUI>
                       </View>
 
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <TextUI size={12} weight="bold" color="#1E5A3E">
-                          {t('استعراض الدروس', 'View Lessons')}
-                        </TextUI>
-                        <Feather name="chevron-left" size={14} color="#1E5A3E" />
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={(e) => {
+                            try { e.stopPropagation?.(); } catch (err) {}
+                            const firstLesson = course.lessons && course.lessons.length > 0 ? course.lessons[0] : null;
+                            if (firstLesson) {
+                              setSelectedLessonCourse(course);
+                              setActiveCourse(course);
+                              setActiveLesson(firstLesson);
+                              playLessonAudio(course, firstLesson);
+                              setIsLessonPageOpen(true);
+                              triggerHapticFeedback('medium');
+                            }
+                          }}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 4,
+                            paddingHorizontal: 9,
+                            paddingVertical: 4,
+                            borderRadius: TOKENS.radius.pill,
+                            backgroundColor: selectedMosque === 'makkah' ? TOKENS.colors.primaryLight : '#E8F5E9',
+                            borderWidth: 1,
+                            borderColor: selectedMosque === 'makkah' ? TOKENS.colors.secondary : '#A5D6A7'
+                          }}
+                        >
+                          <Feather name="play" size={11} color={selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E'} />
+                          <TextUI size={11} weight="bold" color={selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E'}>
+                            {t('فتح الدرس', 'Open Lesson')}
+                          </TextUI>
+                        </TouchableOpacity>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <TextUI size={12} weight="bold" color="#1E5A3E">
+                            {t('قائمة الدروس', 'Lessons List')}
+                          </TextUI>
+                          <Feather name="chevron-left" size={14} color="#1E5A3E" />
+                        </View>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -12161,7 +12551,11 @@ const ALLAH_99_NAMES = [
                       key={ls.id}
                       activeOpacity={0.78}
                       onPress={() => {
+                        setActiveCourse(selectedLessonCourse);
+                        setActiveLesson(ls);
                         playLessonAudio(selectedLessonCourse, ls);
+                        setLessonModalVisible(false);
+                        setIsLessonPageOpen(true);
                         triggerHapticFeedback('medium');
                       }}
                       style={{
@@ -12444,6 +12838,733 @@ const ALLAH_99_NAMES = [
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+        </Modal>
+
+        {/* Modal: Dedicated Lesson Page (صفحة الدرس المستقلة) */}
+        <Modal
+          visible={isLessonPageOpen && !!activeLesson && !!activeCourse}
+          animationType="slide"
+          presentationStyle="fullScreen"
+          onRequestClose={() => setIsLessonPageOpen(false)}
+        >
+          <View
+            style={{ flex: 1, backgroundColor: c.bg, direction: isRTL ? 'rtl' : 'ltr' }}
+            {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+          >
+            {/* Lesson Page Header */}
+            <Header
+              title={t('صفحة الدرس', 'Lesson Page')}
+              onBack={() => setIsLessonPageOpen(false)}
+              rightAction={
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    try {
+                      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+                        (navigator as any).share({
+                          title: activeLesson?.titleAr,
+                          text: `${activeLesson?.titleAr} - ${activeCourse?.scholarAr} (${activeCourse?.titleAr})`,
+                          url: activeLesson?.audioUrl || activeCourse?.audioStreamUrl
+                        });
+                      }
+                    } catch (e) {}
+                  }}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 19,
+                    backgroundColor: c.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: c.border
+                  }}
+                >
+                  <Feather name="share-2" size={16} color={TOKENS.colors.primary} />
+                </TouchableOpacity>
+              }
+            />
+
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
+            >
+              {/* Mosque & Series Breadcrumb Header Card */}
+              <View
+                style={{
+                  backgroundColor: themeMode === 'light' ? '#F7F5F0' : '#221B16',
+                  borderRadius: TOKENS.radius.lg,
+                  borderWidth: 1,
+                  borderColor: 'rgba(198, 146, 85, 0.35)',
+                  padding: 14,
+                  marginBottom: 16
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 5,
+                      backgroundColor: themeMode === 'light' ? '#EAE5DB' : '#33271E',
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                      borderRadius: TOKENS.radius.pill
+                    }}
+                  >
+                    <TextUI size={12}>
+                      {selectedMosque === 'makkah' ? '🕋' : '🕌'}
+                    </TextUI>
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark}>
+                      {selectedMosque === 'makkah' ? t('المسجد الحرام بمكة المكرمة', 'Grand Mosque of Makkah') : t('المسجد النبوي الشريف', "Prophet's Mosque")}
+                    </TextUI>
+                  </View>
+
+                  <View
+                    style={{
+                      backgroundColor: themeMode === 'light' ? '#EBF5EE' : '#1F2C24',
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                      borderRadius: TOKENS.radius.pill,
+                      borderWidth: 1,
+                      borderColor: '#1E5A3E'
+                    }}
+                  >
+                    <TextUI size={11} weight="bold" color="#1E5A3E">
+                      {activeCourse?.categoryAr || 'علمي'}
+                    </TextUI>
+                  </View>
+                </View>
+
+                <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ width: '100%', marginBottom: 4 }}>
+                  {activeCourse?.titleAr}
+                </TextUI>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Feather name="user" size={13} color={TOKENS.colors.secondary} />
+                  <TextUI size={13} weight="bold" color={c.textPrimary}>
+                    {activeCourse?.scholarAr}
+                  </TextUI>
+                  <TextUI size={11} color={c.textSecondary}>
+                    {`• ${activeCourse?.roleAr}`}
+                  </TextUI>
+                </View>
+              </View>
+
+              {/* Lesson Spotlight Banner */}
+              <View
+                style={{
+                  backgroundColor: themeMode === 'light' ? '#F4F9F5' : '#1C2920',
+                  borderRadius: TOKENS.radius.lg,
+                  borderWidth: 1.5,
+                  borderColor: '#1E5A3E',
+                  padding: 16,
+                  marginBottom: 16,
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <ArabesqueWatermark opacity={0.06} color="#1E5A3E" />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <View
+                    style={{
+                      backgroundColor: '#1E5A3E',
+                      paddingHorizontal: 9,
+                      paddingVertical: 3,
+                      borderRadius: TOKENS.radius.pill
+                    }}
+                  >
+                    <TextUI size={11} weight="bold" color="#FFFFFF">
+                      {`الدرس رقم ${toArabicNumber(activeLesson?.number || 1)} من ${toArabicNumber(activeCourse?.lessonsCount || activeCourse?.lessons?.length || 1)}`}
+                    </TextUI>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Feather name="clock" size={12} color="#1E5A3E" />
+                    <TextUI size={11} weight="bold" color="#1E5A3E">
+                      {`المدة: ${activeLesson?.duration}`}
+                    </TextUI>
+                  </View>
+                </View>
+
+                <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ lineHeight: 26, width: '100%' }}>
+                  {activeLesson?.titleAr}
+                </TextUI>
+              </View>
+
+              {/* Full Audio Player Deck */}
+              <View
+                style={{
+                  backgroundColor: themeMode === 'light' ? '#FFFDF9' : '#231B16',
+                  borderRadius: TOKENS.radius.xl,
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(198, 146, 85, 0.4)',
+                  padding: 18,
+                  marginBottom: 18,
+                  ...makeShadow('0 4px 16px rgba(0,0,0,0.06)', '#000', 0.06, 6, { width: 0, height: 2 }, 3)
+                }}
+              >
+                <View style={{ width: '100%', marginBottom: 10 }}>
+                  <MoorishArchFrame height={16} color="#1E5A3E" opacity={0.8} />
+                </View>
+
+                {/* Status & Speed chips */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isCurrentLessonPlaying ? '#2E7D32' : c.textSecondary }} />
+                    <TextUI size={11.5} weight="bold" color="#1E5A3E">
+                      {isCurrentLessonPlaying ? t('الشرح قيد الاستماع الآن', 'Audio Playing') : t('الدرس جاهز للتشغيل', 'Ready to Play')}
+                    </TextUI>
+                  </View>
+
+                  {/* Playback speed */}
+                  <View style={{ flexDirection: 'row', gap: 4 }}>
+                    {[1.0, 1.25, 1.5, 2.0].map((spd) => (
+                      <TouchableOpacity
+                        key={`modal-speed-${spd}`}
+                        onPress={() => changeLessonPlaybackSpeed(spd)}
+                        style={{
+                          paddingHorizontal: 7,
+                          paddingVertical: 3,
+                          borderRadius: 6,
+                          backgroundColor: lessonPlaybackSpeed === spd ? '#1E5A3E' : (themeMode === 'light' ? '#FFFFFF' : '#2A3A2F'),
+                          borderWidth: 1,
+                          borderColor: lessonPlaybackSpeed === spd ? '#1E5A3E' : c.border
+                        }}
+                      >
+                        <TextUI size={10} weight="bold" color={lessonPlaybackSpeed === spd ? '#FFFFFF' : c.textPrimary}>
+                          {spd}x
+                        </TextUI>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Progress bar */}
+                <TouchableOpacity
+                  activeOpacity={0.88}
+                  onPress={(e: any) => {
+                    try {
+                      const locX = e.nativeEvent?.locationX || 0;
+                      const barWidth = 310;
+                      const ratio = Math.max(0, Math.min(1, locX / barWidth));
+                      if (audioTotalSecs > 0) {
+                        seekAudioToTime(Math.round(ratio * audioTotalSecs));
+                      }
+                    } catch (err) {}
+                  }}
+                  style={{ width: '100%', paddingVertical: 8, marginBottom: 4 }}
+                >
+                  <View style={{ width: '100%', height: 7, backgroundColor: c.border, borderRadius: 4, overflow: 'hidden' }}>
+                    <View style={{ height: '100%', width: `${Math.max(2, audioProgress)}%`, backgroundColor: '#1E5A3E', borderRadius: 4 }} />
+                  </View>
+                </TouchableOpacity>
+
+                {/* Time indicators */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Feather name="clock" size={12} color="#1E5A3E" />
+                    <TextUI size={12.5} weight="bold" color="#1E5A3E">
+                      {audioCurrentTime}
+                    </TextUI>
+                  </View>
+
+                  <View
+                    style={{
+                      backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#1A2E20',
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: '#81C784'
+                    }}
+                  >
+                    <TextUI size={11} weight="bold" color="#2E7D32">
+                      {`متبقي ${audioRemainingTime}`}
+                    </TextUI>
+                  </View>
+
+                  <TextUI size={11.5} color={c.textSecondary}>
+                    {audioDuration || activeLesson?.duration}
+                  </TextUI>
+                </View>
+
+                {/* Playback Controls Row: -15s, Play, +15s */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 26, marginBottom: 14 }}>
+                  <TouchableOpacity
+                    onPress={() => skipAudioSeconds(-15)}
+                    activeOpacity={0.8}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      backgroundColor: c.surface,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1,
+                      borderColor: c.border
+                    }}
+                  >
+                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                      <Feather name="rotate-ccw" size={18} color={c.textPrimary} />
+                      <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥-</TextUI>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={toggleLessonAudioPlayback}
+                    style={{
+                      width: 66,
+                      height: 66,
+                      borderRadius: 33,
+                      backgroundColor: '#1E5A3E',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      ...makeShadow('0 4px 14px rgba(30, 90, 62, 0.4)', '#1E5A3E', 0.4, 6, { width: 0, height: 3 }, 6)
+                    }}
+                  >
+                    <Feather name={isCurrentLessonPlaying ? 'pause' : 'play'} size={30} color="#FFFFFF" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => skipAudioSeconds(15)}
+                    activeOpacity={0.8}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      backgroundColor: c.surface,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1,
+                      borderColor: c.border
+                    }}
+                  >
+                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                      <Feather name="rotate-cw" size={18} color={c.textPrimary} />
+                      <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥+</TextUI>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Direct Minute Jump Box */}
+                <View
+                  style={{
+                    backgroundColor: themeMode === 'light' ? '#FBF8F3' : '#221914',
+                    borderRadius: TOKENS.radius.lg,
+                    padding: 12,
+                    borderWidth: 1,
+                    borderColor: 'rgba(198, 146, 85, 0.28)',
+                    marginBottom: 14
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Feather name="clock" size={13} color={TOKENS.colors.primary} />
+                      <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
+                        {t('الانتقال المباشر لدقيقة معينة:', 'Jump directly to minute:')}
+                      </TextUI>
+                    </View>
+                    <TextUI size={10} color={c.textSecondary}>
+                      {t('مثال: 15 أو 15:30', 'e.g. 15 or 15:30')}
+                    </TextUI>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TextInput
+                      value={minuteJumpInput}
+                      onChangeText={setMinuteJumpInput}
+                      placeholder={t('اكتب الدقيقة (مثلاً: 12 أو 12:30)', 'Enter minute (e.g. 12 or 12:30)')}
+                      placeholderTextColor={c.textSecondary}
+                      keyboardType="numeric"
+                      onSubmitEditing={() => handleJumpToMinute()}
+                      returnKeyType="go"
+                      style={{
+                        flex: 1,
+                        height: 40,
+                        backgroundColor: c.surface,
+                        borderRadius: TOKENS.radius.md,
+                        paddingHorizontal: 12,
+                        fontSize: 13,
+                        color: c.textPrimary,
+                        textAlign: isRTL ? 'right' : 'left',
+                        borderWidth: 1,
+                        borderColor: c.border
+                      }}
+                    />
+                    <TouchableOpacity
+                      onPress={() => handleJumpToMinute()}
+                      activeOpacity={0.8}
+                      style={{
+                        height: 40,
+                        paddingHorizontal: 16,
+                        borderRadius: TOKENS.radius.md,
+                        backgroundColor: TOKENS.colors.primary,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        gap: 6
+                      }}
+                    >
+                      <Feather name="play" size={13} color="#FFFFFF" />
+                      <TextUI size={12} weight="bold" color="#FFFFFF">
+                        {t('انتقال', 'Jump')}
+                      </TextUI>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Quick Minute Jump Chips */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    <TextUI size={10} color={c.textSecondary} style={{ marginEnd: 2 }}>
+                      {t('دقائق سريعة:', 'Quick:')}
+                    </TextUI>
+                    {['5', '10', '15', '20', '30', '45'].map((min) => (
+                      <TouchableOpacity
+                        key={`page-quick-min-${min}`}
+                        onPress={() => handleJumpToMinute(min)}
+                        activeOpacity={0.7}
+                        style={{
+                          paddingVertical: 3,
+                          paddingHorizontal: 8,
+                          borderRadius: TOKENS.radius.pill,
+                          backgroundColor: c.surface,
+                          borderWidth: 1,
+                          borderColor: 'rgba(198, 146, 85, 0.3)'
+                        }}
+                      >
+                        <TextUI size={10.5} weight="bold" color={TOKENS.colors.primary}>
+                          {`${toArabicNumber(min)} د`}
+                        </TextUI>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Offline Storage Download Bar */}
+                <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: c.border, marginBottom: 14 }}>
+                  {downloadedLessons[activeLesson.id] ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}>
+                        <Feather name="check-circle" size={15} color="#2E7D32" />
+                        <View>
+                          <TextUI size={12} weight="bold" color="#2E7D32">
+                            محفوظ في ذاكرة الجوال (أوفلاين)
+                          </TextUI>
+                          <TextUI size={10} color={c.textSecondary}>
+                            {`الحجم: ${downloadedLessons[activeLesson.id].sizeMB} • الذاكرة المحلية`}
+                          </TextUI>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => deleteDownloadedLesson(activeLesson.id)}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 4,
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          borderRadius: 8,
+                          backgroundColor: '#FFEBEE',
+                          borderWidth: 1,
+                          borderColor: '#FFCDD2'
+                        }}
+                      >
+                        <Feather name="trash-2" size={12} color="#C62828" />
+                        <TextUI size={11} weight="bold" color="#C62828">
+                          حذف لتوفير المساحة
+                        </TextUI>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <TextUI size={11} color={c.textSecondary}>
+                        {`استمع في أي وقت بدون إنترنت`}
+                      </TextUI>
+                      <TouchableOpacity
+                        disabled={!!downloadingLessonIds[activeLesson.id]}
+                        onPress={() => downloadLessonAudio(activeCourse, activeLesson)}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 5,
+                          paddingHorizontal: 12,
+                          paddingVertical: 7,
+                          borderRadius: 8,
+                          backgroundColor: '#1E5A3E'
+                        }}
+                      >
+                        <Feather name="download" size={13} color="#FFFFFF" />
+                        <TextUI size={11} weight="bold" color="#FFFFFF">
+                          {downloadingLessonIds[activeLesson.id]
+                            ? `جارٍ التحميل ${downloadingLessonIds[activeLesson.id]}%...`
+                            : 'تحميل للاستماع أوفلاين'}
+                        </TextUI>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+
+                {/* Notes & Bookmarks actions */}
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={saveQuickLessonBookmark}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      paddingVertical: 8,
+                      paddingHorizontal: 8,
+                      borderRadius: 8,
+                      backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#203225',
+                      borderWidth: 1,
+                      borderColor: '#1E5A3E'
+                    }}
+                  >
+                    <Feather name="bookmark" size={13} color="#1E5A3E" />
+                    <TextUI size={11} weight="bold" color="#1E5A3E">
+                      {`حفظ الوقفة (${audioCurrentTime})`}
+                    </TextUI>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      setNewNoteTimestampSecs(audioCurrentSecs);
+                      setLessonNoteModalVisible(true);
+                    }}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      paddingVertical: 8,
+                      paddingHorizontal: 8,
+                      borderRadius: 8,
+                      backgroundColor: themeMode === 'light' ? '#F0E8DE' : '#33271D',
+                      borderWidth: 1,
+                      borderColor: TOKENS.colors.primary
+                    }}
+                  >
+                    <Feather name="edit-3" size={13} color={TOKENS.colors.primary} />
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
+                      + تدوين فائدة علمية
+                    </TextUI>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Saved notes list */}
+                {lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
+                  <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: c.border }}>
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginBottom: 6 }}>
+                      {`الوقفات والفوائد المحفوظة (${toArabicNumber(lessonNotes[activeLesson.id].length)}):`}
+                    </TextUI>
+                    {lessonNotes[activeLesson.id].map((note) => (
+                      <View
+                        key={`modal-note-${note.id}`}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: c.surface,
+                          borderRadius: 8,
+                          paddingVertical: 7,
+                          paddingHorizontal: 10,
+                          borderWidth: 1,
+                          borderColor: c.border,
+                          marginBottom: 6
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => seekAudioToTime(note.timestampSecs)}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}
+                        >
+                          <Feather name="play-circle" size={15} color="#1E5A3E" />
+                          <View style={{ flex: 1 }}>
+                            <TextUI size={11.5} weight="bold" color={c.textPrimary}>
+                              {note.text}
+                            </TextUI>
+                            <TextUI size={10} color="#1E5A3E">
+                              {`عند الدقيقة (${toArabicNumber(note.timeLabel)})`}
+                            </TextUI>
+                          </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => deleteLessonNote(activeLesson.id, note.id)}
+                          style={{ padding: 4 }}
+                        >
+                          <Feather name="trash" size={13} color={c.textSecondary} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Previous & Next Lesson Navigation Buttons */}
+              {(() => {
+                const currentLessonIdx = activeCourse?.lessons?.findIndex((l: any) => l.id === activeLesson?.id) ?? -1;
+                const prevLesson = currentLessonIdx > 0 ? activeCourse?.lessons[currentLessonIdx - 1] : null;
+                const nextLesson = currentLessonIdx >= 0 && currentLessonIdx < ((activeCourse?.lessons?.length || 0) - 1)
+                  ? activeCourse?.lessons[currentLessonIdx + 1]
+                  : null;
+
+                return (
+                  <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+                    {/* Previous Lesson Button */}
+                    <TouchableOpacity
+                      disabled={!prevLesson}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        if (prevLesson) {
+                          setActiveLesson(prevLesson);
+                          playLessonAudio(activeCourse, prevLesson);
+                          triggerHapticFeedback('medium');
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        paddingVertical: 12,
+                        paddingHorizontal: 10,
+                        borderRadius: TOKENS.radius.md,
+                        backgroundColor: prevLesson ? c.surface : (themeMode === 'light' ? '#F0F0F0' : '#222222'),
+                        borderWidth: 1,
+                        borderColor: prevLesson ? '#1E5A3E' : c.border,
+                        opacity: prevLesson ? 1 : 0.5
+                      }}
+                    >
+                      <Feather name={isRTL ? 'chevron-right' : 'chevron-left'} size={16} color={prevLesson ? '#1E5A3E' : c.textSecondary} />
+                      <View style={{ alignItems: 'flex-start' }}>
+                        <TextUI size={11} color={c.textSecondary}>الدرس السابق</TextUI>
+                        <TextUI size={12} weight="bold" color={prevLesson ? '#1E5A3E' : c.textSecondary} numberOfLines={1}>
+                          {prevLesson ? prevLesson.titleAr : 'بداية السلسلة'}
+                        </TextUI>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Next Lesson Button */}
+                    <TouchableOpacity
+                      disabled={!nextLesson}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        if (nextLesson) {
+                          setActiveLesson(nextLesson);
+                          playLessonAudio(activeCourse, nextLesson);
+                          triggerHapticFeedback('medium');
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        paddingVertical: 12,
+                        paddingHorizontal: 10,
+                        borderRadius: TOKENS.radius.md,
+                        backgroundColor: nextLesson ? '#1E5A3E' : (themeMode === 'light' ? '#F0F0F0' : '#222222'),
+                        borderWidth: 1,
+                        borderColor: nextLesson ? '#1E5A3E' : c.border,
+                        opacity: nextLesson ? 1 : 0.5
+                      }}
+                    >
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <TextUI size={11} color={nextLesson ? 'rgba(255,255,255,0.8)' : c.textSecondary}>الدرس التالي</TextUI>
+                        <TextUI size={12} weight="bold" color={nextLesson ? '#FFFFFF' : c.textSecondary} numberOfLines={1}>
+                          {nextLesson ? nextLesson.titleAr : 'نهاية السلسلة'}
+                        </TextUI>
+                      </View>
+                      <Feather name={isRTL ? 'chevron-left' : 'chevron-right'} size={16} color={nextLesson ? '#FFFFFF' : c.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })()}
+
+              {/* All Lessons of This Course Section */}
+              <View
+                style={{
+                  backgroundColor: c.surface,
+                  borderRadius: TOKENS.radius.lg,
+                  borderWidth: 1,
+                  borderColor: c.border,
+                  padding: 14,
+                  marginBottom: 10
+                }}
+              >
+                <TextUI weight="bold" size={14} color={TOKENS.colors.primaryDark} style={{ marginBottom: 10 }}>
+                  {`دروس السلسلة (${toArabicNumber(activeCourse?.lessons?.length || 0)} درساً):`}
+                </TextUI>
+
+                {activeCourse?.lessons?.map((ls: any, lIdx: number) => {
+                  const isCurrent = ls.id === activeLesson?.id;
+                  return (
+                    <TouchableOpacity
+                      key={`page-course-lesson-${ls.id}`}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setActiveLesson(ls);
+                        playLessonAudio(activeCourse, ls);
+                        triggerHapticFeedback('medium');
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingVertical: 10,
+                        paddingHorizontal: 10,
+                        borderRadius: 8,
+                        backgroundColor: isCurrent ? (themeMode === 'light' ? '#E8F5E9' : '#1E2D22') : (lIdx % 2 === 0 ? (themeMode === 'light' ? '#F9F7F3' : '#201A16') : 'transparent'),
+                        borderWidth: isCurrent ? 1 : 0,
+                        borderColor: '#1E5A3E',
+                        marginBottom: 4
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginEnd: 8 }}>
+                        <View
+                          style={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: 13,
+                            backgroundColor: isCurrent ? '#1E5A3E' : (themeMode === 'light' ? '#E8E0D5' : '#2C221A'),
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginEnd: 8
+                          }}
+                        >
+                          {isCurrent && isCurrentLessonPlaying ? (
+                            <Feather name="volume-2" size={13} color="#FFFFFF" />
+                          ) : (
+                            <TextUI size={11} weight="bold" color={isCurrent ? '#FFFFFF' : c.textPrimary}>
+                              {toArabicNumber(ls.number)}
+                            </TextUI>
+                          )}
+                        </View>
+                        <TextUI
+                          size={12.5}
+                          weight={isCurrent ? 'bold' : 'regular'}
+                          color={isCurrent ? '#1E5A3E' : c.textPrimary}
+                          numberOfLines={1}
+                          style={{ flex: 1 }}
+                        >
+                          {ls.titleAr}
+                        </TextUI>
+                      </View>
+                      <TextUI size={11} color={c.textSecondary}>
+                        {ls.duration}
+                      </TextUI>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
           </View>
         </Modal>
       </View>
@@ -13482,12 +14603,17 @@ const ALLAH_99_NAMES = [
 
     const parsedSurahStream = streamSurahs.map((surah: any) => getParsedSurahPages(surah));
 
-    // Two-finger Pinch-to-Zoom Gesture Handlers (تكبير وتصغير المصحف بحركة الأصابع)
+    // Two-finger Pinch-to-Zoom Gesture Handlers (تكبير وتصغير المصحف بحركة الأصابع بدقة ونعومة)
     const handlePinchTouchStart = (e: any) => {
       const touches = e.nativeEvent?.touches;
       if (touches && touches.length >= 2) {
         isMultiTouchRef.current = true;
         lastMultiTouchTimeRef.current = Date.now();
+        const p1 = touches[0];
+        const p2 = touches[1];
+        const dx = p1.pageX - p2.pageX;
+        const dy = p1.pageY - p2.pageY;
+        lastPinchDistRef.current = Math.sqrt(dx * dx + dy * dy);
       }
     };
 
@@ -13505,18 +14631,19 @@ const ALLAH_99_NAMES = [
 
         if (lastPinchDistRef.current !== null) {
           const delta = dist - lastPinchDistRef.current;
-          if (Math.abs(delta) > 12) {
+          if (Math.abs(delta) > 7) {
+            const step = Math.min(3, Math.max(1, Math.round(Math.abs(delta) / 10)));
             if (delta > 0) {
               // Pinch Outwards -> Zoom In (تكبير الخط)
               setQuranFontSize((prev: number) => {
-                const next = Math.min(48, prev + 1);
+                const next = Math.min(48, prev + step);
                 showZoomFeedback(next);
                 return next;
               });
             } else {
               // Pinch Inwards -> Zoom Out (تصغير الخط)
               setQuranFontSize((prev: number) => {
-                const next = Math.max(16, prev - 1);
+                const next = Math.max(16, prev - step);
                 showZoomFeedback(next);
                 return next;
               });
@@ -13537,7 +14664,7 @@ const ALLAH_99_NAMES = [
         lastMultiTouchTimeRef.current = Date.now();
         setTimeout(() => {
           isMultiTouchRef.current = false;
-        }, 500);
+        }, 600);
       }
     };
 
@@ -13564,6 +14691,14 @@ const ALLAH_99_NAMES = [
     return (
       <View
         style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}
+        onStartShouldSetResponderCapture={(e) => {
+          const touches = (e as any)?.nativeEvent?.touches;
+          return !!touches && touches.length >= 2;
+        }}
+        onMoveShouldSetResponderCapture={(e) => {
+          const touches = (e as any)?.nativeEvent?.touches;
+          return !!touches && touches.length >= 2;
+        }}
         onTouchStart={handlePinchTouchStart}
         onTouchMove={handlePinchTouchMove}
         onTouchEnd={handlePinchTouchEnd}
