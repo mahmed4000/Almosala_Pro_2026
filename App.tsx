@@ -8700,20 +8700,20 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'كرسي الحرم النبوي',
     descriptionAr: 'شرح تأصيلي نفيس لكتاب التوحيد للإمام المجدد، ألقي في محراب وحلقات المسجد النبوي الشريف.',
     lessonsCount: 12,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_01.mp3',
     lessons: [
-      { id: 'tq_01', number: 1, titleAr: 'مقدمة الكتاب وبيان حق الله على العبيد وفضل التوحيد', duration: '٤٢ دقيقة' },
-      { id: 'tq_02', number: 2, titleAr: 'باب من حقق التوحيد دخل الجنة بغير حساب ولا عذاب', duration: '٣٨ دقيقة' },
-      { id: 'tq_03', number: 3, titleAr: 'باب الخوف من الشرك وبيان خطره ودقائقه', duration: '٤٥ دقيقة' },
-      { id: 'tq_04', number: 4, titleAr: 'باب الدعاء إلى شهادة أن لا إله إلا الله', duration: '٤٠ دقيقة' },
-      { id: 'tq_05', number: 5, titleAr: 'باب تفسير التوحيد وشهادة أن لا إله إلا الله', duration: '٥١ دقيقة' },
-      { id: 'tq_06', number: 6, titleAr: 'باب من الشرك لبس الحلقة والخيط ونحوهما لرفع البلاء', duration: '٣٦ دقيقة' },
-      { id: 'tq_07', number: 7, titleAr: 'باب ما جاء في الرقى والتمائم والتولة', duration: '٤٨ دقيقة' },
-      { id: 'tq_08', number: 8, titleAr: 'باب من تبرك بشجرة أو حجر ونحوهما', duration: '٣٩ دقيقة' },
-      { id: 'tq_09', number: 9, titleAr: 'باب ما جاء في الذبح لغير الله والنذر', duration: '٤٤ دقيقة' },
-      { id: 'tq_10', number: 10, titleAr: 'باب من الشرك الاستعاذة بغير الله والاستغاثة', duration: '٤٧ دقيقة' },
-      { id: 'tq_11', number: 11, titleAr: 'باب قول الله تعالى: ﴿أيشركون ما لا يخلق شيئا﴾', duration: '٤١ دقيقة' },
-      { id: 'tq_12', number: 12, titleAr: 'باب الشفاعة المثبتة والمنفية وخاتمة الأبواب', duration: '٥٥ دقيقة' }
+      { id: 'tq_01', number: 1, titleAr: 'مقدمة الكتاب وبيان حق الله على العبيد وفضل التوحيد', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_01.mp3' },
+      { id: 'tq_02', number: 2, titleAr: 'باب من حقق التوحيد دخل الجنة بغير حساب ولا عذاب', duration: '٣٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_02.mp3' },
+      { id: 'tq_03', number: 3, titleAr: 'باب الخوف من الشرك وبيان خطره ودقائقه', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_03.mp3' },
+      { id: 'tq_04', number: 4, titleAr: 'باب الدعاء إلى شهادة أن لا إله إلا الله', duration: '٤٠ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_04.mp3' },
+      { id: 'tq_05', number: 5, titleAr: 'باب تفسير التوحيد وشهادة أن لا إله إلا الله', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_05.mp3' },
+      { id: 'tq_06', number: 6, titleAr: 'باب من الشرك لبس الحلقة والخيط ونحوهما لرفع البلاء', duration: '٣٦ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_06.mp3' },
+      { id: 'tq_07', number: 7, titleAr: 'باب ما جاء في الرقى والتمائم والتولة', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_07.mp3' },
+      { id: 'tq_08', number: 8, titleAr: 'باب من تبرك بشجرة أو حجر ونحوهما', duration: '٣٩ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_08.mp3' },
+      { id: 'tq_09', number: 9, titleAr: 'باب ما جاء في الذبح لغير الله والنذر', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_09.mp3' },
+      { id: 'tq_10', number: 10, titleAr: 'باب من الشرك الاستعاذة بغير الله والاستغاثة', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_10.mp3' },
+      { id: 'tq_11', number: 11, titleAr: 'باب قول الله تعالى: ﴿أيشركون ما لا يخلق شيئا﴾', duration: '٤١ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_11.mp3' },
+      { id: 'tq_12', number: 12, titleAr: 'باب الشفاعة المثبتة والمنفية وخاتمة الأبواب', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_2/3-Mstawa2_12.mp3' }
     ]
   },
   {
@@ -8727,22 +8727,22 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'سلسلة محراب الفجر',
     descriptionAr: 'شرح منهجي رصين لأهم متون الاعتقاد على منهج أهل السنة والجماعة في أسماء الله وصفاته والإيمان باليوم الآخر.',
     lessonsCount: 14,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/wasetia_Badr/001.mp3',
     lessons: [
-      { id: 'wb_01', number: 1, titleAr: 'مقدمة المتن ومنهج أهل السنة في الأسماء والصفات', duration: '٤٨ دقيقة' },
-      { id: 'wb_02', number: 2, titleAr: 'قاعدة إثبات الصفات بلا تحريف ولا تعطيل ولا تكييف', duration: '٥٠ دقيقة' },
-      { id: 'wb_03', number: 3, titleAr: 'آية الكرسي وسورة الإخلاص ودلائل التوحيد العظمى', duration: '٤٥ دقيقة' },
-      { id: 'wb_04', number: 4, titleAr: 'صفات العلم والقدرة والسمع والبصر لله جل وعلا', duration: '٤٣ دقيقة' },
-      { id: 'wb_05', number: 5, titleAr: 'صفات الإرادة والمحبة والرضا والغضب الإلهي', duration: '٤٩ دقيقة' },
-      { id: 'wb_06', number: 6, titleAr: 'صفة المجيء والإتيان والقرب والمعية الإلهية', duration: '٥٢ دقيقة' },
-      { id: 'wb_07', number: 7, titleAr: 'صفات الكلام الإلهي والقرآن كلام الله غير مخلوق', duration: '٥٦ دقيقة' },
-      { id: 'wb_08', number: 8, titleAr: 'رؤية المؤمنين لربهم عياناً يوم القيامة في الجنة', duration: '٤٦ دقيقة' },
-      { id: 'wb_09', number: 9, titleAr: 'الإيمان باليوم الآخر وفتنة القبر وعذابه ونعيمه', duration: '٥٣ دقيقة' },
-      { id: 'wb_10', number: 10, titleAr: 'أحوال القيامة الكبرى: البعث، الحوض، الصراط، والميزان', duration: '٥٨ دقيقة' },
-      { id: 'wb_11', number: 11, titleAr: 'الإيمان بالقدر خيره وشره ومراتب القدر الأربع', duration: '٥١ دقيقة' },
-      { id: 'wb_12', number: 12, titleAr: 'مسمى الإيمان وحكم مرتكب الكبيرة وأهل القبلة', duration: '٤٧ دقيقة' },
-      { id: 'wb_13', number: 13, titleAr: 'حقوق صحابة رسول الله ﷺ وأهل بيته الأطهار', duration: '٤٥ دقيقة' },
-      { id: 'wb_14', number: 14, titleAr: 'كرامات الأولياء والأمر بالمعروف ومكارم الأخلاق', duration: '٥٤ دقيقة' }
+      { id: 'wb_01', number: 1, titleAr: 'مقدمة المتن ومنهج أهل السنة في الأسماء والصفات', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/001.mp3' },
+      { id: 'wb_02', number: 2, titleAr: 'قاعدة إثبات الصفات بلا تحريف ولا تعطيل ولا تكييف', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/002.mp3' },
+      { id: 'wb_03', number: 3, titleAr: 'آية الكرسي وسورة الإخلاص ودلائل التوحيد العظمى', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/003.mp3' },
+      { id: 'wb_04', number: 4, titleAr: 'صفات العلم والقدرة والسمع والبصر لله جل وعلا', duration: '٤٣ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/004.mp3' },
+      { id: 'wb_05', number: 5, titleAr: 'صفات الإرادة والمحبة والرضا والغضب الإلهي', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/005.mp3' },
+      { id: 'wb_06', number: 6, titleAr: 'صفة المجيء والإتيان والقرب والمعية الإلهية', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/006.mp3' },
+      { id: 'wb_07', number: 7, titleAr: 'صفات الكلام الإلهي والقرآن كلام الله غير مخلوق', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/007.mp3' },
+      { id: 'wb_08', number: 8, titleAr: 'رؤية المؤمنين لربهم عياناً يوم القيامة في الجنة', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/008.mp3' },
+      { id: 'wb_09', number: 9, titleAr: 'الإيمان باليوم الآخر وفتنة القبر وعذابه ونعيمه', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/009.mp3' },
+      { id: 'wb_10', number: 10, titleAr: 'أحوال القيامة الكبرى: البعث، الحوض، الصراط، والميزان', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/010.mp3' },
+      { id: 'wb_11', number: 11, titleAr: 'الإيمان بالقدر خيره وشره ومراتب القدر الأربع', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/011.mp3' },
+      { id: 'wb_12', number: 12, titleAr: 'مسمى الإيمان وحكم مرتكب الكبيرة وأهل القبلة', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/012.mp3' },
+      { id: 'wb_13', number: 13, titleAr: 'حقوق صحابة رسول الله ﷺ وأهل بيته الأطهار', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/013.mp3' },
+      { id: 'wb_14', number: 14, titleAr: 'كرامات الأولياء والأمر بالمعروف ومكارم الأخلاق', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/014.mp3' }
     ]
   },
   {
@@ -8756,18 +8756,18 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'أحاديث الأحكام',
     descriptionAr: 'شرح فقهي حديثي للأحاديث المتفق عليها في الصحيحين المقررة في متون الأحكام الفقهية.',
     lessonsCount: 10,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/002.mp3',
+    audioStreamUrl: 'https://archive.org/download/omdat_alahkam/01.mp3',
     lessons: [
-      { id: 'uq_01', number: 1, titleAr: 'حديث إنما الأعمال بالنيات وبيان أحكام الطهارة والنية', duration: '٤٥ دقيقة' },
-      { id: 'uq_02', number: 2, titleAr: 'أحاديث الاستنجاء وآداب قضاء الحاجة وسنن الفطرة', duration: '٤٢ دقيقة' },
-      { id: 'uq_03', number: 3, titleAr: 'صفة وضوء النبي ﷺ وأركانه ومبطلاته', duration: '٥٠ دقيقة' },
-      { id: 'uq_04', number: 4, titleAr: 'المسح على الخفين والغسل من الجنابة وأحكامهما', duration: '٤٦ دقيقة' },
-      { id: 'uq_05', number: 5, titleAr: 'أحكام التيمم والنجاسات وكيفية تطهيرها', duration: '٣٩ دقيقة' },
-      { id: 'uq_06', number: 6, titleAr: 'كتاب الصلاة: مواقيت الصلوات الخمس وفضل الجماعة', duration: '٥٣ دقيقة' },
-      { id: 'uq_07', number: 7, titleAr: 'الأذان والإقامة واستقبال القبلة وشروط الصلاة', duration: '٤٧ دقيقة' },
-      { id: 'uq_08', number: 8, titleAr: 'صفة صلاة النبي ﷺ من التكبير إلى التسليم', duration: '٥٨ دقيقة' },
-      { id: 'uq_09', number: 9, titleAr: 'سجود السهو وسجود التلاوة وصلاة المريض والمسافر', duration: '٤٤ دقيقة' },
-      { id: 'uq_10', number: 10, titleAr: 'صلاة الجمعة والعيدين والجنائز والأحكام التابعة', duration: '٥١ دقيقة' }
+      { id: 'uq_01', number: 1, titleAr: 'حديث إنما الأعمال بالنيات وبيان أحكام الطهارة والنية', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/01.mp3' },
+      { id: 'uq_02', number: 2, titleAr: 'أحاديث الاستنجاء وآداب قضاء الحاجة وسنن الفطرة', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/02.mp3' },
+      { id: 'uq_03', number: 3, titleAr: 'صفة وضوء النبي ﷺ وأركانه ومبطلاته', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/03.mp3' },
+      { id: 'uq_04', number: 4, titleAr: 'المسح على الخفين والغسل من الجنابة وأحكامهما', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/04.mp3' },
+      { id: 'uq_05', number: 5, titleAr: 'أحكام التيمم والنجاسات وكيفية تطهيرها', duration: '٣٩ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/05.mp3' },
+      { id: 'uq_06', number: 6, titleAr: 'كتاب الصلاة: مواقيت الصلوات الخمس وفضل الجماعة', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/06.mp3' },
+      { id: 'uq_07', number: 7, titleAr: 'الأذان والإقامة واستقبال القبلة وشروط الصلاة', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/07.mp3' },
+      { id: 'uq_08', number: 8, titleAr: 'صفة صلاة النبي ﷺ من التكبير إلى التسليم', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/08.mp3' },
+      { id: 'uq_09', number: 9, titleAr: 'سجود السهو وسجود التلاوة وصلاة المريض والمسافر', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/09.mp3' },
+      { id: 'uq_10', number: 10, titleAr: 'صلاة الجمعة والعيدين والجنائز والأحكام التابعة', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/10.mp3' }
     ]
   },
   {
@@ -8781,18 +8781,18 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'جوامع الكلم',
     descriptionAr: 'بيان مستفيض لقواعد الدين وأصول الإسلام الكبرى الواردة في الأحاديث النبوية الجامعة.',
     lessonsCount: 10,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/ahmad-hudhaifi/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3',
     lessons: [
-      { id: 'nb_01', number: 1, titleAr: 'حديث جبريل عليه السلام في مراتب الإسلام والإيمان والإحسان', duration: '٥٥ دقيقة' },
-      { id: 'nb_02', number: 2, titleAr: 'حديث بني الإسلام على خمس وأطوار خلق الإنسان في الرحم', duration: '٤٩ دقيقة' },
-      { id: 'nb_03', number: 3, titleAr: 'حديث من أحدث في أمرنا هذا ما ليس منه فهو رد', duration: '٤٦ دقيقة' },
-      { id: 'nb_04', number: 4, titleAr: 'حديث الحلال بين والحرام بين وبينهما مشتبهات', duration: '٥٢ دقيقة' },
-      { id: 'nb_05', number: 5, titleAr: 'حديث الدين النصيحة وأمرت أن أقاتل الناس حتى يشهدوا', duration: '٤٨ دقيقة' },
-      { id: 'nb_06', number: 6, titleAr: 'حديث ما نهيتكم عنه فاجتنبوه ودع ما يريبك إلى ما لا يريبك', duration: '٤٣ دقيقة' },
-      { id: 'nb_07', number: 7, titleAr: 'حديث من حسن إسلام المرء تركه ما لا يعنيه وحب الخير لأخيه', duration: '٤١ دقيقة' },
-      { id: 'nb_08', number: 8, titleAr: 'حديث لا يحل دم امرئ مسلم وحديث من كان يؤمن بالله واليوم الآخر', duration: '٤٧ دقيقة' },
-      { id: 'nb_09', number: 9, titleAr: 'حديث لا تغضب وحديث إن الله كتب الإحسان على كل شيء', duration: '٤٤ دقيقة' },
-      { id: 'nb_10', number: 10, titleAr: 'حديث اتق الله حيثما كنت وحديث احفظ الله يحفظك العظيم', duration: '٦٠ دقيقة' }
+      { id: 'nb_01', number: 1, titleAr: 'حديث جبريل عليه السلام في مراتب الإسلام والإيمان والإحسان', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3' },
+      { id: 'nb_02', number: 2, titleAr: 'حديث بني الإسلام على خمس وأطوار خلق الإنسان في الرحم', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/02.mp3' },
+      { id: 'nb_03', number: 3, titleAr: 'حديث من أحدث في أمرنا هذا ما ليس منه فهو رد', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/03.mp3' },
+      { id: 'nb_04', number: 4, titleAr: 'حديث الحلال بين والحرام بين وبينهما مشتبهات', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/04.mp3' },
+      { id: 'nb_05', number: 5, titleAr: 'حديث الدين النصيحة وأمرت أن أقاتل الناس حتى يشهدوا', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/05.mp3' },
+      { id: 'nb_06', number: 6, titleAr: 'حديث ما نهيتكم عنه فاجتنبوه ودع ما يريبك إلى ما لا يريبك', duration: '٤٣ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/06.mp3' },
+      { id: 'nb_07', number: 7, titleAr: 'حديث من حسن إسلام المرء تركه ما لا يعنيه وحب الخير لأخيه', duration: '٤١ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/07.mp3' },
+      { id: 'nb_08', number: 8, titleAr: 'حديث لا يحل دم امرئ مسلم وحديث من كان يؤمن بالله واليوم الآخر', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/08.mp3' },
+      { id: 'nb_09', number: 9, titleAr: 'حديث لا تغضب وحديث إن الله كتب الإحسان على كل شيء', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/09.mp3' },
+      { id: 'nb_10', number: 10, titleAr: 'حديث اتق الله حيثما كنت وحديث احفظ الله يحفظك العظيم', duration: '٦٠ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/10.mp3' }
     ]
   },
   {
@@ -8806,20 +8806,20 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'دروس الروضة الشريفة',
     descriptionAr: 'الشرح الموسوعي الشهير لمتن زاد المستقنع، المقامة دروسه في رحاب المسجد النبوي الشريف والمستمرة لسنوات.',
     lessonsCount: 12,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/muhammad-burhaji/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/mshiqiti_zad/001.mp3',
     lessons: [
-      { id: 'zs_01', number: 1, titleAr: 'مقدمة الفقه وأقسام المياه وأحكام الطهارة', duration: '٦٢ دقيقة' },
-      { id: 'zs_02', number: 2, titleAr: 'فصل في الآنية وفضل تطهير أوعية المسلم', duration: '٥٤ دقيقة' },
-      { id: 'zs_03', number: 3, titleAr: 'فصل الاستنجاء وسنن الوضوء وفضائله العظيمة', duration: '٥٨ دقيقة' },
-      { id: 'zs_04', number: 4, titleAr: 'فروض الوضوء ونواقضه المجمع عليها والمختلف فيها', duration: '٦٥ دقيقة' },
-      { id: 'zs_05', number: 5, titleAr: 'باب المسح على الخفين والجبيرة والعمامة', duration: '٥٢ دقيقة' },
-      { id: 'zs_06', number: 6, titleAr: 'باب الغسل من الجنابة وأحكام الحيض والنفاس', duration: '٥٩ دقيقة' },
-      { id: 'zs_07', number: 7, titleAr: 'كتاب الصلاة: شروط وجوب الصلاة وصحتها', duration: '٦٤ دقيقة' },
-      { id: 'zs_08', number: 8, titleAr: 'أركان الصلاة الأربعة عشر وواجباتها وسننها', duration: '٧٠ دقيقة' },
-      { id: 'zs_09', number: 9, titleAr: 'مكروهات الصلاة ومبطلاتها وأحكام الخشوع', duration: '٥٧ دقيقة' },
-      { id: 'zs_10', number: 10, titleAr: 'باب سجود السهو وحالات الشك والزيادة والنقصان', duration: '٦١ دقيقة' },
-      { id: 'zs_11', number: 11, titleAr: 'صلاة التطوع وقيام الليل والوتر والسنن الرواتب', duration: '٦٦ دقيقة' },
-      { id: 'zs_12', number: 12, titleAr: 'صلاة الجماعة وأحكام الإمامة وموقف المأموم', duration: '٦٨ دقيقة' }
+      { id: 'zs_01', number: 1, titleAr: 'مقدمة الفقه وأقسام المياه وأحكام الطهارة', duration: '٦٢ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/001.mp3' },
+      { id: 'zs_02', number: 2, titleAr: 'فصل في الآنية وفضل تطهير أوعية المسلم', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/002.mp3' },
+      { id: 'zs_03', number: 3, titleAr: 'فصل الاستنجاء وسنن الوضوء وفضائله العظيمة', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/003.mp3' },
+      { id: 'zs_04', number: 4, titleAr: 'فروض الوضوء ونواقضه المجمع عليها والمختلف فيها', duration: '٦٥ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/004.mp3' },
+      { id: 'zs_05', number: 5, titleAr: 'باب المسح على الخفين والجبيرة والعمامة', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/005.mp3' },
+      { id: 'zs_06', number: 6, titleAr: 'باب الغسل من الجنابة وأحكام الحيض والنفاس', duration: '٥٩ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/006.mp3' },
+      { id: 'zs_07', number: 7, titleAr: 'كتاب الصلاة: شروط وجوب الصلاة وصحتها', duration: '٦٤ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/007.mp3' },
+      { id: 'zs_08', number: 8, titleAr: 'أركان الصلاة الأربعة عشر وواجباتها وسننها', duration: '٧٠ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/008.mp3' },
+      { id: 'zs_09', number: 9, titleAr: 'مكروهات الصلاة ومبطلاتها وأحكام الخشوع', duration: '٥٧ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/009.mp3' },
+      { id: 'zs_10', number: 10, titleAr: 'باب سجود السهو وحالات الشك والزيادة والنقصان', duration: '٦١ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/010.mp3' },
+      { id: 'zs_11', number: 11, titleAr: 'صلاة التطوع وقيام الليل والوتر والسنن الرواتب', duration: '٦٦ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/011.mp3' },
+      { id: 'zs_12', number: 12, titleAr: 'صلاة الجماعة وأحكام الإمامة وموقف المأموم', duration: '٦٨ دقيقة', audioUrl: 'https://archive.org/download/mshiqiti_zad/012.mp3' }
     ]
   },
   {
@@ -8833,18 +8833,18 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'الشمائل النبوية',
     descriptionAr: 'مجالس إيمانية تفيض بالحب والتأسي برسول الله ﷺ، في بيان خَلقه وخُلقه وهديه في مأكله ومشربه وعبادته.',
     lessonsCount: 10,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/saud-shuraim/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/01.mp3',
     lessons: [
-      { id: 'sb_01', number: 1, titleAr: 'باب ما جاء في خَلق رسول الله ﷺ وحسن صورته وبهائه', duration: '٥٠ دقيقة' },
-      { id: 'sb_02', number: 2, titleAr: 'باب ما جاء في خاتم النبوة وشعر رسول الله ﷺ', duration: '٤٨ دقيقة' },
-      { id: 'sb_03', number: 3, titleAr: 'باب ما جاء في كحل رسول الله ﷺ ولباسه ونعله', duration: '٤٢ دقيقة' },
-      { id: 'sb_04', number: 4, titleAr: 'باب ما جاء في عيش رسول الله ﷺ وزهده وكرمه', duration: '٥٤ دقيقة' },
-      { id: 'sb_05', number: 5, titleAr: 'باب ما جاء في صفة كلام رسول الله ﷺ وضحكه ومزاحه', duration: '٤٧ دقيقة' },
-      { id: 'sb_06', number: 6, titleAr: 'باب ما جاء في صفة عبادة رسول الله ﷺ وصيامه وتطوعه', duration: '٥٦ دقيقة' },
-      { id: 'sb_07', number: 7, titleAr: 'باب ما جاء في قراءة رسول الله ﷺ وبكائه وخشوعه', duration: '٥١ دقيقة' },
-      { id: 'sb_08', number: 8, titleAr: 'باب ما جاء في تواضع رسول الله ﷺ وخُلقه العظيم', duration: '٥٣ دقيقة' },
-      { id: 'sb_09', number: 9, titleAr: 'باب ما جاء في حياء رسول الله ﷺ وطيب ريحه وعرقه', duration: '٤٦ دقيقة' },
-      { id: 'sb_10', number: 10, titleAr: 'باب ما جاء في وفاة رسول الله ﷺ ورؤيته في المنام', duration: '٦٢ دقيقة' }
+      { id: 'sb_01', number: 1, titleAr: 'باب ما جاء في خَلق رسول الله ﷺ وحسن صورته وبهائه', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/01.mp3' },
+      { id: 'sb_02', number: 2, titleAr: 'باب ما جاء في خاتم النبوة وشعر رسول الله ﷺ', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/02.mp3' },
+      { id: 'sb_03', number: 3, titleAr: 'باب ما جاء في كحل رسول الله ﷺ ولباسه ونعله', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/03.mp3' },
+      { id: 'sb_04', number: 4, titleAr: 'باب ما جاء في عيش رسول الله ﷺ وزهده وكرمه', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/04.mp3' },
+      { id: 'sb_05', number: 5, titleAr: 'باب ما جاء في صفة كلام رسول الله ﷺ وضحكه ومزاحه', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/05a.mp3' },
+      { id: 'sb_06', number: 6, titleAr: 'باب ما جاء في صفة عبادة رسول الله ﷺ وصيامه وتطوعه', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/06.mp3' },
+      { id: 'sb_07', number: 7, titleAr: 'باب ما جاء في قراءة رسول الله ﷺ وبكائه وخشوعه', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/07.mp3' },
+      { id: 'sb_08', number: 8, titleAr: 'باب ما جاء في تواضع رسول الله ﷺ وخُلقه العظيم', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/08.mp3' },
+      { id: 'sb_09', number: 9, titleAr: 'باب ما جاء في حياء رسول الله ﷺ وطيب ريحه وعرقه', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/09.mp3' },
+      { id: 'sb_10', number: 10, titleAr: 'باب ما جاء في وفاة رسول الله ﷺ ورؤيته في المنام', duration: '٦٢ دقيقة', audioUrl: 'https://archive.org/download/Sharh-Shamail_An-Nabi/10.mp3' }
     ]
   },
   {
@@ -8858,16 +8858,16 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'كرسي الإمامة النبوية',
     descriptionAr: 'شرح ميسر لأعظم ما يجب على العبد معرفته: معرفة العبد ربه، ودينه، ونبيه محمداً ﷺ بالأدلة.',
     lessonsCount: 8,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/002.mp3',
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/001.mp3',
     lessons: [
-      { id: 'tb_01', number: 1, titleAr: 'المسائل الأربع الواجبة: العلم والعمل والدعوة والصبر', duration: '٣٥ دقيقة' },
-      { id: 'tb_02', number: 2, titleAr: 'المسائل الثلاث في التوحيد والبراءة من الشرك وأهله', duration: '٣٨ دقيقة' },
-      { id: 'tb_03', number: 3, titleAr: 'الأصل الأول: معرفة العبد ربه وأنواع العبادة وأدلتها', duration: '٤٥ دقيقة' },
-      { id: 'tb_04', number: 4, titleAr: 'الدعاء والاستعانة والاستغاثة والتوكل والرجاء والخوف', duration: '٤٢ دقيقة' },
-      { id: 'tb_05', number: 5, titleAr: 'الأصل الثاني: معرفة دين الإسلام بمراتبه الثلاث', duration: '٤٦ دقيقة' },
-      { id: 'tb_06', number: 6, titleAr: 'مرتبة الإيمان وأركانه الستة ومرتبة الإحسان العظمى', duration: '٤٠ دقيقة' },
-      { id: 'tb_07', number: 7, titleAr: 'الأصل الثالث: معرفة نبيكم محمد ﷺ ونسبه وبعثته وهجرته', duration: '٤٨ دقيقة' },
-      { id: 'tb_08', number: 8, titleAr: 'وفاة النبي ﷺ ودعوة الرسل والكفر بالطاغوت والإيمان بالله', duration: '٤٤ دقيقة' }
+      { id: 'tb_01', number: 1, titleAr: 'المسائل الأربع الواجبة: العلم والعمل والدعوة والصبر', duration: '٣٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/001.mp3' },
+      { id: 'tb_02', number: 2, titleAr: 'المسائل الثلاث في التوحيد والبراءة من الشرك وأهله', duration: '٣٨ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/002.mp3' },
+      { id: 'tb_03', number: 3, titleAr: 'الأصل الأول: معرفة العبد ربه وأنواع العبادة وأدلتها', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/003.mp3' },
+      { id: 'tb_04', number: 4, titleAr: 'الدعاء والاستعانة والاستغاثة والتوكل والرجاء والخوف', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/004.mp3' },
+      { id: 'tb_05', number: 5, titleAr: 'الأصل الثاني: معرفة دين الإسلام بمراتبه الثلاث', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/005.mp3' },
+      { id: 'tb_06', number: 6, titleAr: 'مرتبة الإيمان وأركانه الستة ومرتبة الإحسان العظمى', duration: '٤٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/006.mp3' },
+      { id: 'tb_07', number: 7, titleAr: 'الأصل الثالث: معرفة نبيكم محمد ﷺ ونسبه وبعثته وهجرته', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/007.mp3' },
+      { id: 'tb_08', number: 8, titleAr: 'وفاة النبي ﷺ ودعوة الرسل والكفر بالطاغوت والإيمان بالله', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/008.mp3' }
     ]
   },
   {
@@ -8881,16 +8881,16 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'تدبر التنزيل',
     descriptionAr: 'مجالس تدبرية قرآنية غنية بالمعاني البيانية والفوائد الإيمانية والتربوية من جوار منبر رسول الله ﷺ.',
     lessonsCount: 8,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/ahmad-hudhaifi/r1/002.mp3',
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/017.mp3',
     lessons: [
-      { id: 'hh_01', number: 1, titleAr: 'هدايات سورة الفاتحة أم الكتاب والسبع المثاني', duration: '٤٢ دقيقة' },
-      { id: 'hh_02', number: 2, titleAr: 'مقاصد فواتح سورة البقرة وأصناف المكلفين الثلاثة', duration: '٤٨ دقيقة' },
-      { id: 'hh_03', number: 3, titleAr: 'لطائف وبيان آية الكرسي سيدة آي القرآن الكريم', duration: '٤٠ دقيقة' },
-      { id: 'hh_04', number: 4, titleAr: 'هدايات سورة يوسف وقواعد الثبات في المحن والابتلاء', duration: '٥٣ دقيقة' },
-      { id: 'hh_05', number: 5, titleAr: 'معالم التدبر في سورة الكهف والنجاة من الفتن الأربع', duration: '٤٧ دقيقة' },
-      { id: 'hh_06', number: 6, titleAr: 'محاسن سورة الحجرات وأدب المؤمن مع الله ورسوله والمؤمنين', duration: '٤٥ دقيقة' },
-      { id: 'hh_07', number: 7, titleAr: 'هدايات جزء عم ومقاصد سور الإخلاص والمعوذتين', duration: '٥١ دقيقة' },
-      { id: 'hh_08', number: 8, titleAr: 'وصايا قرآنية في التربية والاعتصام بحبل الله المتين', duration: '٤٦ دقيقة' }
+      { id: 'hh_01', number: 1, titleAr: 'هدايات سورة الفاتحة أم الكتاب والسبع المثاني', duration: '٤٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/017.mp3' },
+      { id: 'hh_02', number: 2, titleAr: 'مقاصد فواتح سورة البقرة وأصناف المكلفين الثلاثة', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/018.mp3' },
+      { id: 'hh_03', number: 3, titleAr: 'لطائف وبيان آية الكرسي سيدة آي القرآن الكريم', duration: '٤٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/019.mp3' },
+      { id: 'hh_04', number: 4, titleAr: 'هدايات سورة يوسف وقواعد الثبات في المحن والابتلاء', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/020.mp3' },
+      { id: 'hh_05', number: 5, titleAr: 'معالم التدبر في سورة الكهف والنجاة من الفتن الأربع', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/021.mp3' },
+      { id: 'hh_06', number: 6, titleAr: 'محاسن سورة الحجرات وأدب المؤمن مع الله ورسوله والمؤمنين', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/022.mp3' },
+      { id: 'hh_07', number: 7, titleAr: 'هدايات جزء عم ومقاصد سور الإخلاص والمعوذتين', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/023.mp3' },
+      { id: 'hh_08', number: 8, titleAr: 'وصايا قرآنية في التربية والاعتصام بحبل الله المتين', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/024.mp3' }
     ]
   },
   {
@@ -8904,16 +8904,16 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'برنامج المتون التأصيلي',
     descriptionAr: 'المجالس العلمية المحققة المقامة بالمسجد النبوي لمتون طالب العلم: نواقض الإسلام، القواعد الأربع، الأصول الثلاثة، وكتاب التوحيد.',
     lessonsCount: 8,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/003.mp3',
+    audioStreamUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3',
     lessons: [
-      { id: 'mq_01', number: 1, titleAr: 'شرح متن نواقض الإسلام للإمام المجدد وبيان خطورة الردة', duration: '٤٤ دقيقة' },
-      { id: 'mq_02', number: 2, titleAr: 'شرح متن القواعد الأربع في معرفة التوحيد والشرك', duration: '٣٩ دقيقة' },
-      { id: 'mq_03', number: 3, titleAr: 'شرح متن الأصول الثلاثة وأدلتها (المقدمة والمسائل الكبرى)', duration: '٤٨ دقيقة' },
-      { id: 'mq_04', number: 4, titleAr: 'شرح الأصول الثلاثة (الأصل الثاني والثالث: الإسلام والنبوة)', duration: '٥٢ دقيقة' },
-      { id: 'mq_05', number: 5, titleAr: 'شرح متن فضل الإسلام ولزوم السنة والجماعة', duration: '٤٦ دقيقة' },
-      { id: 'mq_06', number: 6, titleAr: 'شرح كتاب التوحيد: أبواب إخلاص العبادة لله وحده', duration: '٥٠ دقيقة' },
-      { id: 'mq_07', number: 7, titleAr: 'شرح متن لمعة الاعتقاد الهادي إلى سبيل الرشاد', duration: '٥٥ دقيقة' },
-      { id: 'mq_08', number: 8, titleAr: 'شرح متن الواسطية والوصية بطلب العلم وحفظ المتون', duration: '٥٨ دقيقة' }
+      { id: 'mq_01', number: 1, titleAr: 'شرح متن نواقض الإسلام للإمام المجدد وبيان خطورة الردة', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3' },
+      { id: 'mq_02', number: 2, titleAr: 'شرح متن القواعد الأربع في معرفة التوحيد والشرك', duration: '٣٩ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/2-Mstawa1_01.mp3' },
+      { id: 'mq_03', number: 3, titleAr: 'شرح متن الأصول الثلاثة وأدلتها (المقدمة والمسائل الكبرى)', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_01.mp3' },
+      { id: 'mq_04', number: 4, titleAr: 'شرح الأصول الثلاثة (الأصل الثاني والثالث: الإسلام والنبوة)', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_02.mp3' },
+      { id: 'mq_05', number: 5, titleAr: 'شرح متن فضل الإسلام ولزوم السنة والجماعة', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_03.mp3' },
+      { id: 'mq_06', number: 6, titleAr: 'شرح كتاب التوحيد: أبواب إخلاص العبادة لله وحده', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_04.mp3' },
+      { id: 'mq_07', number: 7, titleAr: 'شرح متن لمعة الاعتقاد الهادي إلى سبيل الرشاد', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_01.mp3' },
+      { id: 'mq_08', number: 8, titleAr: 'شرح متن الواسطية والوصية بطلب العلم وحفظ المتون', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_02.mp3' }
     ]
   },
   {
@@ -8927,16 +8927,16 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'كرسي القواعد الفقهية',
     descriptionAr: 'شرح تأصيلي ميسر للقواعد والضوابط الفقهية الكبرى وتطبيقاتها المعاصرة، ألقي في الرواق العثماني بالمسجد النبوي.',
     lessonsCount: 8,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/muhammad-burhaji/r1/002.mp3',
+    audioStreamUrl: 'https://archive.org/download/05_20211026/01.mp3',
     lessons: [
-      { id: 'qr_01', number: 1, titleAr: 'مقدمة علم القواعد الفقهية وقاعدة: الدين مبني على المصالح', duration: '٤٨ دقيقة' },
-      { id: 'qr_02', number: 2, titleAr: 'قاعدة: درء المفاسد مقدم على جلب المصالح والموازنة بينها', duration: '٥١ دقيقة' },
-      { id: 'qr_03', number: 3, titleAr: 'قاعدة: المشقة تجلب التيسير ورخص الشريعة الإسلامية', duration: '٤٦ دقيقة' },
-      { id: 'qr_04', number: 4, titleAr: 'قاعدة: اليقين لا يزول بالشك في العبادات والمعاملات', duration: '٥٣ دقيقة' },
-      { id: 'qr_05', number: 5, titleAr: 'قاعدة: الأمور بمقاصدها وأثر النية في العقود والعبادات', duration: '٤٩ دقيقة' },
-      { id: 'qr_06', number: 6, titleAr: 'قاعدة: العادة محكمة وضوابط الأعراف المعتبرة شرعاً', duration: '٤٤ دقيقة' },
-      { id: 'qr_07', number: 7, titleAr: 'قاعدة: لا ضرر ولا ضرار والضرر يزال وتطبيقاتها', duration: '٥٢ دقيقة' },
-      { id: 'qr_08', number: 8, titleAr: 'قواعد التابع تابع وإعمال الكلام أولى من إهماله وخاتمة المنظومة', duration: '٥٥ دقيقة' }
+      { id: 'qr_01', number: 1, titleAr: 'مقدمة علم القواعد الفقهية وقاعدة: الدين مبني على المصالح', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/01.mp3' },
+      { id: 'qr_02', number: 2, titleAr: 'قاعدة: درء المفاسد مقدم على جلب المصالح والموازنة بينها', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/02.mp3' },
+      { id: 'qr_03', number: 3, titleAr: 'قاعدة: المشقة تجلب التيسير ورخص الشريعة الإسلامية', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/03.mp3' },
+      { id: 'qr_04', number: 4, titleAr: 'قاعدة: اليقين لا يزول بالشك في العبادات والمعاملات', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/04.mp3' },
+      { id: 'qr_05', number: 5, titleAr: 'قاعدة: الأمور بمقاصدها وأثر النية في العقود والعبادات', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/05.mp3' },
+      { id: 'qr_06', number: 6, titleAr: 'قاعدة: العادة محكمة وضوابط الأعراف المعتبرة شرعاً', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/06.mp3' },
+      { id: 'qr_07', number: 7, titleAr: 'قاعدة: لا ضرر ولا ضرار والضرر يزال وتطبيقاتها', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/07.mp3' },
+      { id: 'qr_08', number: 8, titleAr: 'قواعد التابع تابع وإعمال الكلام أولى من إهماله وخاتمة المنظومة', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/05_20211026/08.mp3' }
     ]
   },
   {
@@ -8950,14 +8950,14 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'مجلس أصول الدين',
     descriptionAr: 'شرح محرر لمتن لمعة الاعتقاد للإمام ابن قدامة المقدسي، ألقي في رحاب الحرم النبوي مع بيان قواعد الأسماء والصفات.',
     lessonsCount: 6,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/wasetia_Badr/015.mp3',
     lessons: [
-      { id: 'ls_01', number: 1, titleAr: 'ترجمة الإمام ابن قدامة وبيان منهج السلف الصالح في نصوص الوحيين', duration: '٤٥ دقيقة' },
-      { id: 'ls_02', number: 2, titleAr: 'إثبات ما وصف الله به نفسه أو وصفه به رسوله بلا تكييف ولا تمثيل', duration: '٤٩ دقيقة' },
-      { id: 'ls_03', number: 3, titleAr: 'صفات الاستواء والنزول والوجه واليدين والمجيء الإلهي', duration: '٥٣ دقيقة' },
-      { id: 'ls_04', number: 4, titleAr: 'القرآن كلام الله حقيقة بحرف وصوت وليس بمخلوق', duration: '٥٠ دقيقة' },
-      { id: 'ls_05', number: 5, titleAr: 'رؤية المؤمنين لربهم في الجنة والإيمان بالقدر واليوم الآخر', duration: '٤٧ دقيقة' },
-      { id: 'ls_06', number: 6, titleAr: 'مقام الصحابة الكرام والخلافة الراشدة وحقوق ولاة الأمر', duration: '٥٦ دقيقة' }
+      { id: 'ls_01', number: 1, titleAr: 'ترجمة الإمام ابن قدامة وبيان منهج السلف الصالح في نصوص الوحيين', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/015.mp3' },
+      { id: 'ls_02', number: 2, titleAr: 'إثبات ما وصف الله به نفسه أو وصفه به رسوله بلا تكييف ولا تمثيل', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/016.mp3' },
+      { id: 'ls_03', number: 3, titleAr: 'صفات الاستواء والنزول والوجه واليدين والمجيء الإلهي', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/017.mp3' },
+      { id: 'ls_04', number: 4, titleAr: 'القرآن كلام الله حقيقة بحرف وصوت وليس بمخلوق', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/018.mp3' },
+      { id: 'ls_05', number: 5, titleAr: 'رؤية المؤمنين لربهم في الجنة والإيمان بالقدر واليوم الآخر', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/019.mp3' },
+      { id: 'ls_06', number: 6, titleAr: 'مقام الصحابة الكرام والخلافة الراشدة وحقوق ولاة الأمر', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/020.mp3' }
     ]
   },
   {
@@ -8971,16 +8971,16 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'مجالس الذكر والرقائق',
     descriptionAr: 'سلسلة نافعة في فقه الذكر والدعاء وآدابهما وشروط الإجابة وأذكار الصباح والمساء وأحوال اليوم والليلة.',
     lessonsCount: 8,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/001.mp3',
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/009.mp3',
     lessons: [
-      { id: 'fa_01', number: 1, titleAr: 'فضل الذكر ومكانة الدعاء في حياة المسلم وثمراته في القلب', duration: '٤٣ دقيقة' },
-      { id: 'fa_02', number: 2, titleAr: 'شروط إجابة الدعاء وآدابه وأسباب موانع الإجابة', duration: '٤٧ دقيقة' },
-      { id: 'fa_03', number: 3, titleAr: 'فقه أذكار طرفي النهار: الصباح والمساء وفضلها وحفظها للعبد', duration: '٥٢ دقيقة' },
-      { id: 'fa_04', number: 4, titleAr: 'أذكار النوم والاستيقاظ والآداب النبوية عند المنام', duration: '٤١ دقيقة' },
-      { id: 'fa_05', number: 5, titleAr: 'أذكار الصلوات المكتوبة وأدعية الاستفتاح والركوع والسجود', duration: '٤٩ دقيقة' },
-      { id: 'fa_06', number: 6, titleAr: 'أدعية تفريج الكروب والهموم والغموم والاستعاذة من الشرور', duration: '٤٦ دقيقة' },
-      { id: 'fa_07', number: 7, titleAr: 'الاستغفار وفضله وصيغه وسيد الاستغفار', duration: '٤٤ دقيقة' },
-      { id: 'fa_08', number: 8, titleAr: 'الصلاة على النبي ﷺ وفضائلها ومواطنها المستحبة', duration: '٥٠ دقيقة' }
+      { id: 'fa_01', number: 1, titleAr: 'فضل الذكر ومكانة الدعاء في حياة المسلم وثمراته في القلب', duration: '٤٣ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/009.mp3' },
+      { id: 'fa_02', number: 2, titleAr: 'شروط إجابة الدعاء وآدابه وأسباب موانع الإجابة', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/010.mp3' },
+      { id: 'fa_03', number: 3, titleAr: 'فقه أذكار طرفي النهار: الصباح والمساء وفضلها وحفظها للعبد', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/011.mp3' },
+      { id: 'fa_04', number: 4, titleAr: 'أذكار النوم والاستيقاظ والآداب النبوية عند المنام', duration: '٤١ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/012.mp3' },
+      { id: 'fa_05', number: 5, titleAr: 'أذكار الصلوات المكتوبة وأدعية الاستفتاح والركوع والسجود', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/013.mp3' },
+      { id: 'fa_06', number: 6, titleAr: 'أدعية تفريج الكروب والهموم والغموم والاستعاذة من الشرور', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/014.mp3' },
+      { id: 'fa_07', number: 7, titleAr: 'الاستغفار وفضله وصيغه وسيد الاستغفار', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/015.mp3' },
+      { id: 'fa_08', number: 8, titleAr: 'الصلاة على النبي ﷺ وفضائلها ومواطنها المستحبة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/016.mp3' }
     ]
   },
   {
@@ -8994,15 +8994,15 @@ const PROPHET_MOSQUE_COURSES = [
     badge: 'فقه العبادات',
     descriptionAr: 'شرح فقهي رصين لكتاب دليل الطالب للإمام مرعي الكرمي الحنبلي، يُعنى بتحرير المذهب بالأدلة الصحيحة وتيسير الفروع.',
     lessonsCount: 7,
-    audioStreamUrl: 'https://cdn.mp3quran.net/audio/ahmad-hudhaifi/r1/002.mp3',
+    audioStreamUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/01.sulayman.ruhailie.taharah.manhaj.salkeen.mp3',
     lessons: [
-      { id: 'dt_01', number: 1, titleAr: 'كتاب الطهارة: المياه والآنية وقضاء الحاجة', duration: '٥٠ دقيقة' },
-      { id: 'dt_02', number: 2, titleAr: 'فروض الوضوء ونواقضه وسنن الفطرة والمسح على الخفين', duration: '٥٣ دقيقة' },
-      { id: 'dt_03', number: 3, titleAr: 'الغسل والتيمم وإزالة النجاسات وأحكام المعذورين', duration: '٤٨ دقيقة' },
-      { id: 'dt_04', number: 4, titleAr: 'كتاب الصلاة: شروط الصلاة ومواقيتها ومكان الصلاة ولباسها', duration: '٥٤ دقيقة' },
-      { id: 'dt_05', number: 5, titleAr: 'صفة الصلاة المفصلة وأركانها وواجباتها وسننها', duration: '٥٧ دقيقة' },
-      { id: 'dt_06', number: 6, titleAr: 'سجود السهو وصلاة التطوع والوتر وأوقات النهي', duration: '٥١ دقيقة' },
-      { id: 'dt_07', number: 7, titleAr: 'صلاة الجماعة وأحكام الإمامة وصلاة أهل الأعذار والجمعة', duration: '٦٠ دقيقة' }
+      { id: 'dt_01', number: 1, titleAr: 'كتاب الطهارة: المياه والآنية وقضاء الحاجة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/01.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_02', number: 2, titleAr: 'فروض الوضوء ونواقضه وسنن الفطرة والمسح على الخفين', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/02.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_03', number: 3, titleAr: 'الغسل والتيمم وإزالة النجاسات وأحكام المعذورين', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/03.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_04', number: 4, titleAr: 'كتاب الصلاة: شروط الصلاة ومواقيتها ومكان الصلاة ولباسها', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/04.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_05', number: 5, titleAr: 'صفة الصلاة المفصلة وأركانها وواجباتها وسننها', duration: '٥٧ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/05.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_06', number: 6, titleAr: 'سجود السهو وصلاة التطوع والوتر وأوقات النهي', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/06.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'dt_07', number: 7, titleAr: 'صلاة الجماعة وأحكام الإمامة وصلاة أهل الأعذار والجمعة', duration: '٦٠ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/07.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' }
     ]
   }
 ];
