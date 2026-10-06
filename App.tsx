@@ -1357,6 +1357,18 @@ function AlmosalaApp() {
   const [lessonNoteModalVisible, setLessonNoteModalVisible] = useState<boolean>(false);
   const [newNoteText, setNewNoteText] = useState<string>('');
   const [newNoteTimestampSecs, setNewNoteTimestampSecs] = useState<number>(0);
+  const [minuteJumpInput, setMinuteJumpInput] = useState<string>('');
+  const lastPinchDistRef = useRef<number | null>(null);
+  const [zoomFeedbackPill, setZoomFeedbackPill] = useState<number | null>(null);
+  const zoomPillTimeoutRef = useRef<any>(null);
+
+  const showZoomFeedback = (size: number) => {
+    setZoomFeedbackPill(size);
+    if (zoomPillTimeoutRef.current) clearTimeout(zoomPillTimeoutRef.current);
+    zoomPillTimeoutRef.current = setTimeout(() => {
+      setZoomFeedbackPill(null);
+    }, 1400);
+  };
 
   // Audio Surah Selector State (منتقي السور لمشغل التلاوة)
   const [audioSurahSelectorVisible, setAudioSurahSelectorVisible] = useState(false);
@@ -2252,6 +2264,43 @@ function AlmosalaApp() {
     const curS = (timeSecs % 60).toString().padStart(2, '0');
     setBookmarkToast(`الانتقال للدقيقة (${toArabicNumber(curM)}:${toArabicNumber(curS)}) ⏱️`);
     setTimeout(() => setBookmarkToast(null), 2500);
+  };
+
+  const handleJumpToMinute = (inputVal?: string) => {
+    const rawVal = (inputVal !== undefined ? inputVal : minuteJumpInput).trim();
+    if (!rawVal) return;
+
+    // Convert Arabic digits to English digits
+    const normalized = rawVal
+      .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString())
+      .replace(/[\u0660-\u0669]/g, d => (d.charCodeAt(0) - 0x0660).toString());
+
+    let totalSeconds = 0;
+    if (normalized.includes(':')) {
+      const parts = normalized.split(':');
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
+      totalSeconds = mins * 60 + secs;
+    } else {
+      const mins = parseFloat(normalized) || 0;
+      totalSeconds = Math.round(mins * 60);
+    }
+
+    if (totalSeconds < 0) totalSeconds = 0;
+    if (audioTotalSecs > 0 && totalSeconds > audioTotalSecs) {
+      totalSeconds = audioTotalSecs;
+    }
+
+    seekAudioToTime(totalSeconds);
+    if (!audioPlaying && activeCourse && activeLesson) {
+      toggleLessonAudioPlayback();
+    }
+
+    const curM = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const curS = (totalSeconds % 60).toString().padStart(2, '0');
+    triggerHapticFeedback('medium');
+    setBookmarkToast(`الانتقال للدقيقة (${toArabicNumber(curM)}:${toArabicNumber(curS)}) وبدء الشرح ⏱️`);
+    setTimeout(() => setBookmarkToast(null), 3000);
   };
 
 
@@ -10787,6 +10836,112 @@ const ALLAH_99_NAMES = [
                 </TouchableOpacity>
               </View>
 
+              {/* DIRECT MINUTE JUMP BOX (مربع كتابة الدقيقة والانتقال الفوري للصوت) */}
+              <View
+                style={{
+                  marginTop: 14,
+                  backgroundColor: themeMode === 'light' ? '#FBF8F3' : '#221914',
+                  borderRadius: TOKENS.radius.lg,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: 'rgba(198, 146, 85, 0.28)'
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.15)' : 'rgba(198, 146, 85, 0.25)',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Feather name="clock" size={12} color={TOKENS.colors.primary} />
+                    </View>
+                    <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
+                      {t('الانتقال المباشر لدقيقة معينة:', 'Jump directly to minute:')}
+                    </TextUI>
+                  </View>
+                  <TextUI size={10} color={c.textSecondary}>
+                    {t('مثال: 15 أو 15:30', 'e.g. 15 or 15:30')}
+                  </TextUI>
+                </View>
+
+                {/* Input row + Jump Button */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TextInput
+                    value={minuteJumpInput}
+                    onChangeText={setMinuteJumpInput}
+                    placeholder={t('اكتب الدقيقة (مثلاً: 12 أو 12:30)', 'Enter minute (e.g. 12 or 12:30)')}
+                    placeholderTextColor={c.textSecondary}
+                    keyboardType="numeric"
+                    onSubmitEditing={() => handleJumpToMinute()}
+                    returnKeyType="go"
+                    style={{
+                      flex: 1,
+                      height: 40,
+                      backgroundColor: c.surface,
+                      borderRadius: TOKENS.radius.md,
+                      paddingHorizontal: 12,
+                      fontSize: 13,
+                      color: c.textPrimary,
+                      textAlign: isRTL ? 'right' : 'left',
+                      borderWidth: 1,
+                      borderColor: c.border
+                    }}
+                  />
+                  <TouchableOpacity
+                    onPress={() => handleJumpToMinute()}
+                    activeOpacity={0.8}
+                    style={{
+                      height: 40,
+                      paddingHorizontal: 16,
+                      borderRadius: TOKENS.radius.md,
+                      backgroundColor: TOKENS.colors.primary,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 6,
+                      ...makeShadow('0 2px 6px rgba(198, 146, 85, 0.3)', TOKENS.colors.primary, 0.3, 4, { width: 0, height: 2 }, 3)
+                    }}
+                  >
+                    <Feather name="play" size={13} color="#FFFFFF" />
+                    <TextUI size={12} weight="bold" color="#FFFFFF">
+                      {t('انتقال', 'Jump')}
+                    </TextUI>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Quick Minute Jump Chips */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  <TextUI size={10} color={c.textSecondary} style={{ marginEnd: 2 }}>
+                    {t('دقائق سريعة:', 'Quick:')}
+                  </TextUI>
+                  {['5', '10', '15', '20', '30', '45'].map((min) => (
+                    <TouchableOpacity
+                      key={`quick-min-${min}`}
+                      onPress={() => handleJumpToMinute(min)}
+                      activeOpacity={0.7}
+                      style={{
+                        paddingVertical: 3,
+                        paddingHorizontal: 8,
+                        borderRadius: TOKENS.radius.pill,
+                        backgroundColor: c.surface,
+                        borderWidth: 1,
+                        borderColor: 'rgba(198, 146, 85, 0.3)'
+                      }}
+                    >
+                      <TextUI size={10.5} weight="bold" color={TOKENS.colors.primary}>
+                        {`${toArabicNumber(min)} د`}
+                      </TextUI>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
               {/* OFFLINE STORAGE & DOWNLOAD ACTION CARD */}
               <View
                 style={{
@@ -12686,8 +12841,108 @@ const ALLAH_99_NAMES = [
 
     const parsedSurahStream = streamSurahs.map((surah: any) => getParsedSurahPages(surah));
 
+    // Two-finger Pinch-to-Zoom Gesture Handlers (تكبير وتصغير المصحف بحركة الأصابع)
+    const handlePinchTouchMove = (e: any) => {
+      const touches = e.nativeEvent?.touches;
+      if (touches && touches.length === 2) {
+        const p1 = touches[0];
+        const p2 = touches[1];
+        const dx = p1.pageX - p2.pageX;
+        const dy = p1.pageY - p2.pageY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (lastPinchDistRef.current !== null) {
+          const delta = dist - lastPinchDistRef.current;
+          if (Math.abs(delta) > 12) {
+            if (delta > 0) {
+              // Pinch Outwards -> Zoom In (تكبير الخط)
+              setQuranFontSize((prev: number) => {
+                const next = Math.min(48, prev + 1);
+                showZoomFeedback(next);
+                return next;
+              });
+            } else {
+              // Pinch Inwards -> Zoom Out (تصغير الخط)
+              setQuranFontSize((prev: number) => {
+                const next = Math.max(16, prev - 1);
+                showZoomFeedback(next);
+                return next;
+              });
+            }
+            triggerHapticFeedback('light');
+            lastPinchDistRef.current = dist;
+          }
+        } else {
+          lastPinchDistRef.current = dist;
+        }
+      }
+    };
+
+    const handlePinchTouchEnd = () => {
+      lastPinchDistRef.current = null;
+    };
+
+    const handleWheelZoom = (e: any) => {
+      if (e.ctrlKey) {
+        e.preventDefault?.();
+        if (e.deltaY < 0) {
+          setQuranFontSize((prev: number) => {
+            const next = Math.min(48, prev + 1);
+            showZoomFeedback(next);
+            return next;
+          });
+        } else if (e.deltaY > 0) {
+          setQuranFontSize((prev: number) => {
+            const next = Math.max(16, prev - 1);
+            showZoomFeedback(next);
+            return next;
+          });
+        }
+        triggerHapticFeedback('light');
+      }
+    };
+
     return (
-      <View style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}>
+      <View
+        style={{ flex: 1, backgroundColor: c.bg, position: 'relative' }}
+        onTouchMove={handlePinchTouchMove}
+        onTouchEnd={handlePinchTouchEnd}
+        onTouchCancel={handlePinchTouchEnd}
+      >
+        {/* Floating Zoom Feedback Pill (حجم الخط عند التكبير/التصغير بحركة الأصابع) */}
+        {zoomFeedbackPill !== null && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: quranReaderFullScreen ? 24 : 88,
+              alignSelf: 'center',
+              zIndex: 9999,
+              backgroundColor: themeMode === 'light' ? 'rgba(35, 25, 18, 0.92)' : 'rgba(255, 255, 255, 0.94)',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: TOKENS.radius.pill,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              ...makeShadow('0 4px 16px rgba(0, 0, 0, 0.35)', '#000', 0.35, 8, { width: 0, height: 4 }, 8)
+            }}
+          >
+            <Feather
+              name="type"
+              size={14}
+              color={themeMode === 'light' ? '#FFFFFF' : '#1A1410'}
+            />
+            <TextUI
+              size={12.5}
+              weight="bold"
+              color={themeMode === 'light' ? '#FFFFFF' : '#1A1410'}
+            >
+              {`حجم خط المصحف: ${toArabicNumber(zoomFeedbackPill)} pt`}
+            </TextUI>
+          </View>
+        )}
+
         {/* Full-Screen Floating Reopen Button (يظهر في وضع ملء الشاشة لإعادة شريط الأدوات) */}
         {quranReaderFullScreen && (
           <TouchableOpacity
@@ -13007,6 +13262,11 @@ const ALLAH_99_NAMES = [
         {/* Continuous Stream Holy Quran ScrollView (المصحف ممتد عبر السور) */}
         <ScrollView
           ref={quranScrollViewRef}
+          onTouchMove={handlePinchTouchMove}
+          onTouchEnd={handlePinchTouchEnd}
+          onTouchCancel={handlePinchTouchEnd}
+          // @ts-ignore
+          onWheel={handleWheelZoom}
           onScroll={(e) => {
             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
             currentScrollYRef.current = contentOffset.y;
