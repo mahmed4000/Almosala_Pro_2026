@@ -1447,6 +1447,17 @@ function AlmosalaApp() {
     };
   }, [quranAutoScroll, quranScrollSpeed]);
 
+  // Reset reader scroll position and stream count on Surah change
+  useEffect(() => {
+    if (screen === 'QuranReader') {
+      currentScrollYRef.current = 0;
+      setStreamSurahCount(1);
+      setTimeout(() => {
+        quranScrollViewRef.current?.scrollTo?.({ y: 0, animated: false });
+      }, 50);
+    }
+  }, [selectedSurah?.id, screen]);
+
   const fetchAyahTafsir = async (surahId: number, ayahNumber: number, school: string = 'muyassar') => {
     const cacheKey = `ayah_tafsir_${surahId}_${ayahNumber}_${school}`;
     if (typeof window !== 'undefined' && (window as any).localStorage) {
@@ -10741,11 +10752,10 @@ const ALLAH_99_NAMES = [
             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
             currentScrollYRef.current = contentOffset.y;
             if (
-              contentSize.height > layoutMeasurement.height + 200 &&
+              contentSize.height > layoutMeasurement.height + 300 &&
               contentOffset.y > 100 &&
-              contentOffset.y + layoutMeasurement.height >= contentSize.height - 350
+              contentOffset.y + layoutMeasurement.height >= contentSize.height - 100
             ) {
-              setStreamPageCount((prev: number) => prev + 3);
               setStreamSurahCount((prev: number) => Math.min(114, prev + 1));
             }
           }}
@@ -10787,8 +10797,8 @@ const ALLAH_99_NAMES = [
                   ...makeShadow('0 4px 16px rgba(93, 58, 34, 0.06)', '#5D3A22', 0.08, 6, { width: 0, height: 2 }, 3)
                 }}
               >
-                {/* Pages of this Surah (Lazy sliced to streamPageCount) */}
-                {pages.slice(0, streamPageCount).map((page, pIdx) => (
+                {/* All Pages of this Surah (Rendered completely without truncation) */}
+                {pages.map((page: any, pIdx: number) => (
                   <View key={`surah-${surah.id}-page-${pIdx}`} style={{ width: '100%', alignItems: 'center' }}>
                     {/* Subtle Authentic Madinah Mushaf Page Divider */}
                     {pIdx > 0 && (
@@ -10838,7 +10848,7 @@ const ALLAH_99_NAMES = [
                         textAlign: 'center'
                       }}
                     >
-                      {page.verses.map((v, vIdx) => {
+                      {page.verses.map((v: any, vIdx: number) => {
                         const isSelected = selectedAyahForTafsir?.surahId === surah.id && selectedAyahForTafsir?.ayahNumber === v.ayahNumber;
                         const isMarked = readingBookmark?.surahId === surah.id && readingBookmark?.ayahNumber === v.ayahNumber;
                         return (
@@ -10876,7 +10886,7 @@ const ALLAH_99_NAMES = [
                 ))}
               </View>
 
-              {/* End of Surah Subtle Divider (Flows directly into next Surah without stopping!) */}
+              {/* End of Surah Divider (After all verses of the Surah are 100% complete) */}
               <View
                 style={{
                   alignItems: 'center',
@@ -10890,12 +10900,100 @@ const ALLAH_99_NAMES = [
                 <View style={{ height: 1, flex: 1, backgroundColor: 'rgba(198, 146, 85, 0.35)' }} />
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <TextUI size={12} color={TOKENS.colors.secondary}>۞</TextUI>
-                  <TextUI quran size={13} weight="bold" color={TOKENS.colors.primaryDark}>
+                  <TextUI quran size={14} weight="bold" color={TOKENS.colors.primaryDark}>
                     {`خَاتِمَةُ سُورَةِ ${SURAH_TASHKEEL[surah.id] || surah.nameAr}`}
                   </TextUI>
                   <TextUI size={12} color={TOKENS.colors.secondary}>۞</TextUI>
                 </View>
                 <View style={{ height: 1, flex: 1, backgroundColor: 'rgba(198, 146, 85, 0.35)' }} />
+              </View>
+
+              {/* End of Surah Navigation (الانتقال السريع إلى السورة التالية أو السابقة) */}
+              <View
+                style={{
+                  marginTop: 8,
+                  marginBottom: 8,
+                  padding: 14,
+                  borderRadius: TOKENS.radius.lg,
+                  backgroundColor: themeMode === 'light' ? '#FAF4EA' : '#2C211B',
+                  borderWidth: 1,
+                  borderColor: 'rgba(198, 146, 85, 0.35)',
+                  alignItems: 'center',
+                  gap: 10
+                }}
+              >
+                <TextUI size={12} color={c.textSecondary}>
+                  {t('انتهت السورة الكريمة بحمد الله • تقبل الله تلاوتكم', 'End of Surah • May Allah accept your recitation')}
+                </TextUI>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
+                  {surah.id > 1 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        const prevSurah = SURAHS.find((s: any) => s.id === surah.id - 1);
+                        if (prevSurah) {
+                          setSelectedSurah(prevSurah);
+                          setReadingAyah(1);
+                          setSurahPageIndex(0);
+                          setStreamSurahCount(1);
+                          quranScrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                          triggerHapticFeedback('light');
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 9,
+                        paddingHorizontal: 10,
+                        borderRadius: TOKENS.radius.md,
+                        backgroundColor: c.surface,
+                        borderWidth: 1,
+                        borderColor: c.border,
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        gap: 4
+                      }}
+                    >
+                      <Feather name={isRTL ? "chevron-right" : "chevron-left"} size={14} color={c.textPrimary} />
+                      <TextUI size={11.5} weight="bold" color={c.textPrimary} numberOfLines={1}>
+                        {`سورة ${SURAHS[surah.id - 2]?.nameAr || ''}`}
+                      </TextUI>
+                    </TouchableOpacity>
+                  )}
+
+                  {surah.id < 114 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        const nextSurah = SURAHS.find((s: any) => s.id === surah.id + 1);
+                        if (nextSurah) {
+                          setSelectedSurah(nextSurah);
+                          setReadingAyah(1);
+                          setSurahPageIndex(0);
+                          setStreamSurahCount(1);
+                          quranScrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                          triggerHapticFeedback('medium');
+                        }
+                      }}
+                      style={{
+                        flex: 1.4,
+                        paddingVertical: 9,
+                        paddingHorizontal: 12,
+                        borderRadius: TOKENS.radius.md,
+                        backgroundColor: TOKENS.colors.primary,
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        gap: 4,
+                        ...makeShadow('0 2px 8px rgba(140, 94, 60, 0.25)', '#8C5E3C', 0.25, 4, { width: 0, height: 2 }, 3)
+                      }}
+                    >
+                      <TextUI size={12} weight="bold" color="#FFFFFF" numberOfLines={1}>
+                        {`السورة التالية: ${SURAHS[surah.id]?.nameAr || ''}`}
+                      </TextUI>
+                      <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={14} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
 
               {/* Holy Quran Complete Milestone (When reaching Surah An-Nas 114) */}
