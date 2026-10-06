@@ -14,9 +14,9 @@ import {
   Switch,
   Modal,
   Share,
-  Alert,
   ActivityIndicator,
-  I18nManager
+  I18nManager,
+  PanResponder
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -332,8 +332,8 @@ const COMPLETE_QURAN_DATA: any[] = require('./assets/quran_complete_114.json');
 const SURAHS = COMPLETE_QURAN_DATA;
 
 const AZKAR_CATEGORIES = [
-  { id: 'morning', titleAr: 'أذكار الصباح', titleEn: 'Morning Azkar', count: 16, subtitleAr: 'تُقرأ بعد الفجر حتى الشروق', icon: 'sun' },
-  { id: 'evening', titleAr: 'أذكار المساء', titleEn: 'Evening Azkar', count: 16, subtitleAr: 'تُقرأ بعد العصر حتى الغروب', icon: 'moon' },
+  { id: 'morning', titleAr: 'أذكار الصباح', titleEn: 'Morning Azkar', count: 24, subtitleAr: 'تُقرأ بعد الفجر حتى الشروق', icon: 'sun' },
+  { id: 'evening', titleAr: 'أذكار المساء', titleEn: 'Evening Azkar', count: 24, subtitleAr: 'تُقرأ بعد العصر حتى الغروب', icon: 'moon' },
   { id: 'after_prayer', titleAr: 'أذكار بعد الصلاة', titleEn: 'Post-Prayer Azkar', count: 10, subtitleAr: 'أدعية وأذكار دبر كل صلاة', icon: 'heart' },
   { id: 'sleep', titleAr: 'أذكار النوم', titleEn: 'Sleep Azkar', count: 12, subtitleAr: 'حصن المسلم قبل المنام', icon: 'shield' },
   { id: 'waking', titleAr: 'أذكار الاستيقاظ', titleEn: 'Waking Up Azkar', count: 8, subtitleAr: 'دعاء الاستيقاظ من النوم', icon: 'sunrise' },
@@ -437,6 +437,54 @@ const AZKAR_DATABASE: Record<string, Array<{ ar: string; en: string; virtue: str
       en: 'O Allah, send peace and blessings upon our Prophet Muhammad',
       virtue: 'من صلى عليّ حين يصبح عشراً وحين يمسي عشراً أدركته شفاعتي يوم القيامة',
       target: 10
+    },
+    {
+      ar: 'اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ: أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ',
+      en: 'O Allah, I enter the morning calling You to bear witness, and calling the bearers of Your Throne, Your angels, and all Your creation...',
+      virtue: 'من قالها حين يصبح أو يمسي أربع مرات أعتقه الله من النار',
+      target: 4
+    },
+    {
+      ar: 'اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ، فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ',
+      en: 'O Allah, whatever blessing I or any of Your creation have risen with, is from You alone with no partner...',
+      virtue: 'من قالها حين يصبح فقد أدّى شكر يومه، ومن قالها حين يمسي فقد أدّى شكر ليلته',
+      target: 1
+    },
+    {
+      ar: 'اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءاً أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ',
+      en: 'O Allah, Knower of the unseen and seen, Creator of the heavens and earth...',
+      virtue: 'حفظ ووقاية شاملة من شر النفس والشيطان ووسوسته وجرّ السوء',
+      target: 1
+    },
+    {
+      ar: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْماً نَافِعاً، وَرِزْقاً طَيِّباً، وَعَمَلاً مُتَقَبَّلاً',
+      en: 'O Allah, I ask You for knowledge that is of benefit, a good provision, and deeds that are accepted',
+      virtue: 'كان النبي ﷺ يدعو بها كل صباح؛ لجمع خيري العلم والرزق والعمل المقبول',
+      target: 1
+    },
+    {
+      ar: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ',
+      en: 'I seek the forgiveness of Allah and repent to Him',
+      virtue: 'سنة نبوية جليلة؛ كان النبي ﷺ يستغفر ويتوب في اليوم مائة مرة',
+      target: 100
+    },
+    {
+      ar: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+      en: 'None has the right to be worshipped except Allah alone (100 times)',
+      virtue: 'من قالها مائة مرة كانت له عدل عشر رقاب، وكُتبت له مائة حسنة، ومُحيت عنه مائة سيئة، وحرزاً من الشيطان',
+      target: 100
+    },
+    {
+      ar: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ',
+      en: 'Glory be to Allah and Praise Him, Glory be to Allah the Almighty',
+      virtue: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن',
+      target: 33
+    },
+    {
+      ar: 'يَا رَبِّ لَكَ الْحَمْدُ كَمَا يَنْبَغِي لِجَلَالِ وَجْهِكَ وَلِعَظِيمِ سُلْطَانِكَ',
+      en: 'O Lord, to You belongs all praise as befits the majesty of Your Face and the greatness of Your Authority',
+      virtue: 'من أدعية الحمد العظيمة التي تضاعف الأجور',
+      target: 3
     }
   ],
 
@@ -460,7 +508,7 @@ const AZKAR_DATABASE: Record<string, Array<{ ar: string; en: string; virtue: str
       target: 1
     },
     {
-      ar: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ',
+      ar: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عهدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ',
       en: 'Sayyid al-Istighfar (The Master Supplication for Forgiveness)',
       virtue: 'من قالها موقناً بها حين يمسي فمات من ليلته كان من أهل الجنة',
       target: 1
@@ -508,7 +556,7 @@ const AZKAR_DATABASE: Record<string, Array<{ ar: string; en: string; virtue: str
       target: 3
     },
     {
-      ar: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي',
+      ar: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي',
       en: 'O Allah, I ask You for pardon and well-being in this life and the next',
       virtue: 'دعاء التحصين والحفظ التام من الشرور والآفات',
       target: 1
@@ -536,6 +584,54 @@ const AZKAR_DATABASE: Record<string, Array<{ ar: string; en: string; virtue: str
       en: 'O Allah, send peace and blessings upon our Prophet Muhammad',
       virtue: 'شفاعة النبي ﷺ يوم القيامة',
       target: 10
+    },
+    {
+      ar: 'اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ: أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ',
+      en: 'O Allah, I enter the evening calling You to bear witness, and calling the bearers of Your Throne...',
+      virtue: 'من قالها حين يمسي أربع مرات أعتقه الله من النار',
+      target: 4
+    },
+    {
+      ar: 'اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ، فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ',
+      en: 'O Allah, whatever blessing I or any of Your creation have reached the evening with, is from You alone...',
+      virtue: 'من قالها حين يمسي فقد أدّى شكر ليلته كاملة',
+      target: 1
+    },
+    {
+      ar: 'اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءاً أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ',
+      en: 'O Allah, Knower of the unseen and seen, Creator of the heavens and earth...',
+      virtue: 'حفظ ووقاية في ظلمة الليل من شر النفس والشيطان والسيئات',
+      target: 1
+    },
+    {
+      ar: 'آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رُّسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ ۝ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ',
+      en: 'The Messenger has believed in what was revealed to him... (Last two verses of Surah Al-Baqarah)',
+      virtue: 'من قرأهما في ليلة كفتاه من كل شر وسوء ومكروه',
+      target: 1
+    },
+    {
+      ar: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ',
+      en: 'I seek the forgiveness of Allah and repent to Him',
+      virtue: 'ممحاة لذنوب اليوم ومغفرة للخطايا قبل المنام',
+      target: 100
+    },
+    {
+      ar: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+      en: 'None has the right to be worshipped except Allah alone (100 times)',
+      virtue: 'حرز وحصن من الشيطان وحط للأوزار والسيئات',
+      target: 100
+    },
+    {
+      ar: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ',
+      en: 'Glory be to Allah and Praise Him, Glory be to Allah the Almighty',
+      virtue: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن',
+      target: 33
+    },
+    {
+      ar: 'سُبْحَانَ اللَّهِ (٣٣) ، وَالْحَمْدُ لِلَّهِ (٣٣) ، وَاللَّهُ أَكْبَرُ (٣٤)',
+      en: 'Subhan Allah (33), Alhamdulillah (33), Allahu Akbar (34)',
+      virtue: 'تسبيح المساء المأثور الذي وصى به النبي ﷺ عليّاً وفاطمة رضي الله عنهما',
+      target: 100
     }
   ],
 
@@ -6186,54 +6282,64 @@ function AlmosalaApp() {
               borderColor: c.border
             }}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginLeft: 8
-                  }}
-                >
-                  <Feather name="sun" size={16} color={TOKENS.colors.primaryDark} />
-                </View>
-                <View>
-                  <TextUI weight="bold" size={14} color={c.textPrimary}>
-                    {t('أذكار الصباح والمساء • ذكر الوقت', 'Morning & Evening Azkar')}
-                  </TextUI>
-                  <TextUI size={11} color={TOKENS.colors.primary}>
-                    {t('أُنجز ١٤ من ١٦ ذكراً مأثوراً اليوم', '14 of 16 completed today')}
-                  </TextUI>
-                </View>
-              </View>
+            {/* Smart Time-Aware Azkar Card with Quick In-Place Actions */}
+            {(() => {
+              const currentHour = new Date().getHours();
+              const isEveningTime = currentHour >= 12;
+              const activeCat = isEveningTime ? AZKAR_CATEGORIES[1] : AZKAR_CATEGORIES[0];
+              const cardTitle = isEveningTime ? t('أذكار المساء • حِصنك في ليلتك', 'Evening Azkar • Night Fortress') : t('أذكار الصباح • بداية يوم مبارك', 'Morning Azkar • Blessed Day');
+              const cardIcon = isEveningTime ? 'moon' : 'sun';
+              return (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginLeft: 8
+                      }}
+                    >
+                      <Feather name={cardIcon as any} size={16} color={TOKENS.colors.primaryDark} />
+                    </View>
+                    <View>
+                      <TextUI weight="bold" size={14} color={c.textPrimary}>
+                        {cardTitle}
+                      </TextUI>
+                      <TextUI size={11} color={TOKENS.colors.primary}>
+                        {t('٢٤ ذكراً مأثوراً كاملاً وموثقاً', '24 Complete Authentic Azkar')}
+                      </TextUI>
+                    </View>
+                  </View>
 
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedCategory(AZKAR_CATEGORIES[0]);
-                  setAzkarIndex(0);
-                  setAzkarCounter(0);
-                  navigate('AzkarSession');
-                }}
-                style={{
-                  backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  borderRadius: TOKENS.radius.pill,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 4
-                }}
-              >
-                <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
-                  {t('فتح الجلسة', 'Open')}
-                </TextUI>
-                <Feather name="chevron-left" size={12} color={TOKENS.colors.primary} />
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedCategory(activeCat);
+                      setAzkarIndex(0);
+                      setAzkarCounter(0);
+                      navigate('AzkarSession');
+                    }}
+                    style={{
+                      backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: TOKENS.radius.pill,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
+                      {t('فتح الجلسة', 'Open')}
+                    </TextUI>
+                    <Feather name="chevron-left" size={12} color={TOKENS.colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })()}
 
             {/* Quick 2 Mini Buttons: Counter & Prophetic Duas */}
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
@@ -15130,7 +15236,69 @@ const ALLAH_99_NAMES = [
       } else {
         setAzkarIndex((prev) => prev + 1);
         setAzkarCounter(0);
+        triggerHapticFeedback('light');
       }
+    };
+
+    const handlePrev = () => {
+      if (azkarIndex > 0) {
+        setAzkarIndex((prev) => prev - 1);
+        setAzkarCounter(0);
+        triggerHapticFeedback('light');
+      }
+    };
+
+    // PanResponder for smooth left/right swipe gestures
+    const panResponder = useRef(
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          return Math.abs(gestureState.dx) > 25 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx < -45) {
+            // Swiped Left:
+            // In RTL: swiping finger to the left means moving backward/to previous in Arabic reading flow,
+            // or forward in standard gestures. We support intuitive navigation:
+            if (isRTL) {
+              handlePrev();
+            } else {
+              handleNext();
+            }
+          } else if (gestureState.dx > 45) {
+            // Swiped Right:
+            if (isRTL) {
+              handleNext();
+            } else {
+              handlePrev();
+            }
+          }
+        }
+      })
+    ).current;
+
+    // Web touch swipe support via onTouchStart / onTouchEnd
+    const touchStartX = useRef<number | null>(null);
+    const handleTouchStart = (e: any) => {
+      if (e.nativeEvent?.pageX !== undefined) {
+        touchStartX.current = e.nativeEvent.pageX;
+      }
+    };
+    const handleTouchEnd = (e: any) => {
+      if (touchStartX.current !== null && e.nativeEvent?.pageX !== undefined) {
+        const diffX = e.nativeEvent.pageX - touchStartX.current;
+        if (Math.abs(diffX) > 45) {
+          if (diffX < 0) {
+            // Swiped Left
+            if (isRTL) handlePrev();
+            else handleNext();
+          } else {
+            // Swiped Right
+            if (isRTL) handleNext();
+            else handlePrev();
+          }
+        }
+      }
+      touchStartX.current = null;
     };
 
     // Responsive font calculation to prevent oversized fonts on long texts (e.g., Ayat Al-Kursi)
@@ -15139,7 +15307,12 @@ const ALLAH_99_NAMES = [
     const arabicLineHeight = Math.round(arabicFontSize * 1.8);
 
     return (
-      <View style={{ flex: 1, backgroundColor: c.bg, justifyContent: 'space-between' }}>
+      <View
+        style={{ flex: 1, backgroundColor: c.bg, justifyContent: 'space-between' }}
+        {...panResponder.panHandlers}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <Header
           title={isRTL ? selectedCategory.titleAr : selectedCategory.titleEn}
           subtitle={isRTL ? `${toArabicNumber(safeIndex + 1)} من ${toArabicNumber(azkarList.length)} • فضل الذكر` : `${safeIndex + 1} of ${azkarList.length}`}
@@ -15151,7 +15324,7 @@ const ALLAH_99_NAMES = [
           }
         />
 
-        {/* Upper Portion: Scrollable Dhikr Text - NEVER overflows or overlaps with Header */}
+        {/* Upper Portion: Scrollable Dhikr Text - With Swipe Hints */}
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
@@ -15163,6 +15336,26 @@ const ALLAH_99_NAMES = [
           }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Quick Category & Progress Ribbon */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.1)' : 'rgba(198, 146, 85, 0.18)',
+              paddingVertical: 4,
+              paddingHorizontal: 12,
+              borderRadius: TOKENS.radius.pill,
+              marginBottom: 12,
+              gap: 6
+            }}
+          >
+            <Feather name="info" size={12} color={TOKENS.colors.primary} />
+            <TextUI size={11} weight="medium" color={TOKENS.colors.primary}>
+              {t('اسحب الشاشة يميناً أو يساراً للتنقل بين الأذكار', 'Swipe left or right to switch azkar')}
+            </TextUI>
+          </View>
+
           <TextUI
             quran
             weight="bold"
@@ -15201,83 +15394,151 @@ const ALLAH_99_NAMES = [
           ) : null}
         </ScrollView>
 
-        {/* Lower Portion: Ergonomic Touch Area for Eyes-Free Counting */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={isCompleted ? handleNext : handleTap}
-          style={{
-            height: Math.min(240, (windowHeight || 700) * 0.35),
-            backgroundColor: c.surface,
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            borderTopWidth: 1,
-            borderColor: c.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingVertical: 16,
-            paddingHorizontal: 20
-          }}
-        >
-          {isCompleted ? (
-            <View style={{ alignItems: 'center' }}>
-              <View
-                style={{
-                  width: 58,
-                  height: 58,
-                  borderRadius: 29,
-                  backgroundColor: TOKENS.colors.primaryLight,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 12
-                }}
-              >
-                <Feather name="check-circle" size={32} color={TOKENS.colors.primary} />
-              </View>
-              <TextUI weight="bold" size={18} color={TOKENS.colors.primary}>
-                {t('اكتمل الذكر • تقبل الله', 'Completed • MashaAllah')}
+        {/* Bottom Interactive Navigation & Counter Bar */}
+        <View style={{ backgroundColor: c.surface, borderTopLeftRadius: 32, borderTopRightRadius: 32, borderTopWidth: 1, borderColor: c.border }}>
+          {/* Prev / Next Arrows Bar for direct clicking alongside swipe */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 20,
+              paddingTop: 10,
+              paddingBottom: 4
+            }}
+          >
+            {/* Previous Dhikr Button */}
+            <TouchableOpacity
+              onPress={handlePrev}
+              disabled={safeIndex === 0}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingVertical: 6,
+                paddingHorizontal: 10,
+                borderRadius: TOKENS.radius.md,
+                backgroundColor: safeIndex > 0 ? (themeMode === 'light' ? '#F4EDE4' : '#2C221A') : 'transparent',
+                opacity: safeIndex === 0 ? 0.35 : 1
+              }}
+            >
+              <Feather name={isRTL ? "chevron-right" : "chevron-left"} size={16} color={TOKENS.colors.primary} />
+              <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
+                {t('السابق', 'Previous')}
               </TextUI>
-              <TextUI size={13} color={c.textSecondary} style={{ marginTop: 4 }}>
-                {t('اضغط للانتقال إلى الذكر التالي', 'Tap to proceed to next Dhikr')}
+            </TouchableOpacity>
+
+            {/* Dhikr Index Counter Chip */}
+            <View
+              style={{
+                backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#241E1A',
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                borderRadius: TOKENS.radius.pill,
+                borderWidth: 1,
+                borderColor: 'rgba(198, 146, 85, 0.3)'
+              }}
+            >
+              <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
+                {`${toArabicNumber(safeIndex + 1)} / ${toArabicNumber(azkarList.length)}`}
               </TextUI>
             </View>
-          ) : (
-            <View style={{ alignItems: 'center' }}>
-              <View
-                style={{
-                  width: 105,
-                  height: 105,
-                  borderRadius: 52.5,
-                  borderWidth: 2,
-                  borderColor: TOKENS.colors.secondary,
-                  backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 6
-                }}
-              >
-                <TextUI weight="bold" size={38} color={TOKENS.colors.primaryDark}>
-                  {isRTL ? toArabicNumber(azkarCounter) : azkarCounter}
+
+            {/* Next / Skip Dhikr Button */}
+            <TouchableOpacity
+              onPress={handleNext}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingVertical: 6,
+                paddingHorizontal: 10,
+                borderRadius: TOKENS.radius.md,
+                backgroundColor: themeMode === 'light' ? '#F4EDE4' : '#2C221A'
+              }}
+            >
+              <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
+                {safeIndex + 1 >= azkarList.length ? t('إتمام', 'Finish') : t('تخطي / التالي', 'Next')}
+              </TextUI>
+              <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={16} color={TOKENS.colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Lower Portion: Ergonomic Touch Area for Eyes-Free Counting */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={isCompleted ? handleNext : handleTap}
+            style={{
+              height: Math.min(220, (windowHeight || 700) * 0.32),
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 14,
+              paddingHorizontal: 20
+            }}
+          >
+            {isCompleted ? (
+              <View style={{ alignItems: 'center' }}>
+                <View
+                  style={{
+                    width: 58,
+                    height: 58,
+                    borderRadius: 29,
+                    backgroundColor: TOKENS.colors.primaryLight,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 12
+                  }}
+                >
+                  <Feather name="check-circle" size={32} color={TOKENS.colors.primary} />
+                </View>
+                <TextUI weight="bold" size={18} color={TOKENS.colors.primary}>
+                  {t('اكتمل الذكر • تقبل الله', 'Completed • MashaAllah')}
                 </TextUI>
-                <TextUI size={11} weight="bold" color={TOKENS.colors.secondary}>
-                  {`${t('الهدف:', 'Target:')} ${isRTL ? toArabicNumber(currentItem.target) : currentItem.target}`}
+                <TextUI size={13} color={c.textSecondary} style={{ marginTop: 4 }}>
+                  {t('اضغط أو اسحب للانتقال إلى الذكر التالي', 'Tap or swipe to proceed')}
                 </TextUI>
               </View>
-              <View
-                style={{
-                  marginTop: 10,
-                  backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C231E',
-                  paddingVertical: 6,
-                  paddingHorizontal: 16,
-                  borderRadius: TOKENS.radius.pill
-                }}
-              >
-                <TextUI size={12} weight="medium" color={TOKENS.colors.primary}>
-                  {t('المس في أي مكان للعد (دون النظر)', 'Tap anywhere to count (eyes-free)')}
-                </TextUI>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <View
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 50,
+                    borderWidth: 2,
+                    borderColor: TOKENS.colors.secondary,
+                    backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 6
+                  }}
+                >
+                  <TextUI weight="bold" size={36} color={TOKENS.colors.primaryDark}>
+                    {isRTL ? toArabicNumber(azkarCounter) : azkarCounter}
+                  </TextUI>
+                  <TextUI size={11} weight="bold" color={TOKENS.colors.secondary}>
+                    {`${t('الهدف:', 'Target:')} ${isRTL ? toArabicNumber(currentItem.target) : currentItem.target}`}
+                  </TextUI>
+                </View>
+                <View
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C231E',
+                    paddingVertical: 5,
+                    paddingHorizontal: 16,
+                    borderRadius: TOKENS.radius.pill
+                  }}
+                >
+                  <TextUI size={12} weight="medium" color={TOKENS.colors.primary}>
+                    {t('المس للعد • أو اسحب الشاشة للتخطي والتبديل', 'Tap to count • Swipe to skip/navigate')}
+                  </TextUI>
+                </View>
               </View>
-            </View>
-          )}
-        </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
