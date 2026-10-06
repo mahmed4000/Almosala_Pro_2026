@@ -8872,6 +8872,118 @@ const PROPHET_MOSQUE_COURSES = [
       { id: 'hh_07', number: 7, titleAr: 'هدايات جزء عم ومقاصد سور الإخلاص والمعوذتين', duration: '٥١ دقيقة' },
       { id: 'hh_08', number: 8, titleAr: 'وصايا قرآنية في التربية والاعتصام بحبل الله المتين', duration: '٤٦ دقيقة' }
     ]
+  },
+  {
+    id: 'course_mutoon_qasim',
+    titleAr: 'برنامج شرح متون طالب العلم (المستويات التأصيلية)',
+    titleEn: 'Mutoon Talib Al-Ilm Commentary Program',
+    scholarAr: 'الشيخ د. عبد المحسن بن محمد القاسم',
+    roleAr: 'إمام وخطيب المسجد النبوي الشريف',
+    categoryAr: 'العقيدة',
+    categoryEn: 'Creed & Foundations',
+    badge: 'برنامج المتون التأصيلي',
+    descriptionAr: 'المجالس العلمية المحققة المقامة بالمسجد النبوي لمتون طالب العلم: نواقض الإسلام، القواعد الأربع، الأصول الثلاثة، وكتاب التوحيد.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/003.mp3',
+    lessons: [
+      { id: 'mq_01', number: 1, titleAr: 'شرح متن نواقض الإسلام للإمام المجدد وبيان خطورة الردة', duration: '٤٤ دقيقة' },
+      { id: 'mq_02', number: 2, titleAr: 'شرح متن القواعد الأربع في معرفة التوحيد والشرك', duration: '٣٩ دقيقة' },
+      { id: 'mq_03', number: 3, titleAr: 'شرح متن الأصول الثلاثة وأدلتها (المقدمة والمسائل الكبرى)', duration: '٤٨ دقيقة' },
+      { id: 'mq_04', number: 4, titleAr: 'شرح الأصول الثلاثة (الأصل الثاني والثالث: الإسلام والنبوة)', duration: '٥٢ دقيقة' },
+      { id: 'mq_05', number: 5, titleAr: 'شرح متن فضل الإسلام ولزوم السنة والجماعة', duration: '٤٦ دقيقة' },
+      { id: 'mq_06', number: 6, titleAr: 'شرح كتاب التوحيد: أبواب إخلاص العبادة لله وحده', duration: '٥٠ دقيقة' },
+      { id: 'mq_07', number: 7, titleAr: 'شرح متن لمعة الاعتقاد الهادي إلى سبيل الرشاد', duration: '٥٥ دقيقة' },
+      { id: 'mq_08', number: 8, titleAr: 'شرح متن الواسطية والوصية بطلب العلم وحفظ المتون', duration: '٥٨ دقيقة' }
+    ]
+  },
+  {
+    id: 'course_qawaid_fiqhiyyah_ruhaily',
+    titleAr: 'شرح منظومة القواعد الفقهية للعلامة السعدي',
+    titleEn: 'Explanation of Al-Qawaid Al-Fiqhiyyah',
+    scholarAr: 'الشيخ أ.د. سليمان بن سليم الله الرحيلي',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh & Principles',
+    badge: 'كرسي القواعد الفقهية',
+    descriptionAr: 'شرح تأصيلي ميسر للقواعد والضوابط الفقهية الكبرى وتطبيقاتها المعاصرة، ألقي في الرواق العثماني بالمسجد النبوي.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://cdn.mp3quran.net/audio/muhammad-burhaji/r1/002.mp3',
+    lessons: [
+      { id: 'qr_01', number: 1, titleAr: 'مقدمة علم القواعد الفقهية وقاعدة: الدين مبني على المصالح', duration: '٤٨ دقيقة' },
+      { id: 'qr_02', number: 2, titleAr: 'قاعدة: درء المفاسد مقدم على جلب المصالح والموازنة بينها', duration: '٥١ دقيقة' },
+      { id: 'qr_03', number: 3, titleAr: 'قاعدة: المشقة تجلب التيسير ورخص الشريعة الإسلامية', duration: '٤٦ دقيقة' },
+      { id: 'qr_04', number: 4, titleAr: 'قاعدة: اليقين لا يزول بالشك في العبادات والمعاملات', duration: '٥٣ دقيقة' },
+      { id: 'qr_05', number: 5, titleAr: 'قاعدة: الأمور بمقاصدها وأثر النية في العقود والعبادات', duration: '٤٩ دقيقة' },
+      { id: 'qr_06', number: 6, titleAr: 'قاعدة: العادة محكمة وضوابط الأعراف المعتبرة شرعاً', duration: '٤٤ دقيقة' },
+      { id: 'qr_07', number: 7, titleAr: 'قاعدة: لا ضرر ولا ضرار والضرر يزال وتطبيقاتها', duration: '٥٢ دقيقة' },
+      { id: 'qr_08', number: 8, titleAr: 'قواعد التابع تابع وإعمال الكلام أولى من إهماله وخاتمة المنظومة', duration: '٥٥ دقيقة' }
+    ]
+  },
+  {
+    id: 'course_lumah_sindi',
+    titleAr: 'شرح لمعة الاعتقاد الهادي إلى سبيل الرشاد',
+    titleEn: 'Explanation of Lumat Al-Itiqad',
+    scholarAr: 'الشيخ د. صالح بن عبد العزيز السندي',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'العقيدة',
+    categoryEn: 'Creed',
+    badge: 'مجلس أصول الدين',
+    descriptionAr: 'شرح محرر لمتن لمعة الاعتقاد للإمام ابن قدامة المقدسي، ألقي في رحاب الحرم النبوي مع بيان قواعد الأسماء والصفات.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/001.mp3',
+    lessons: [
+      { id: 'ls_01', number: 1, titleAr: 'ترجمة الإمام ابن قدامة وبيان منهج السلف الصالح في نصوص الوحيين', duration: '٤٥ دقيقة' },
+      { id: 'ls_02', number: 2, titleAr: 'إثبات ما وصف الله به نفسه أو وصفه به رسوله بلا تكييف ولا تمثيل', duration: '٤٩ دقيقة' },
+      { id: 'ls_03', number: 3, titleAr: 'صفات الاستواء والنزول والوجه واليدين والمجيء الإلهي', duration: '٥٣ دقيقة' },
+      { id: 'ls_04', number: 4, titleAr: 'القرآن كلام الله حقيقة بحرف وصوت وليس بمخلوق', duration: '٥٠ دقيقة' },
+      { id: 'ls_05', number: 5, titleAr: 'رؤية المؤمنين لربهم في الجنة والإيمان بالقدر واليوم الآخر', duration: '٤٧ دقيقة' },
+      { id: 'ls_06', number: 6, titleAr: 'مقام الصحابة الكرام والخلافة الراشدة وحقوق ولاة الأمر', duration: '٥٦ دقيقة' }
+    ]
+  },
+  {
+    id: 'course_fiqh_ad-iyah_badr',
+    titleAr: 'فقه الأدعية والأذكار في اليوم والليلة',
+    titleEn: 'Fiqh of Supplications & Daily Remembrances',
+    scholarAr: 'الشيخ د. عبد الرزاق بن عبد المحسن البدر',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'سيرة ورقائق',
+    categoryEn: 'Supplications & Heart Softeners',
+    badge: 'مجالس الذكر والرقائق',
+    descriptionAr: 'سلسلة نافعة في فقه الذكر والدعاء وآدابهما وشروط الإجابة وأذكار الصباح والمساء وأحوال اليوم والليلة.',
+    lessonsCount: 8,
+    audioStreamUrl: 'https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/001.mp3',
+    lessons: [
+      { id: 'fa_01', number: 1, titleAr: 'فضل الذكر ومكانة الدعاء في حياة المسلم وثمراته في القلب', duration: '٤٣ دقيقة' },
+      { id: 'fa_02', number: 2, titleAr: 'شروط إجابة الدعاء وآدابه وأسباب موانع الإجابة', duration: '٤٧ دقيقة' },
+      { id: 'fa_03', number: 3, titleAr: 'فقه أذكار طرفي النهار: الصباح والمساء وفضلها وحفظها للعبد', duration: '٥٢ دقيقة' },
+      { id: 'fa_04', number: 4, titleAr: 'أذكار النوم والاستيقاظ والآداب النبوية عند المنام', duration: '٤١ دقيقة' },
+      { id: 'fa_05', number: 5, titleAr: 'أذكار الصلوات المكتوبة وأدعية الاستفتاح والركوع والسجود', duration: '٤٩ دقيقة' },
+      { id: 'fa_06', number: 6, titleAr: 'أدعية تفريج الكروب والهموم والغموم والاستعاذة من الشرور', duration: '٤٦ دقيقة' },
+      { id: 'fa_07', number: 7, titleAr: 'الاستغفار وفضله وصيغه وسيد الاستغفار', duration: '٤٤ دقيقة' },
+      { id: 'fa_08', number: 8, titleAr: 'الصلاة على النبي ﷺ وفضائلها ومواطنها المستحبة', duration: '٥٠ دقيقة' }
+    ]
+  },
+  {
+    id: 'course_dalil_talib_ruhaily',
+    titleAr: 'شرح دليل الطالب لنيل المطالب (كتاب الصلاة والعبادات)',
+    titleEn: 'Explanation of Daleel At-Talib',
+    scholarAr: 'الشيخ أ.د. سليمان بن سليم الله الرحيلي',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh',
+    badge: 'فقه العبادات',
+    descriptionAr: 'شرح فقهي رصين لكتاب دليل الطالب للإمام مرعي الكرمي الحنبلي، يُعنى بتحرير المذهب بالأدلة الصحيحة وتيسير الفروع.',
+    lessonsCount: 7,
+    audioStreamUrl: 'https://cdn.mp3quran.net/audio/ahmad-hudhaifi/r1/002.mp3',
+    lessons: [
+      { id: 'dt_01', number: 1, titleAr: 'كتاب الطهارة: المياه والآنية وقضاء الحاجة', duration: '٥٠ دقيقة' },
+      { id: 'dt_02', number: 2, titleAr: 'فروض الوضوء ونواقضه وسنن الفطرة والمسح على الخفين', duration: '٥٣ دقيقة' },
+      { id: 'dt_03', number: 3, titleAr: 'الغسل والتيمم وإزالة النجاسات وأحكام المعذورين', duration: '٤٨ دقيقة' },
+      { id: 'dt_04', number: 4, titleAr: 'كتاب الصلاة: شروط الصلاة ومواقيتها ومكان الصلاة ولباسها', duration: '٥٤ دقيقة' },
+      { id: 'dt_05', number: 5, titleAr: 'صفة الصلاة المفصلة وأركانها وواجباتها وسننها', duration: '٥٧ دقيقة' },
+      { id: 'dt_06', number: 6, titleAr: 'سجود السهو وصلاة التطوع والوتر وأوقات النهي', duration: '٥١ دقيقة' },
+      { id: 'dt_07', number: 7, titleAr: 'صلاة الجماعة وأحكام الإمامة وصلاة أهل الأعذار والجمعة', duration: '٦٠ دقيقة' }
+    ]
   }
 ];
 
@@ -10060,7 +10172,10 @@ const ALLAH_99_NAMES = [
     const isCurrentLessonPlaying = audioPlaying && currentAudioType === 'lesson' && activeLesson;
 
     return (
-      <View style={{ flex: 1, backgroundColor: c.bg }}>
+      <View
+        style={{ flex: 1, backgroundColor: c.bg, direction: isRTL ? 'rtl' : 'ltr' }}
+        {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+      >
         {/* Top Header */}
         <Header
           title={t('دروس الحرم النبوي الشريف', "Prophet's Mosque Lessons")}
@@ -10367,14 +10482,14 @@ const ALLAH_99_NAMES = [
                   }}
                 >
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <View style={{ flex: 1, marginRight: 10 }}>
-                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark}>
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {chair.chairTitleAr}
                       </TextUI>
-                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2 }}>
+                      <TextUI size={12} weight="bold" color="#1E5A3E" style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                         {chair.scholarAr}
                       </TextUI>
-                      <TextUI size={11} color={c.textSecondary}>
+                      <TextUI size={11} color={c.textSecondary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {chair.roleAr}
                       </TextUI>
                     </View>
@@ -10405,19 +10520,19 @@ const ALLAH_99_NAMES = [
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="book-open" size={13} color={TOKENS.colors.secondary} />
-                      <TextUI size={12} weight="bold" color={c.textPrimary}>
+                      <TextUI size={12} weight="bold" color={c.textPrimary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {`${t('المتن المشروح:', 'Taught Book:')} ${chair.bookAr}`}
                       </TextUI>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="clock" size={13} color="#1E5A3E" />
-                      <TextUI size={12} color="#1E5A3E" weight="medium">
+                      <TextUI size={12} color="#1E5A3E" weight="medium" style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {chair.timingAr}
                       </TextUI>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Feather name="map-pin" size={13} color={TOKENS.colors.primary} />
-                      <TextUI size={12} color={c.textSecondary}>
+                      <TextUI size={12} color={c.textSecondary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {chair.locationAr}
                       </TextUI>
                     </View>
@@ -10476,17 +10591,17 @@ const ALLAH_99_NAMES = [
                     ...makeShadow('0 4px 12px rgba(30,90,62,0.25)', '#1E5A3E', 0.25, 6, { width: 0, height: 2 }, 4)
                   }}
                 >
-                  <View style={{ flex: 1, marginRight: 10 }}>
+                  <View style={{ flex: 1, marginLeft: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <Feather name="radio" size={14} color="#C69255" />
-                      <TextUI size={12} weight="bold" color="#C69255">
+                      <TextUI size={12} weight="bold" color="#C69255" style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {t('كراسي الحرم النبوي الحية', "Prophet's Mosque Live Chairs")}
                       </TextUI>
                     </View>
-                    <TextUI weight="bold" size={15} color="#FFFFFF">
+                    <TextUI weight="bold" size={15} color="#FFFFFF" style={{ textAlign: isRTL ? 'right' : 'left' }}>
                       {t('جدول ومواقع مجالس العلم بالمسجد النبوي الشريف', 'Schedule & Locations of Daily Classes')}
                     </TextUI>
-                    <TextUI size={11} color="rgba(255,255,255,0.8)" style={{ marginTop: 2 }}>
+                    <TextUI size={11} color="rgba(255,255,255,0.8)" style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                       {t('٧ كراسي علمية كبرى لكبار أئمة ومدرسي الحرم • انقر للاطلاع', '7 major scholarly chairs • Tap to view schedule')}
                     </TextUI>
                   </View>
@@ -10567,18 +10682,18 @@ const ALLAH_99_NAMES = [
                       </View>
                     </View>
 
-                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4 }}>
+                    <TextUI weight="bold" size={16} color={TOKENS.colors.primaryDark} style={{ marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>
                       {course.titleAr}
                     </TextUI>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <Feather name="user" size={13} color={TOKENS.colors.secondary} />
-                      <TextUI size={13} weight="bold" color={c.textPrimary}>
+                      <TextUI size={13} weight="bold" color={c.textPrimary} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {course.scholarAr}
                       </TextUI>
                     </View>
 
-                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12 }}>
+                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
                       {course.descriptionAr}
                     </TextUI>
 
@@ -10625,8 +10740,10 @@ const ALLAH_99_NAMES = [
             style={{
               flex: 1,
               backgroundColor: 'rgba(0,0,0,0.65)',
-              justifyContent: 'flex-end'
+              justifyContent: 'flex-end',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}
+            {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
           >
             <View
               style={{
@@ -10638,8 +10755,10 @@ const ALLAH_99_NAMES = [
                 paddingTop: 16,
                 paddingHorizontal: 18,
                 borderTopWidth: 2,
-                borderColor: '#1E5A3E'
+                borderColor: '#1E5A3E',
+                direction: isRTL ? 'rtl' : 'ltr'
               }}
+              {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
             >
               {/* Modal Drag Handle */}
               <View
@@ -10657,14 +10776,14 @@ const ALLAH_99_NAMES = [
               {selectedLessonCourse && (
                 <View style={{ marginBottom: 14 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1, marginRight: 10 }}>
-                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2 }}>
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <TextUI size={11} weight="bold" color="#1E5A3E" style={{ marginBottom: 2, textAlign: isRTL ? 'right' : 'left' }}>
                         {`سلسلة علمية • ${selectedLessonCourse.categoryAr}`}
                       </TextUI>
-                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark}>
+                      <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ textAlign: isRTL ? 'right' : 'left' }}>
                         {selectedLessonCourse.titleAr}
                       </TextUI>
-                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2 }}>
+                      <TextUI size={12} color={c.textSecondary} style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                         {`${selectedLessonCourse.scholarAr} • ${selectedLessonCourse.roleAr}`}
                       </TextUI>
                     </View>
@@ -10719,7 +10838,7 @@ const ALLAH_99_NAMES = [
                         marginBottom: 6
                       }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginLeft: 10 }}>
                         {/* Number / Play Indicator Badge */}
                         <View
                           style={{
@@ -10747,10 +10866,11 @@ const ALLAH_99_NAMES = [
                             size={14}
                             color={isCurrentActive ? '#1E5A3E' : c.textPrimary}
                             numberOfLines={2}
+                            style={{ textAlign: isRTL ? 'right' : 'left' }}
                           >
                             {ls.titleAr}
                           </TextUI>
-                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2 }}>
+                          <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                             {`المدة: ${ls.duration}`}
                           </TextUI>
                         </View>
