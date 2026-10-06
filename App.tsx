@@ -22,7 +22,7 @@ import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { Magnetometer } from 'expo-sensors';
 import * as Notifications from 'expo-notifications';
-import { Audio as ExpoAudio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync as setExpoAudioModeAsync } from 'expo-audio';
 
 // Safe Notification Handler
 if (Platform.OS !== 'web') {
@@ -37,11 +37,9 @@ if (Platform.OS !== 'web') {
   } catch (e) {}
 
   try {
-    ExpoAudio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-      shouldDuckAndroid: true,
-      playThroughEarpieceAndroid: false
+    setExpoAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
     }).catch(() => {});
   } catch (e) {}
 }
@@ -1635,15 +1633,18 @@ function AlmosalaApp() {
   };
 
   // ==========================================
-  // BULLETPROOF SINGLETON QURAN AUDIO CONTROLLER (NATIVE + WEB)
+  // BULLETPROOF SINGLETON QURAN AUDIO CONTROLLER (EXPO-AUDIO + WEB FALLBACK)
   // ==========================================
   const stopAllAudioPlayback = () => {
-    // 1. Unload Native Sound
+    // 1. Unload & remove expo-audio player
     try {
       if (nativeAudioSoundRef.current) {
-        const soundToStop = nativeAudioSoundRef.current;
+        const player = nativeAudioSoundRef.current;
         nativeAudioSoundRef.current = null;
-        soundToStop.stopAsync().then(() => soundToStop.unloadAsync()).catch(() => {});
+        try {
+          player.pause();
+          player.remove();
+        } catch (e) {}
       }
     } catch (e) {}
 
@@ -1660,7 +1661,7 @@ function AlmosalaApp() {
       }
     } catch (e) {}
 
-    // 3. On Web: forcefully pause and unload any orphan audio elements in the DOM
+    // 3. Forcefully pause and unload any orphan audio elements in the DOM (on web)
     if (typeof document !== 'undefined') {
       try {
         const audioNodes = document.querySelectorAll('audio');
@@ -1682,32 +1683,30 @@ function AlmosalaApp() {
 
   const playQuranSurah = async (surahId: number, reciterId: string) => {
     try {
-      // 1. Terminate all previous audio instances first
       stopAllAudioPlayback();
-
       const url = getReciterAudioUrl(reciterId, surahId);
       setAudioPlaying(true);
 
-      // --- NATIVE ENVIRONMENT (iOS / Android / Expo Go) ---
-      if (Platform.OS !== 'web') {
-        try {
-          await ExpoAudio.setAudioModeAsync({
-            playsInSilentModeIOS: true,
-            staysActiveInBackground: true,
-            shouldDuckAndroid: true,
-            playThroughEarpieceAndroid: false
-          });
-        } catch (e) {}
+      // Attempt A: expo-audio (Native iOS & Android in Expo Go and modern Web)
+      try {
+        if (Platform.OS !== 'web') {
+          try {
+            await setExpoAudioModeAsync({
+              playsInSilentMode: true,
+              shouldPlayInBackground: true,
+            });
+          } catch (e) {}
+        }
 
-        const { sound } = await ExpoAudio.Sound.createAsync(
-          { uri: url },
-          { shouldPlay: true, volume: 1.0, progressUpdateIntervalMillis: 500 },
-          (status) => {
-            if (status.isLoaded) {
-              if (status.durationMillis && status.durationMillis > 0) {
-                const currentSecs = Math.floor((status.positionMillis || 0) / 1000);
-                const totalSecs = Math.floor(status.durationMillis / 1000);
-                const progressPct = ((status.positionMillis || 0) / status.durationMillis) * 100;
+        const player = createAudioPlayer(url, { updateInterval: 500 });
+        if (player) {
+          nativeAudioSoundRef.current = player;
+          player.addListener('playbackStatusUpdate', (status: any) => {
+            if (status) {
+              const currentSecs = Math.floor(status.currentTime || 0);
+              const totalSecs = Math.floor(status.duration || 0);
+              if (totalSecs > 0) {
+                const progressPct = (currentSecs / totalSecs) * 100;
                 setAudioProgress(progressPct);
                 const curM = Math.floor(currentSecs / 60).toString().padStart(2, '0');
                 const curS = (currentSecs % 60).toString().padStart(2, '0');
@@ -1721,14 +1720,15 @@ function AlmosalaApp() {
                 setAudioProgress(100);
               }
             }
-          }
-        );
-
-        nativeAudioSoundRef.current = sound;
-        return;
+          });
+          player.play();
+          return;
+        }
+      } catch (expoAudioErr) {
+        console.warn('expo-audio initialization error, falling back:', expoAudioErr);
       }
 
-      // --- WEB ENVIRONMENT (Browsers) ---
+      // Attempt B: HTML5 Web Audio (Fallback for Web browsers)
       if (typeof window !== 'undefined' && typeof Audio !== 'undefined') {
         const sound = new Audio();
         sound.src = url;
@@ -1761,17 +1761,16 @@ function AlmosalaApp() {
         };
 
         quranAudioRef.current = sound;
-
         const playPromise = sound.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.warn('Playback prevented or interrupted:', err);
+            console.warn('Web playback prevented or interrupted:', err);
             setAudioPlaying(false);
           });
         }
       }
     } catch (e) {
-      console.warn('playQuranSurah error:', e);
+      console.warn('playQuranSurah critical error:', e);
       setAudioPlaying(false);
     }
   };
