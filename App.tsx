@@ -15248,57 +15248,45 @@ const ALLAH_99_NAMES = [
       }
     };
 
-    // PanResponder for smooth left/right swipe gestures
-    const panResponder = useRef(
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, gestureState) => {
-          return Math.abs(gestureState.dx) > 25 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-        },
-        onPanResponderRelease: (_, gestureState) => {
-          if (gestureState.dx < -45) {
-            // Swiped Left:
-            // In RTL: swiping finger to the left means moving backward/to previous in Arabic reading flow,
-            // or forward in standard gestures. We support intuitive navigation:
-            if (isRTL) {
-              handlePrev();
-            } else {
-              handleNext();
-            }
-          } else if (gestureState.dx > 45) {
-            // Swiped Right:
-            if (isRTL) {
-              handleNext();
-            } else {
-              handlePrev();
-            }
-          }
-        }
-      })
-    ).current;
+    // Smooth horizontal swipe gesture handlers (pure touch events without violating React hooks rules)
+    let touchStartX = 0;
+    let touchStartY = 0;
 
-    // Web touch swipe support via onTouchStart / onTouchEnd
-    const touchStartX = useRef<number | null>(null);
-    const handleTouchStart = (e: any) => {
-      if (e.nativeEvent?.pageX !== undefined) {
-        touchStartX.current = e.nativeEvent.pageX;
-      }
+    const onTouchStart = (e: any) => {
+      try {
+        const touch = e.nativeEvent?.touches?.[0] || e.nativeEvent;
+        touchStartX = touch?.pageX ?? touch?.clientX ?? 0;
+        touchStartY = touch?.pageY ?? touch?.clientY ?? 0;
+      } catch (err) {}
     };
-    const handleTouchEnd = (e: any) => {
-      if (touchStartX.current !== null && e.nativeEvent?.pageX !== undefined) {
-        const diffX = e.nativeEvent.pageX - touchStartX.current;
-        if (Math.abs(diffX) > 45) {
-          if (diffX < 0) {
-            // Swiped Left
-            if (isRTL) handlePrev();
-            else handleNext();
+
+    const onTouchEnd = (e: any) => {
+      try {
+        const touch = e.nativeEvent?.changedTouches?.[0] || e.nativeEvent;
+        const endX = touch?.pageX ?? touch?.clientX ?? 0;
+        const endY = touch?.pageY ?? touch?.clientY ?? 0;
+        const deltaX = endX - touchStartX;
+        const deltaY = endY - touchStartY;
+
+        // Verify it was a horizontal swipe (dx > 40 and horizontal distance greater than vertical)
+        if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+          if (deltaX < 0) {
+            // Swiped to the left
+            if (isRTL) {
+              handlePrev();
+            } else {
+              handleNext();
+            }
           } else {
-            // Swiped Right
-            if (isRTL) handleNext();
-            else handlePrev();
+            // Swiped to the right
+            if (isRTL) {
+              handleNext();
+            } else {
+              handlePrev();
+            }
           }
         }
-      }
-      touchStartX.current = null;
+      } catch (err) {}
     };
 
     // Responsive font calculation to prevent oversized fonts on long texts (e.g., Ayat Al-Kursi)
@@ -15309,9 +15297,8 @@ const ALLAH_99_NAMES = [
     return (
       <View
         style={{ flex: 1, backgroundColor: c.bg, justifyContent: 'space-between' }}
-        {...panResponder.panHandlers}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         <Header
           title={isRTL ? selectedCategory.titleAr : selectedCategory.titleEn}
