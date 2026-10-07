@@ -12471,20 +12471,19 @@ const ALLAH_99_NAMES = [
           )}
         </ScrollView>
 
-        {/* Modal: Course Lessons List (نافذة تفاصيل السلسلة وقائمة الدروس) */}
-        <Modal
-          visible={lessonModalVisible && !!selectedLessonCourse}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setLessonModalVisible(false)}
-        >
+        {/* In-Frame Modal: Course Lessons List (نافذة تفاصيل السلسلة وقائمة الدروس داخل إطار الموبايل) */}
+        {lessonModalVisible && selectedLessonCourse && (
           <View
-            style={{
-              flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.65)',
-              justifyContent: 'flex-end',
-              direction: isRTL ? 'rtl' : 'ltr'
-            }}
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                backgroundColor: 'rgba(0,0,0,0.65)',
+                justifyContent: 'flex-end',
+                zIndex: 500,
+                elevation: 500,
+                direction: isRTL ? 'rtl' : 'ltr'
+              }
+            ]}
             {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
           >
             <View
@@ -12710,24 +12709,23 @@ const ALLAH_99_NAMES = [
               </ScrollView>
             </View>
           </View>
-        </Modal>
+        )}
 
-        {/* Modal: Add Lesson Note / Bookmark (نافذة تدوين الفائدة العلمية والوقفة) */}
-        <Modal
-          visible={lessonNoteModalVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setLessonNoteModalVisible(false)}
-        >
+        {/* In-Frame Modal: Add Lesson Note / Bookmark (نافذة تدوين الفائدة العلمية والوقفة داخل إطار الموبايل) */}
+        {lessonNoteModalVisible && (
           <View
-            style={{
-              flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.65)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: 20,
-              direction: isRTL ? 'rtl' : 'ltr'
-            }}
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                backgroundColor: 'rgba(0,0,0,0.65)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 20,
+                zIndex: 2000,
+                elevation: 2000,
+                direction: isRTL ? 'rtl' : 'ltr'
+              }
+            ]}
             {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
           >
             <View
@@ -12850,20 +12848,22 @@ const ALLAH_99_NAMES = [
               </View>
             </View>
           </View>
-        </Modal>
+        )}
 
-        {/* Modal: Dedicated Lesson Page (صفحة الدرس المستقلة) */}
-        <Modal
-          visible={isLessonPageOpen && !!activeLesson && !!activeCourse}
-          animationType="slide"
-          presentationStyle="fullScreen"
-          onRequestClose={() => setIsLessonPageOpen(false)}
-        >
-          {isLessonPageOpen && activeLesson && activeCourse ? (
-            <View
-              style={{ flex: 1, backgroundColor: c.bg, direction: isRTL ? 'rtl' : 'ltr' }}
-              {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
-            >
+        {/* In-Frame Dedicated Lesson Page (صفحة الدرس المستقلة داخل إطار الموبايل) */}
+        {isLessonPageOpen && activeLesson && activeCourse && (
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                backgroundColor: c.bg,
+                direction: isRTL ? 'rtl' : 'ltr',
+                zIndex: 1000,
+                elevation: 1000
+              }
+            ]}
+            {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}
+          >
             {/* Lesson Page Header */}
             <Header
               title={t('صفحة الدرس', 'Lesson Page')}
@@ -13578,8 +13578,7 @@ const ALLAH_99_NAMES = [
               </View>
             </ScrollView>
           </View>
-          ) : null}
-        </Modal>
+        )}
       </View>
     );
   };
@@ -17215,10 +17214,10 @@ const ALLAH_99_NAMES = [
         <View style={{ flex: 1, minHeight: 0, overflow: 'hidden' }} {...({ dir: isRTL ? 'rtl' : 'ltr' } as any)}>
           {renderCurrentScreen()}
         </View>
-        {audioPlaying && !['QuranAudio', 'Welcome', 'LocationPermission', 'ManualLocation', 'NotificationPermission'].includes(screen) && !audioMiniPlayerDismissed && (
+        {audioPlaying && !isLessonPageOpen && !['QuranAudio', 'Welcome', 'LocationPermission', 'ManualLocation', 'NotificationPermission'].includes(screen) && !audioMiniPlayerDismissed && (
           FloatingMiniPlayer()
         )}
-        {!isFullScreen && BottomNav()}
+        {!isFullScreen && !isLessonPageOpen && BottomNav()}
         {ScreenCatalogModal()}
       </View>
     </View>
