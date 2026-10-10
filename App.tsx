@@ -1664,6 +1664,25 @@ function AlmosalaApp() {
   const [lessonCategoryTab, setLessonCategoryTab] = useState<string>('all');
   const [lessonSearchQuery, setLessonSearchQuery] = useState<string>('');
 
+  // Persistent Playback Progress Storage (حفظ موضع الاستماع لكل دورة ودرس بدقة)
+  const [lessonResumeStorage, setLessonResumeStorage] = useState<Record<string, {
+    courseId: string;
+    lessonId: string;
+    lessonNumber: number;
+    lessonTitle: string;
+    currentSecs: number;
+    totalSecs: number;
+    updatedAt: number;
+  }>>(() => {
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      try {
+        const raw = (window as any).localStorage.getItem('almosala_lessons_resume_v1');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) { return {}; }
+    }
+    return {};
+  });
+
   // Offline Audio Downloads & Storage Management State
   const [downloadedLessons, setDownloadedLessons] = useState<Record<string, any>>(() => {
     if (typeof window !== 'undefined' && (window as any).localStorage) {
@@ -2357,6 +2376,9 @@ function AlmosalaApp() {
                 const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
                 const remS = (remainingSecs % 60).toString().padStart(2, '0');
                 setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
+                if (currentSecs > 0 && currentSecs % 5 === 0) {
+                  saveLessonProgress(course.id, lesson.id, lesson.number, lesson.titleAr, currentSecs, totalSecs);
+                }
               }
               if (status.didJustFinish) {
                 stopAllAudioPlayback();
@@ -2402,6 +2424,9 @@ function AlmosalaApp() {
             const remM = Math.floor(remainingSecs / 60).toString().padStart(2, '0');
             const remS = (remainingSecs % 60).toString().padStart(2, '0');
             setAudioRemainingTime(`-${toArabicNumber(remM)}:${toArabicNumber(remS)}`);
+            if (currentSecs > 0 && currentSecs % 5 === 0) {
+              saveLessonProgress(course.id, lesson.id, lesson.number, lesson.titleAr, currentSecs, totalSecs);
+            }
           }
         };
 
@@ -2444,6 +2469,9 @@ function AlmosalaApp() {
         }
       } catch (e) {}
       setAudioPlaying(false);
+      if (activeCourse && activeLesson) {
+        saveLessonProgress(activeCourse.id, activeLesson.id, activeLesson.number, activeLesson.titleAr, audioCurrentSecs, audioTotalSecs);
+      }
     } else {
       // Seamless Resume from the exact paused second
       const hasActiveNative = !!nativeAudioSoundRef.current;
@@ -2471,16 +2499,84 @@ function AlmosalaApp() {
         } catch (e) {}
       }
 
-      // If player wasn't initialized yet, start from previous audioCurrentSecs (or 0)
+      // If player wasn't initialized yet, start from previous audioCurrentSecs (or saved resume)
       if (activeCourse && activeLesson) {
-        playLessonAudio(activeCourse, activeLesson, audioCurrentSecs || 0);
-      } else if (PROPHET_MOSQUE_COURSES.length > 0) {
+        const resumeSecs = (lessonResumeStorage[activeCourse.id]?.lessonId === activeLesson.id)
+          ? lessonResumeStorage[activeCourse.id].currentSecs
+          : (audioCurrentSecs || 0);
+        playLessonAudio(activeCourse, activeLesson, resumeSecs);
+      } else if (PROPHET_MOSQUE_COURSES && PROPHET_MOSQUE_COURSES.length > 0) {
         const c0 = PROPHET_MOSQUE_COURSES[0];
         playLessonAudio(c0, c0.lessons[0], audioCurrentSecs || 0);
       }
     }
     triggerHapticFeedback('light');
   };
+
+  // --- LESSON PROGRESS PERSISTENCE & FULL VIEW HANDLERS ---
+  const saveLessonProgress = (courseId: string, lessonId: string, lessonNumber: number, lessonTitle: string, secs: number, totSecs: number) => {
+    if (!courseId || !lessonId || secs < 0) return;
+    setLessonResumeStorage((prev) => {
+      const next = {
+        ...prev,
+        [courseId]: {
+          courseId,
+          lessonId,
+          lessonNumber: lessonNumber || 1,
+          lessonTitle: lessonTitle || '',
+          currentSecs: secs,
+          totalSecs: totSecs || 0,
+          updatedAt: Date.now()
+        }
+      };
+      if (typeof window !== 'undefined' && (window as any).localStorage) {
+        try {
+          (window as any).localStorage.setItem('almosala_lessons_resume_v1', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+  };
+
+  const openFullCourseView = (course: any, targetLesson?: any) => {
+    if (!course) return;
+    setSelectedLessonCourse(course);
+    setActiveCourse(course);
+
+    const savedResume = lessonResumeStorage[course.id];
+    let lessonToActivate = targetLesson;
+
+    if (!lessonToActivate) {
+      if (savedResume && savedResume.lessonId && course.lessons) {
+        lessonToActivate = course.lessons.find((l: any) => l.id === savedResume.lessonId) || course.lessons[0];
+      } else if (course.lessons && course.lessons.length > 0) {
+        lessonToActivate = course.lessons[0];
+      }
+    }
+
+    if (lessonToActivate) {
+      setActiveLesson(lessonToActivate);
+      // Restore playback seconds if returning to the exact saved lesson
+      if (savedResume && savedResume.lessonId === lessonToActivate.id && savedResume.currentSecs > 0) {
+        const secs = savedResume.currentSecs;
+        setAudioCurrentSecs(secs);
+        const curM = Math.floor(secs / 60).toString().padStart(2, '0');
+        const curS = (secs % 60).toString().padStart(2, '0');
+        setAudioCurrentTime(`${toArabicNumber(curM)}:${toArabicNumber(curS)}`);
+      }
+    }
+
+    setIsLessonPageOpen(true);
+    setLessonModalVisible(false);
+    triggerHapticFeedback('light');
+
+    setTimeout(() => {
+      try {
+        lessonsScrollRef.current?.scrollTo({ y: 0, animated: false });
+      } catch (e) {}
+    }, 60);
+  };
+
 
   const changeLessonPlaybackSpeed = (newSpeed: number) => {
     setLessonPlaybackSpeed(newSpeed);
@@ -9905,8 +10001,8 @@ const PROPHET_MOSQUE_COURSES = [
     titleEn: 'Explanation of Al-Qawaid Al-Fiqhiyyah',
     scholarAr: 'الشيخ أ.د. سليمان بن سليم الله الرحيلي',
     roleAr: 'المدرس بالمسجد النبوي الشريف',
-    categoryAr: 'الفقه',
-    categoryEn: 'Fiqh & Principles',
+    categoryAr: 'أصول الفقه',
+    categoryEn: 'Usul al-Fiqh & Principles',
     badge: 'كرسي القواعد الفقهية',
     descriptionAr: 'شرح تأصيلي ميسر للقواعد والضوابط الفقهية الكبرى وتطبيقاتها المعاصرة، ألقي في الرواق العثماني بالمسجد النبوي.',
     lessonsCount: 8,
@@ -9986,6 +10082,111 @@ const PROPHET_MOSQUE_COURSES = [
       { id: 'dt_05', number: 5, titleAr: 'صفة الصلاة المفصلة وأركانها وواجباتها وسننها', duration: '٥٧ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/05.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
       { id: 'dt_06', number: 6, titleAr: 'سجود السهو وصلاة التطوع والوتر وأوقات النهي', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/06.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
       { id: 'dt_07', number: 7, titleAr: 'صلاة الجماعة وأحكام الإمامة وصلاة أهل الأعذار والجمعة', duration: '٦٠ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/07.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' }
+    ]
+  },
+  {
+    id: 'course_manhaj_salikeen_ruhayli',
+    titleAr: 'شرح منهج السالكين وتوضيح الفقه في الدين للسعدي',
+    titleEn: 'Explanation of Manhaj As-Salikeen by As-Saadi',
+    scholarAr: 'الشيخ أ.د. سليمان بن سليم الله الرحيلي',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh',
+    badge: 'الفقه الميسر',
+    descriptionAr: 'شرح فقهي جامع وميسر لكتاب منهج السالكين للعلامة السعدي في أدلة الأحكام وبيان الحلال والحرام.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/01.sulayman.ruhailie.taharah.manhaj.salkeen.mp3',
+    lessons: [
+      { id: 'msr_01', number: 1, titleAr: 'مقدمة كتاب الطهارة وحكم إزالة النجاسات والمياه', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/01.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'msr_02', number: 2, titleAr: 'صفة الوضوء الكامل وسننه ونواقضه المتفق عليها', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/02.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'msr_03', number: 3, titleAr: 'باب الصلاة وشروطها وفضل المحافظة على أوقاتها', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/03.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'msr_04', number: 4, titleAr: 'أركان الصلاة وسننها القولية والفعلية ومبطلاتها', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/04.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'msr_05', number: 5, titleAr: 'باب الزكاة ومصارفها الثمانية وأحكام الصيام', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/05.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' },
+      { id: 'msr_06', number: 6, titleAr: 'كتاب الحج والعمرة والآداب والأخلاق الشرعية', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/11.sulayman.ruhailie.taharah.manhaj.salkeen_202110/06.sulayman.ruhailie.taharah.manhaj.salkeen.mp3' }
+    ]
+  },
+  {
+    id: 'course_waraqat_qasim',
+    titleAr: 'شرح متن الورقات لإمام الحرمين في أصول الفقه',
+    titleEn: 'Explanation of Al-Waraqat in Usul al-Fiqh',
+    scholarAr: 'الشيخ د. عبد المحسن بن محمد القاسم',
+    roleAr: 'إمام وخطيب المسجد النبوي الشريف',
+    categoryAr: 'أصول الفقه',
+    categoryEn: 'Usul al-Fiqh',
+    badge: 'مدخل أصول الفقه',
+    descriptionAr: 'شرح تأصيلي دقيق لمتن الورقات للمبتدئين في علم أصول الفقه وقواعد الاستنباط والأدلة الشرعية.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3',
+    lessons: [
+      { id: 'wq_01', number: 1, titleAr: 'أبواب أصول الفقه وتعريف الواجب والمندوب والمباح والحرام والمكروه', duration: '٤٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/1-Mstawa1_01.mp3' },
+      { id: 'wq_02', number: 2, titleAr: 'أقسام الكلام ودلالات الأوامر والنواهي وصيغها', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/2-Mstawa1_01.mp3' },
+      { id: 'wq_03', number: 3, titleAr: 'العام والخاص ومخصصات العموم في الكتاب والسنة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_01.mp3' },
+      { id: 'wq_04', number: 4, titleAr: 'المجمل والمبين والظاهر والمؤول وأفعال صاحب الشريعة ﷺ', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_02.mp3' },
+      { id: 'wq_05', number: 5, titleAr: 'النسخ والإجماع والأخبار وحجية سنة النبي ﷺ', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_03.mp3' },
+      { id: 'wq_06', number: 6, titleAr: 'القياس وترتيب الأدلة والاجتهاد والتقليد والإفتاء', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_01.mp3' }
+    ]
+  },
+  {
+    id: 'course_bayqooniyyah_khudair',
+    titleAr: 'شرح المنظومة البيقونية في مصطلح الحديث',
+    titleEn: 'Explanation of Al-Bayqooniyyah in Hadith Terminology',
+    scholarAr: 'الشيخ د. عبد الكريم بن عبد الله الخضير',
+    roleAr: 'عضو هيئة كبار العلماء ومدرس الحرمين الشريفين',
+    categoryAr: 'الحديث',
+    categoryEn: 'Hadith Sciences',
+    badge: 'مصطلح الحديث',
+    descriptionAr: 'شرح محقق لمتن البيقونية في أنواع الحديث الصحيح والحسن والضعيف والمعلول وأقسام الرواة.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/omdat_alahkam/01.mp3',
+    lessons: [
+      { id: 'bk_01', number: 1, titleAr: 'مقدمة علم الحديث وتعريف الحديث الصحيح وشروطه الخمسة', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/01.mp3' },
+      { id: 'bk_02', number: 2, titleAr: 'الحديث الحسن والضعيف والمرفوع والموقوف والمقطوع', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/02.mp3' },
+      { id: 'bk_03', number: 3, titleAr: 'المسند والمتصل والمسلسل والعزيز والمشهور والغريب', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/03.mp3' },
+      { id: 'bk_04', number: 4, titleAr: 'المعنعن والمبهم والشاذ والمقلوب والفرد والمعلل', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/04.mp3' },
+      { id: 'bk_05', number: 5, titleAr: 'المضطرب والمدرج والمدبج والمتفق والمفترق والمؤتلف والمختلف', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/05.mp3' },
+      { id: 'bk_06', number: 6, titleAr: 'المنكر والمتروك والموضوع وخاتمة المنظومة البيقونية', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/06.mp3' }
+    ]
+  },
+  {
+    id: 'course_qawaid_hisan_badr',
+    titleAr: 'شرح القواعد الحسان لتفسير القرآن للعلامة السعدي',
+    titleEn: 'Explanation of Al-Qawaid Al-Hissan fi Tafsir Al-Quran',
+    scholarAr: 'الشيخ د. عبد الرزاق بن عبد المحسن البدر',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'التفسير',
+    categoryEn: 'Tafsir & Quran Sciences',
+    badge: 'قواعد التفسير',
+    descriptionAr: 'قواعد جليلة نافعة تفتح للمتدبر مغاليق القرآن وتهدي إلى فهم مقاصد الآيات البينات على منهج السلف.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/018.mp3',
+    lessons: [
+      { id: 'qh_01', number: 1, titleAr: 'قاعدة: طريقة القرآن في تقرير التوحيد ونفي الشرك', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/018.mp3' },
+      { id: 'qh_02', number: 2, titleAr: 'قاعدة: إثبات كمال الأسماء والصفات وأثرها في القلب', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/019.mp3' },
+      { id: 'qh_03', number: 3, titleAr: 'قاعدة: العبرة بعموم اللفظ لا بخصوص السبب وتطبيقاتها', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/020.mp3' },
+      { id: 'qh_04', number: 4, titleAr: 'قاعدة: مفاتيح القصص القرآني والعبرة من تكرارها', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/021.mp3' },
+      { id: 'qh_05', number: 5, titleAr: 'قاعدة: الحذف في القرآن لدلالة السياق وبلاغة الإيجاز', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/022.mp3' },
+      { id: 'qh_06', number: 6, titleAr: 'قاعدة: الجمع بين آيات الوعد والوعيد والترغيب والترهيب', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/023.mp3' }
+    ]
+  },
+  {
+    id: 'course_da_dawa_badr',
+    titleAr: 'شرح كتاب الداء والدواء (الجواب الكافي) لابن القيم',
+    titleEn: 'Explanation of Ad-Da wad-Dawa by Ibn Al-Qayyim',
+    scholarAr: 'الشيخ د. عبد الرزاق بن عبد المحسن البدر',
+    roleAr: 'المدرس بالمسجد النبوي الشريف',
+    categoryAr: 'سيرة ورقائق',
+    categoryEn: 'Heart Softeners & Purification',
+    badge: 'تزكية النفوس',
+    descriptionAr: 'دروس تربوية إيمانية في شفاء أمراض القلوب وعلاج الذنوب وأثر الدعاء والتوكل والتوبة الصادقة.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/da2_dawaa_badr/01.mp3',
+    lessons: [
+      { id: 'dd_01', number: 1, titleAr: 'ما أنزل الله داء إلا أنزل له شفاء وفضل الدعاء في دفع البلاء', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/01.mp3' },
+      { id: 'dd_02', number: 2, titleAr: 'أسباب عدم إجابة الدعاء والداء العضال الذي يهلك العبد', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/02.mp3' },
+      { id: 'dd_03', number: 3, titleAr: 'شؤم المعاصي والذنوب وآثارها القبيحة في القلب والبدن والرزق', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/03.mp3' },
+      { id: 'dd_04', number: 4, titleAr: 'عقوبات الذنوب في الدنيا والبرزخ والآخرة ووحشة المعصية', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/04.mp3' },
+      { id: 'dd_05', number: 5, titleAr: 'حقيقة التوبة النصوح وتدارك ما فات وصدق اللجوء إلى الله', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/05.mp3' },
+      { id: 'dd_06', number: 6, titleAr: 'محبة الله وأنس القلب بذكره وكمال العبودية لرب العالمين', duration: '٦٠ دقيقة', audioUrl: 'https://archive.org/download/da2_dawaa_badr/06.mp3' }
     ]
   }
 ];
@@ -10116,8 +10317,8 @@ const MAKKAH_MOSQUE_COURSES = [
     titleEn: 'Explanation of Major Fiqh Maxims',
     scholarAr: 'الشيخ د. صالح بن عبد الله بن حميد',
     roleAr: 'المستشار بالديوان الملكي وإمام وخطيب المسجد الحرام',
-    categoryAr: 'الفقه',
-    categoryEn: 'Fiqh',
+    categoryAr: 'أصول الفقه',
+    categoryEn: 'Usul al-Fiqh',
     badge: 'كرسي صحن المطاف',
     descriptionAr: 'تحرير فقهي رصين للقواعد الفقهية الخمس الكبرى وتطبيقاتها المعاصرة، ألقي في رحاب الكعبة المشرفة.',
     lessonsCount: 10,
@@ -10233,8 +10434,8 @@ const MAKKAH_MOSQUE_COURSES = [
     titleEn: 'Explanation of Al-Waraqat in Usul al-Fiqh',
     scholarAr: 'الشيخ د. حسن بن عبد الحميد بخاري',
     roleAr: 'المدرس بالمسجد الحرام وعميد معهد اللغة العربية',
-    categoryAr: 'الفقه',
-    categoryEn: 'Fiqh & Principles',
+    categoryAr: 'أصول الفقه',
+    categoryEn: 'Usul al-Fiqh',
     badge: 'كرسي أصول الفقه بمكة',
     descriptionAr: 'شرح منهجي بديع لمتن الورقات في أصول الفقه، يجمع بين دقة القواعد الأصولية وجمال البيان واللسان العربي.',
     lessonsCount: 8,
@@ -10248,6 +10449,90 @@ const MAKKAH_MOSQUE_COURSES = [
       { id: 'hb_06', number: 6, titleAr: 'الإجماع وحجيته وأقوال الصحابة وخبر الواحد والتوتر', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/3-Mstawa1_04.mp3' },
       { id: 'hb_07', number: 7, titleAr: 'القياس وأركانه الأربعة: الأصل والفرع والعلة والحكم', duration: '٥٦ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_01.mp3' },
       { id: 'hb_08', number: 8, titleAr: 'شروط المفتي والمستفتي وأحكام التقليد والاجتهاد وخاتمة المتن', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/Mstawa_1/4-Mstawa1_02.mp3' }
+    ]
+  },
+  {
+    id: 'course_bidayat_mutafaqqih_makkah',
+    titleAr: 'شرح متن بداية المتفقه في الفقه الميسر',
+    titleEn: 'Explanation of Bidayat Al-Mutafaqqih in Fiqh',
+    scholarAr: 'الشيخ د. حسن بن عبد الحميد بخاري',
+    roleAr: 'المدرس بالمسجد الحرام وعميد معهد اللغة العربية',
+    categoryAr: 'الفقه',
+    categoryEn: 'Fiqh',
+    badge: 'فقه العبادات الميسر',
+    descriptionAr: 'دورة تأصيلية ميسرة في فقه الطهارة والصلاة والجنائز والزكاة والصوم والحج من رحاب المسجد الحرام.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/omdat_alahkam/01.mp3',
+    lessons: [
+      { id: 'bm_01', number: 1, titleAr: 'كتاب الطهارة: المياه والنجاسات والوضوء والغسل والتيمم', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/01.mp3' },
+      { id: 'bm_02', number: 2, titleAr: 'كتاب الصلاة: شروط الصلاة وأركانها وواجباتها وسننها', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/02.mp3' },
+      { id: 'bm_03', number: 3, titleAr: 'صلاة الجماعة وأحكام الإمامة وصلاة الجمعة والعيدين والجنازة', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/03.mp3' },
+      { id: 'bm_04', number: 4, titleAr: 'كتاب الزكاة: الأموال الزكوية والأنصبة ومصارف الزكاة الشرعية', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/04.mp3' },
+      { id: 'bm_05', number: 5, titleAr: 'كتاب الصيام: أحكام صيام رمضان ومفطراته وصيام التطوع', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/05.mp3' },
+      { id: 'bm_06', number: 6, titleAr: 'كتاب الحج والعمرة: أركانهما وواجباتهما وسنن مناسك الحرمين', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/omdat_alahkam/06.mp3' }
+    ]
+  },
+  {
+    id: 'course_bulugh_maram_sudais',
+    titleAr: 'شرح أحاديث الأحكام من بلوغ المرام لابن حجر',
+    titleEn: 'Explanation of Bulugh Al-Maram by As-Sudais',
+    scholarAr: 'الشيخ د. عبد الرحمن بن عبد العزيز السديس',
+    roleAr: 'رئيس الشؤون الدينية وإمام وخطيب المسجد الحرام',
+    categoryAr: 'الحديث',
+    categoryEn: 'Hadith',
+    badge: 'أحاديث الأحكام بمكة',
+    descriptionAr: 'دروس محققة في أحاديث الأحكام الفقهية وتخريجها واستنباط الدلالات العقدية والعملية منها بمكة المكرمة.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3',
+    lessons: [
+      { id: 'bms_01', number: 1, titleAr: 'كتاب الطهارة: حديث إنما الماء من الماء وحديث رفع الحدث', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/01.mp3' },
+      { id: 'bms_02', number: 2, titleAr: 'كتاب الصلاة: أحاديث المواقيت وفضل الصلاة في جماعة', duration: '٥٣ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/02.mp3' },
+      { id: 'bms_03', number: 3, titleAr: 'أحاديث صفة صلاة النبي ﷺ والخشوع في الركوع والسجود', duration: '٥١ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/03.mp3' },
+      { id: 'bms_04', number: 4, titleAr: 'كتاب الجنائز: أحاديث اتباع الجنائز والصلاة عليها والدفن', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/04.mp3' },
+      { id: 'bms_05', number: 5, titleAr: 'كتاب الزكاة والصيام: أحاديث فرض زكاة الفطر وحرمة الشهر', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/05.mp3' },
+      { id: 'bms_06', number: 6, titleAr: 'كتاب الحج: أحاديث خذوا عني مناسككم وفضل الحج المبرور', duration: '٥٨ دقيقة', audioUrl: 'https://archive.org/download/raj3elsada-40NAWAWI/06.mp3' }
+    ]
+  },
+  {
+    id: 'course_fadael_makkah_humaid',
+    titleAr: 'فضائل البيت الحرام وتطهير القلوب في رحاب الكعبة',
+    titleEn: 'Virtues of the Holy Kaaba & Purification of Hearts',
+    scholarAr: 'الشيخ د. صالح بن عبد الله بن حميد',
+    roleAr: 'المستشار بالديوان الملكي وإمام وخطيب المسجد الحرام',
+    categoryAr: 'سيرة ورقائق',
+    categoryEn: 'Heart Softeners & Virtues',
+    badge: 'فضائل البلد الحرام',
+    descriptionAr: 'مجالس وعظية إيمانية في حرمة مكة المكرمة وعظمة البيت العتيق ومضاعفة الأجور وآداب قاصدي الحرم.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/Usul3_Badr/017.mp3',
+    lessons: [
+      { id: 'fm_01', number: 1, titleAr: 'مكانة البلد الحرام في القرآن وتاريخ بناء إبراهيم عليه السلام للكعبة', duration: '٤٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/017.mp3' },
+      { id: 'fm_02', number: 2, titleAr: 'مضاعفة الحسنات والصلوات في المسجد الحرام ومقام إبراهيم', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/018.mp3' },
+      { id: 'fm_03', number: 3, titleAr: 'فضل الطواف بالبيت العتيق واستلام الحجر الأسود والركن اليماني', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/019.mp3' },
+      { id: 'fm_04', number: 4, titleAr: 'حرمة مكة والتحذير من الإلحاد في الحرم وظلم النفس فيه', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/020.mp3' },
+      { id: 'fm_05', number: 5, titleAr: 'بركة ماء زمزم وفضل السعي بين الصفا والمروة ومناسك المشاعر', duration: '٤٧ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/021.mp3' },
+      { id: 'fm_06', number: 6, titleAr: 'الزاد الإيماني لضيف الرحمن وأثر مجاورة بيت الله في تزكية الروح', duration: '٥٥ دقيقة', audioUrl: 'https://archive.org/download/Usul3_Badr/022.mp3' }
+    ]
+  },
+  {
+    id: 'course_lumatu_itiqad_makkah',
+    titleAr: 'شرح لمعة الاعتقاد الهادي إلى سبيل الرشاد',
+    titleEn: 'Explanation of Lumat Al-Itiqad by Makkah Scholars',
+    scholarAr: 'الشيخ د. عبد الله بن عواد الجهني',
+    roleAr: 'إمام وخطيب المسجد الحرام بمكة المكرمة',
+    categoryAr: 'العقيدة',
+    categoryEn: 'Creed',
+    badge: 'أصول أهل السنة',
+    descriptionAr: 'شرح عقيدة السلف الصالح في توحيد الأسماء والصفات والإيمان بالقضاء والقدر وصيانة جناب التوحيد.',
+    lessonsCount: 6,
+    audioStreamUrl: 'https://archive.org/download/wasetia_Badr/015.mp3',
+    lessons: [
+      { id: 'lm_01', number: 1, titleAr: 'قواعد منهج السلف في نصوص الأسماء والصفات دون تحريف ولا تعطيل', duration: '٤٦ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/015.mp3' },
+      { id: 'lm_02', number: 2, titleAr: 'إثبات الصفات الذاتية والفعلية لله تعالى على الوجه اللائق بجلاله', duration: '٥٠ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/016.mp3' },
+      { id: 'lm_03', number: 3, titleAr: 'القرآن كلام الله غير مخلوق منه بدأ وإليه يعود', duration: '٤٨ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/017.mp3' },
+      { id: 'lm_04', number: 4, titleAr: 'الإيمان برؤية المؤمنين لربهم يوم القيامة وسؤال القبر ونعيمه وعذابه', duration: '٥٢ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/018.mp3' },
+      { id: 'lm_05', number: 5, titleAr: 'مراتب الإيمان بالقدر الأربع: العلم والكتابة والمشيئة والخلق', duration: '٤٩ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/019.mp3' },
+      { id: 'lm_06', number: 6, titleAr: 'حقوق صحابة رسول الله ﷺ وأهل بيته ولزوم سنة الخلفاء الراشدين', duration: '٥٤ دقيقة', audioUrl: 'https://archive.org/download/wasetia_Badr/020.mp3' }
     ]
   }
 ];
@@ -11420,11 +11705,12 @@ const ALLAH_99_NAMES = [
     const tabs = [
       { id: 'all', titleAr: 'كافة السلاسل', titleEn: 'All Series', count: currentCourses.length },
       { id: 'schedule', titleAr: selectedMosque === 'makkah' ? 'كراسي الحرم المكي' : 'كراسي المسجد النبوي', titleEn: 'Live Chairs', count: currentSchedule.length },
-      { id: 'العقيدة', titleAr: 'العقيدة', titleEn: 'Creed' },
-      { id: 'الحديث', titleAr: 'الحديث', titleEn: 'Hadith' },
-      { id: 'الفقه', titleAr: 'الفقه', titleEn: 'Fiqh' },
-      { id: 'التفسير', titleAr: 'التفسير', titleEn: 'Tafsir' },
-      { id: 'سيرة ورقائق', titleAr: 'السيرة والرقائق', titleEn: 'Seerah' }
+      { id: 'العقيدة', titleAr: 'العقيدة', titleEn: 'Creed', count: currentCourses.filter((cs) => cs.categoryAr === 'العقيدة').length },
+      { id: 'الفقه', titleAr: 'الفقه', titleEn: 'Fiqh', count: currentCourses.filter((cs) => cs.categoryAr === 'الفقه').length },
+      { id: 'أصول الفقه', titleAr: 'أصول الفقه', titleEn: 'Usul al-Fiqh', count: currentCourses.filter((cs) => cs.categoryAr === 'أصول الفقه').length },
+      { id: 'الحديث', titleAr: 'الحديث', titleEn: 'Hadith', count: currentCourses.filter((cs) => cs.categoryAr === 'الحديث').length },
+      { id: 'التفسير', titleAr: 'التفسير', titleEn: 'Tafsir', count: currentCourses.filter((cs) => cs.categoryAr === 'التفسير').length },
+      { id: 'سيرة ورقائق', titleAr: 'السيرة والرقائق', titleEn: 'Seerah', count: currentCourses.filter((cs) => cs.categoryAr === 'سيرة ورقائق').length }
     ];
 
     const filteredCourses = currentCourses.filter((course) => {
@@ -12259,8 +12545,7 @@ const ALLAH_99_NAMES = [
                       const matchedCourse = currentCourses.find(
                         (cs) => cs.scholarAr.includes(chair.scholarAr.split(' ')[2] || '') || cs.titleAr.includes(chair.bookAr.split(' ')[0] || '')
                       ) || currentCourses[0];
-                      setSelectedLessonCourse(matchedCourse);
-                      setLessonModalVisible(true);
+                      openFullCourseView(matchedCourse);
                       triggerHapticFeedback('light');
                     }}
                     style={{
@@ -12345,20 +12630,21 @@ const ALLAH_99_NAMES = [
                   </TextUI>
                 </View>
               ) : (
-                filteredCourses.map((course) => (
+                filteredCourses.map((course) => {
+                  const savedProgress = lessonResumeStorage[course.id];
+                  return (
                   <TouchableOpacity
                     key={course.id}
                     activeOpacity={0.88}
                     onPress={() => {
-                      setSelectedLessonCourse(course);
-                      setLessonModalVisible(true);
+                      openFullCourseView(course);
                       triggerHapticFeedback('light');
                     }}
                     style={{
                       backgroundColor: c.surface,
                       borderRadius: TOKENS.radius.lg,
                       borderWidth: 1,
-                      borderColor: c.border,
+                      borderColor: savedProgress ? '#C69255' : c.border,
                       padding: 16,
                       marginBottom: 14,
                       position: 'relative',
@@ -12407,9 +12693,32 @@ const ALLAH_99_NAMES = [
                       </TextUI>
                     </View>
 
-                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 12, width: '100%' }}>
+                    <TextUI size={12} color={c.textSecondary} style={{ lineHeight: 18, marginBottom: 10, width: '100%' }}>
                       {course.descriptionAr}
                     </TextUI>
+
+                    {/* Saved Resume Progress Banner on Course Card */}
+                    {savedProgress && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          backgroundColor: themeMode === 'light' ? '#FFF9E6' : '#2D2314',
+                          borderWidth: 1,
+                          borderColor: 'rgba(198, 146, 85, 0.45)',
+                          borderRadius: TOKENS.radius.md,
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          marginBottom: 10
+                        }}
+                      >
+                        <Feather name="bookmark" size={12} color="#D97706" />
+                        <TextUI size={11} weight="bold" color="#B45309">
+                          {`استئناف: الدرس ${toArabicNumber(savedProgress.lessonNumber)} • الدقيقة ${formatAudioTime(savedProgress.seconds)}`}
+                        </TextUI>
+                      </View>
+                    )}
 
                     {/* Footer Row */}
                     <View
@@ -12434,31 +12743,24 @@ const ALLAH_99_NAMES = [
                           activeOpacity={0.8}
                           onPress={(e) => {
                             try { e.stopPropagation?.(); } catch (err) {}
-                            const firstLesson = course.lessons && course.lessons.length > 0 ? course.lessons[0] : null;
-                            if (firstLesson) {
-                              setSelectedLessonCourse(course);
-                              setActiveCourse(course);
-                              setActiveLesson(firstLesson);
-                              playLessonAudio(course, firstLesson);
-                              setIsLessonPageOpen(true);
-                              triggerHapticFeedback('medium');
-                            }
+                            openFullCourseView(course);
+                            triggerHapticFeedback('medium');
                           }}
                           style={{
                             flexDirection: 'row',
                             alignItems: 'center',
                             gap: 4,
-                            paddingHorizontal: 9,
-                            paddingVertical: 4,
+                            paddingHorizontal: 10,
+                            paddingVertical: 5,
                             borderRadius: TOKENS.radius.pill,
-                            backgroundColor: selectedMosque === 'makkah' ? TOKENS.colors.primaryLight : '#E8F5E9',
+                            backgroundColor: savedProgress ? (themeMode === 'light' ? '#FFF3CD' : '#423315') : (selectedMosque === 'makkah' ? TOKENS.colors.primaryLight : '#E8F5E9'),
                             borderWidth: 1,
-                            borderColor: selectedMosque === 'makkah' ? TOKENS.colors.secondary : '#A5D6A7'
+                            borderColor: savedProgress ? '#D97706' : (selectedMosque === 'makkah' ? TOKENS.colors.secondary : '#A5D6A7')
                           }}
                         >
-                          <Feather name="play" size={11} color={selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E'} />
-                          <TextUI size={11} weight="bold" color={selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E'}>
-                            {t('فتح الدرس', 'Open Lesson')}
+                          <Feather name={savedProgress ? 'play-circle' : 'play'} size={12} color={savedProgress ? '#D97706' : (selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E')} />
+                          <TextUI size={11.5} weight="bold" color={savedProgress ? '#B45309' : (selectedMosque === 'makkah' ? TOKENS.colors.primaryDark : '#1E5A3E')}>
+                            {savedProgress ? t('استئناف الموضع', 'Resume') : t('فتح الشرح', 'Open Course')}
                           </TextUI>
                         </TouchableOpacity>
 
@@ -12471,7 +12773,7 @@ const ALLAH_99_NAMES = [
                       </View>
                     </View>
                   </TouchableOpacity>
-                ))
+                );})
               )}
             </View>
           )}
@@ -12873,7 +13175,19 @@ const ALLAH_99_NAMES = [
             {/* Lesson Page Header */}
             <Header
               title={t('صفحة الدرس', 'Lesson Page')}
-              onBack={() => setIsLessonPageOpen(false)}
+              onBack={() => {
+                if (activeCourse && activeLesson) {
+                  saveLessonProgress(
+                    activeCourse.id,
+                    activeLesson.id,
+                    activeLesson.number,
+                    activeLesson.titleAr,
+                    audioCurrentSecs,
+                    audioTotalSecs
+                  );
+                }
+                setIsLessonPageOpen(false);
+              }}
               rightAction={
                 <TouchableOpacity
                   activeOpacity={0.8}
@@ -12905,9 +13219,69 @@ const ALLAH_99_NAMES = [
             />
 
             <ScrollView
+              ref={lessonsScrollRef}
               style={{ flex: 1 }}
               contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
             >
+              {/* Previous Saved Stop Point Banner (استئناف من حيث توقفت) */}
+              {lessonResumeStorage[activeCourse.id] && (
+                <View
+                  style={{
+                    backgroundColor: themeMode === 'light' ? '#FFF9E6' : '#2D2314',
+                    borderWidth: 1.5,
+                    borderColor: '#D97706',
+                    borderRadius: TOKENS.radius.lg,
+                    padding: 13,
+                    marginBottom: 14,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    ...makeShadow('0 2px 8px rgba(217,119,6,0.15)', '#D97706', 0.15, 4, { width: 0, height: 2 }, 2)
+                  }}
+                >
+                  <View style={{ flex: 1, marginEnd: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <Feather name="bookmark" size={13} color="#D97706" />
+                      <TextUI size={11.5} weight="bold" color="#B45309">
+                        {t('موضعك المسجل في هذه السلسلة', 'Your Saved Position in this Series')}
+                      </TextUI>
+                    </View>
+                    <TextUI size={12.5} weight="bold" color={c.textPrimary} numberOfLines={1}>
+                      {`الدرس ${toArabicNumber(lessonResumeStorage[activeCourse.id].lessonNumber)}: ${lessonResumeStorage[activeCourse.id].lessonTitle}`}
+                    </TextUI>
+                    <TextUI size={11} color={c.textSecondary} style={{ marginTop: 2 }}>
+                      {`عند الدقيقة: ${formatAudioTime(lessonResumeStorage[activeCourse.id].seconds)}`}
+                    </TextUI>
+                  </View>
+
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      const savedProg = lessonResumeStorage[activeCourse.id];
+                      const matched = activeCourse.lessons?.find((l: any) => l.id === savedProg.lessonId) || activeCourse.lessons?.[0];
+                      if (matched) {
+                        setActiveLesson(matched);
+                        playLessonAudio(activeCourse, matched, savedProg.seconds);
+                        triggerHapticFeedback('medium');
+                      }
+                    }}
+                    style={{
+                      backgroundColor: '#D97706',
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: TOKENS.radius.pill,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6
+                    }}
+                  >
+                    <Feather name="play" size={12} color="#FFFFFF" />
+                    <TextUI size={11} weight="bold" color="#FFFFFF">
+                      {t('استئناف الآن', 'Resume')}
+                    </TextUI>
+                  </TouchableOpacity>
+                </View>
+              )}
               {/* Mosque & Series Breadcrumb Header Card */}
               <View
                 style={{
