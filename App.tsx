@@ -11711,14 +11711,14 @@ const ALLAH_99_NAMES = [
     const currentSchedule = selectedMosque === 'makkah' ? MAKKAH_MOSQUE_SCHEDULE : PROPHET_MOSQUE_SCHEDULE;
 
     const tabs = [
-      { id: 'all', titleAr: 'كافة السلاسل', titleEn: 'All Series', count: currentCourses.length },
-      { id: 'schedule', titleAr: selectedMosque === 'makkah' ? 'كراسي الحرم المكي' : 'كراسي المسجد النبوي', titleEn: 'Live Chairs', count: currentSchedule.length },
+      { id: 'all', titleAr: 'الكل', titleEn: 'All', count: currentCourses.length },
       { id: 'العقيدة', titleAr: 'العقيدة', titleEn: 'Creed', count: currentCourses.filter((cs) => cs.categoryAr === 'العقيدة').length },
       { id: 'الفقه', titleAr: 'الفقه', titleEn: 'Fiqh', count: currentCourses.filter((cs) => cs.categoryAr === 'الفقه').length },
       { id: 'أصول الفقه', titleAr: 'أصول الفقه', titleEn: 'Usul al-Fiqh', count: currentCourses.filter((cs) => cs.categoryAr === 'أصول الفقه').length },
       { id: 'الحديث', titleAr: 'الحديث', titleEn: 'Hadith', count: currentCourses.filter((cs) => cs.categoryAr === 'الحديث').length },
       { id: 'التفسير', titleAr: 'التفسير', titleEn: 'Tafsir', count: currentCourses.filter((cs) => cs.categoryAr === 'التفسير').length },
-      { id: 'سيرة ورقائق', titleAr: 'السيرة والرقائق', titleEn: 'Seerah', count: currentCourses.filter((cs) => cs.categoryAr === 'سيرة ورقائق').length }
+      { id: 'سيرة ورقائق', titleAr: 'السيرة والرقائق', titleEn: 'Seerah', count: currentCourses.filter((cs) => cs.categoryAr === 'سيرة ورقائق').length },
+      { id: 'schedule', titleAr: 'كراسي الحرم', titleEn: 'Chairs', count: currentSchedule.length }
     ];
 
     const filteredCourses = currentCourses.filter((course) => {
@@ -11878,11 +11878,11 @@ const ALLAH_99_NAMES = [
         )}
 
         {/* Categories Tab Strip */}
-        <View style={{ paddingVertical: 10 }}>
+        <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: c.border }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: 'center' }}
           >
             {tabs.map((tab) => {
               const isSelected = lessonCategoryTab === tab.id;
@@ -11898,13 +11898,11 @@ const ALLAH_99_NAMES = [
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 14,
-                    paddingVertical: 8,
+                    paddingVertical: 7,
                     borderRadius: TOKENS.radius.pill,
-                    backgroundColor: isSelected
-                      ? (tab.id === 'schedule' ? '#1E5A3E' : TOKENS.colors.primary)
-                      : c.surface,
+                    backgroundColor: isSelected ? '#1E5A3E' : (themeMode === 'light' ? '#F4F2ED' : '#2A221B'),
                     borderWidth: 1,
-                    borderColor: isSelected ? 'transparent' : c.border,
+                    borderColor: isSelected ? '#1E5A3E' : c.border,
                     gap: 6
                   }}
                 >
@@ -11921,13 +11919,16 @@ const ALLAH_99_NAMES = [
                   {tab.count !== undefined && (
                     <View
                       style={{
-                        backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : c.bgSecondary,
-                        paddingHorizontal: 6,
-                        paddingVertical: 1,
-                        borderRadius: TOKENS.radius.pill
+                        backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : (themeMode === 'light' ? '#EAE5DB' : '#3A2E26'),
+                        paddingHorizontal: 7,
+                        paddingVertical: 1.5,
+                        borderRadius: TOKENS.radius.pill,
+                        minWidth: 18,
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      <TextUI size={10} weight="bold" color={isSelected ? '#FFFFFF' : c.textSecondary}>
+                      <TextUI size={10.5} weight="bold" color={isSelected ? '#FFFFFF' : TOKENS.colors.primaryDark}>
                         {toArabicNumber(tab.count)}
                       </TextUI>
                     </View>
@@ -11940,517 +11941,6 @@ const ALLAH_99_NAMES = [
 
         {/* Scrollable Content Body */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-          {/* Active Scholarly Deck Audio Player (عند وجود درس قيد التشغيل) */}
-          {activeLesson && activeCourse && (
-            <View
-              style={{
-                backgroundColor: themeMode === 'light' ? '#F4F9F5' : '#1E2B22',
-                borderRadius: TOKENS.radius.lg,
-                borderWidth: 1.5,
-                borderColor: '#1E5A3E',
-                padding: 18,
-                marginBottom: 20,
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-            >
-              <ArabesqueWatermark opacity={0.07} color="#1E5A3E" />
-              <View style={{ width: '100%', marginBottom: 6 }}>
-                <MoorishArchFrame height={16} color="#1E5A3E" opacity={0.8} />
-              </View>
-
-              {/* Status Row */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 8 }}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    setIsLessonPageOpen(true);
-                    triggerHapticFeedback('light');
-                  }}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                >
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isCurrentLessonPlaying ? '#2E7D32' : c.textSecondary }} />
-                  <TextUI size={11} weight="bold" color="#1E5A3E">
-                    {isCurrentLessonPlaying ? t('مجلس علمي قيد الاستماع', 'Now Playing Lesson') : t('الدرس المحدد', 'Selected Lesson')}
-                  </TextUI>
-                  <Feather name="maximize-2" size={12} color="#1E5A3E" />
-                </TouchableOpacity>
-
-                {/* Speed Selector Chips */}
-                <View style={{ flexDirection: 'row', gap: 4 }}>
-                  {[1.0, 1.25, 1.5, 2.0].map((spd) => (
-                    <TouchableOpacity
-                      key={spd}
-                      onPress={() => changeLessonPlaybackSpeed(spd)}
-                      style={{
-                        paddingHorizontal: 7,
-                        paddingVertical: 3,
-                        borderRadius: 6,
-                        backgroundColor: lessonPlaybackSpeed === spd ? '#1E5A3E' : (themeMode === 'light' ? '#FFFFFF' : '#2A3A2F'),
-                        borderWidth: 1,
-                        borderColor: lessonPlaybackSpeed === spd ? '#1E5A3E' : c.border
-                      }}
-                    >
-                      <TextUI size={10} weight="bold" color={lessonPlaybackSpeed === spd ? '#FFFFFF' : c.textPrimary}>
-                        {spd}x
-                      </TextUI>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Lesson Title & Course (Tapping opens dedicated Lesson Page) */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                onPress={() => {
-                  setIsLessonPageOpen(true);
-                  triggerHapticFeedback('light');
-                }}
-              >
-                <TextUI weight="bold" size={17} color={TOKENS.colors.primaryDark} style={{ textAlign: 'center', marginBottom: 4 }}>
-                  {activeLesson.titleAr}
-                </TextUI>
-                <TextUI size={13} color={c.textSecondary} style={{ textAlign: 'center', marginBottom: 12 }}>
-                  {`${activeCourse.scholarAr} • ${activeCourse.titleAr}`}
-                </TextUI>
-              </TouchableOpacity>
-
-              {/* Interactive Progress Slider Bar */}
-              <TouchableOpacity
-                activeOpacity={0.88}
-                onPress={(e: any) => {
-                  try {
-                    const locX = e.nativeEvent?.locationX || 0;
-                    // Approximate or responsive percentage based on typical layout width
-                    const barWidth = 310;
-                    const ratio = Math.max(0, Math.min(1, locX / barWidth));
-                    if (audioTotalSecs > 0) {
-                      seekAudioToTime(Math.round(ratio * audioTotalSecs));
-                    }
-                  } catch (err) {}
-                }}
-                style={{ width: '100%', paddingVertical: 6, marginBottom: 2 }}
-              >
-                <View style={{ width: '100%', height: 6, backgroundColor: c.border, borderRadius: 3, overflow: 'hidden' }}>
-                  <View style={{ height: '100%', width: `${Math.max(2, audioProgress)}%`, backgroundColor: '#1E5A3E', borderRadius: 3 }} />
-                </View>
-              </TouchableOpacity>
-
-              {/* Time Indicators: Elapsed, Remaining Countdown, and Total Duration */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 14 }}>
-                {/* Elapsed Time */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Feather name="clock" size={12} color="#1E5A3E" />
-                  <TextUI size={12} weight="bold" color="#1E5A3E">
-                    {audioCurrentTime}
-                  </TextUI>
-                </View>
-
-                {/* Remaining Time Countdown */}
-                <View
-                  style={{
-                    backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#1A2E20',
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: '#81C784'
-                  }}
-                >
-                  <TextUI size={11} weight="bold" color="#2E7D32">
-                    {`متبقي ${audioRemainingTime}`}
-                  </TextUI>
-                </View>
-
-                {/* Total Duration */}
-                <TextUI size={11} color={c.textSecondary}>
-                  {audioDuration || activeLesson.duration}
-                </TextUI>
-              </View>
-
-              {/* Controls Row: -15s, Play/Pause, +15s */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-                {/* Replay 15 seconds button */}
-                <TouchableOpacity
-                  onPress={() => skipAudioSeconds(-15)}
-                  activeOpacity={0.8}
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 23,
-                    backgroundColor: c.surface,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 1,
-                    borderColor: c.border
-                  }}
-                >
-                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                    <Feather name="rotate-ccw" size={17} color={c.textPrimary} />
-                    <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥-</TextUI>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Main Play / Pause Button */}
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={toggleLessonAudioPlayback}
-                  style={{
-                    width: 62,
-                    height: 62,
-                    borderRadius: 31,
-                    backgroundColor: '#1E5A3E',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    ...makeShadow('0 4px 14px rgba(30, 90, 62, 0.4)', '#1E5A3E', 0.4, 6, { width: 0, height: 3 }, 6)
-                  }}
-                >
-                  <Feather name={isCurrentLessonPlaying ? 'pause' : 'play'} size={28} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                {/* Forward 15 seconds button */}
-                <TouchableOpacity
-                  onPress={() => skipAudioSeconds(15)}
-                  activeOpacity={0.8}
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 23,
-                    backgroundColor: c.surface,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 1,
-                    borderColor: c.border
-                  }}
-                >
-                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                    <Feather name="rotate-cw" size={17} color={c.textPrimary} />
-                    <TextUI size={9} weight="bold" color={c.textSecondary} style={{ marginTop: -1 }}>١٥+</TextUI>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* DIRECT MINUTE JUMP BOX (مربع كتابة الدقيقة والانتقال الفوري للصوت) */}
-              <View
-                style={{
-                  marginTop: 14,
-                  backgroundColor: themeMode === 'light' ? '#FBF8F3' : '#221914',
-                  borderRadius: TOKENS.radius.lg,
-                  padding: 12,
-                  borderWidth: 1,
-                  borderColor: 'rgba(198, 146, 85, 0.28)'
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <View
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 12,
-                        backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.15)' : 'rgba(198, 146, 85, 0.25)',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <Feather name="clock" size={12} color={TOKENS.colors.primary} />
-                    </View>
-                    <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
-                      {t('الانتقال المباشر لدقيقة معينة:', 'Jump directly to minute:')}
-                    </TextUI>
-                  </View>
-                  <TextUI size={10} color={c.textSecondary}>
-                    {t('مثال: 15 أو 15:30', 'e.g. 15 or 15:30')}
-                  </TextUI>
-                </View>
-
-                {/* Input row + Jump Button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <TextInput
-                    value={minuteJumpInput}
-                    onChangeText={setMinuteJumpInput}
-                    placeholder={t('اكتب الدقيقة (مثلاً: 12 أو 12:30)', 'Enter minute (e.g. 12 or 12:30)')}
-                    placeholderTextColor={c.textSecondary}
-                    keyboardType="numeric"
-                    onSubmitEditing={() => handleJumpToMinute()}
-                    returnKeyType="go"
-                    style={{
-                      flex: 1,
-                      height: 40,
-                      backgroundColor: c.surface,
-                      borderRadius: TOKENS.radius.md,
-                      paddingHorizontal: 12,
-                      fontSize: 13,
-                      color: c.textPrimary,
-                      textAlign: isRTL ? 'right' : 'left',
-                      borderWidth: 1,
-                      borderColor: c.border
-                    }}
-                  />
-                  <TouchableOpacity
-                    onPress={() => handleJumpToMinute()}
-                    activeOpacity={0.8}
-                    style={{
-                      height: 40,
-                      paddingHorizontal: 16,
-                      borderRadius: TOKENS.radius.md,
-                      backgroundColor: TOKENS.colors.primary,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'row',
-                      gap: 6,
-                      ...makeShadow('0 2px 6px rgba(198, 146, 85, 0.3)', TOKENS.colors.primary, 0.3, 4, { width: 0, height: 2 }, 3)
-                    }}
-                  >
-                    <Feather name="play" size={13} color="#FFFFFF" />
-                    <TextUI size={12} weight="bold" color="#FFFFFF">
-                      {t('انتقال', 'Jump')}
-                    </TextUI>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Quick Minute Jump Chips */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  <TextUI size={10} color={c.textSecondary} style={{ marginEnd: 2 }}>
-                    {t('دقائق سريعة:', 'Quick:')}
-                  </TextUI>
-                  {['5', '10', '15', '20', '30', '45'].map((min) => (
-                    <TouchableOpacity
-                      key={`quick-min-${min}`}
-                      onPress={() => handleJumpToMinute(min)}
-                      activeOpacity={0.7}
-                      style={{
-                        paddingVertical: 3,
-                        paddingHorizontal: 8,
-                        borderRadius: TOKENS.radius.pill,
-                        backgroundColor: c.surface,
-                        borderWidth: 1,
-                        borderColor: 'rgba(198, 146, 85, 0.3)'
-                      }}
-                    >
-                      <TextUI size={10.5} weight="bold" color={TOKENS.colors.primary}>
-                        {`${toArabicNumber(min)} د`}
-                      </TextUI>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* OFFLINE STORAGE & DOWNLOAD ACTION CARD */}
-              <View
-                style={{
-                  marginTop: 16,
-                  paddingTop: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: c.border
-                }}
-              >
-                {activeLesson?.id && downloadedLessons[activeLesson.id] ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginEnd: 8 }}>
-                      <Feather name="check-circle" size={15} color="#2E7D32" />
-                      <View>
-                        <TextUI size={12} weight="bold" color="#2E7D32">
-                          محفوظ في ذاكرة الجوال (أوفلاين)
-                        </TextUI>
-                        <TextUI size={10} color={c.textSecondary}>
-                          {`الحجم: ${downloadedLessons[activeLesson.id]?.sizeMB || '0'} • الذاكرة المحلية`}
-                        </TextUI>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => activeLesson?.id && deleteDownloadedLesson(activeLesson.id)}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 4,
-                        paddingHorizontal: 10,
-                        paddingVertical: 6,
-                        borderRadius: 8,
-                        backgroundColor: '#FFEBEE',
-                        borderWidth: 1,
-                        borderColor: '#FFCDD2'
-                      }}
-                    >
-                      <Feather name="trash-2" size={12} color="#C62828" />
-                      <TextUI size={11} weight="bold" color="#C62828">
-                        حذف لتوفير المساحة
-                      </TextUI>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <TouchableOpacity
-                      onPress={() => setAudioStorageInfoVisible(!audioStorageInfoVisible)}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1, marginEnd: 8 }}
-                    >
-                      <Feather name="hard-drive" size={13} color={c.textSecondary} />
-                      <TextUI size={11} color={c.textSecondary} style={{ textDecorationLine: 'underline' }}>
-                        أين تُخزن المحاضرة؟
-                      </TextUI>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      disabled={!activeLesson?.id || !!downloadingLessonIds[activeLesson.id]}
-                      onPress={() => activeCourse && activeLesson && downloadLessonAudio(activeCourse, activeLesson)}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 5,
-                        paddingHorizontal: 12,
-                        paddingVertical: 7,
-                        borderRadius: 8,
-                        backgroundColor: '#1E5A3E'
-                      }}
-                    >
-                      <Feather name="download" size={13} color="#FFFFFF" />
-                      <TextUI size={11} weight="bold" color="#FFFFFF">
-                        {activeLesson?.id && downloadingLessonIds[activeLesson.id]
-                          ? `جارٍ التحميل ${downloadingLessonIds[activeLesson.id]}%...`
-                          : 'تحميل للاستماع أوفلاين'}
-                      </TextUI>
-                    </TouchableOpacity>
-                  </View>
-                )}
-
-                {/* Explanatory Storage Box */}
-                {audioStorageInfoVisible && (
-                  <View
-                    style={{
-                      marginTop: 10,
-                      padding: 10,
-                      borderRadius: 8,
-                      backgroundColor: themeMode === 'light' ? '#EBF3ED' : '#223326',
-                      borderWidth: 1,
-                      borderColor: '#A5D6A7'
-                    }}
-                  >
-                    <TextUI size={11} color={TOKENS.colors.primaryDark} style={{ lineHeight: 17 }}>
-                      ℹ️ <TextUI weight="bold" size={11}>مكان التخزين:</TextUI> تُحفظ المحاضرات محلياً في ذاكرة التخزين المستدامة للتطبيق (App Cache / Storage) لتعمل بدون اتصال، ويمكنك حذف أي محاضرة بعد الاستماع إليها بضغطة زر واحدة لتفريغ مساحة هاتفك فوراً.
-                    </TextUI>
-                  </View>
-                )}
-              </View>
-
-              {/* LESSON NOTES & TIMESTAMPS SECTION */}
-              <View
-                style={{
-                  marginTop: 14,
-                  paddingTop: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: c.border
-                }}
-              >
-                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-                  {/* Quick Bookmark Stop Position Button */}
-                  <TouchableOpacity
-                    onPress={saveQuickLessonBookmark}
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                      paddingVertical: 8,
-                      paddingHorizontal: 8,
-                      borderRadius: 8,
-                      backgroundColor: themeMode === 'light' ? '#E8F5E9' : '#203225',
-                      borderWidth: 1,
-                      borderColor: '#1E5A3E'
-                    }}
-                  >
-                    <Feather name="bookmark" size={13} color="#1E5A3E" />
-                    <TextUI size={11} weight="bold" color="#1E5A3E">
-                      {`حفظ الوقفة (${audioCurrentTime})`}
-                    </TextUI>
-                  </TouchableOpacity>
-
-                  {/* Add Custom Scientific Note Button */}
-                  <TouchableOpacity
-                    onPress={() => {
-                      setNewNoteTimestampSecs(audioCurrentSecs);
-                      setLessonNoteModalVisible(true);
-                    }}
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                      paddingVertical: 8,
-                      paddingHorizontal: 8,
-                      borderRadius: 8,
-                      backgroundColor: themeMode === 'light' ? '#F0E8DE' : '#33271D',
-                      borderWidth: 1,
-                      borderColor: TOKENS.colors.primary
-                    }}
-                  >
-                    <Feather name="edit-3" size={13} color={TOKENS.colors.primary} />
-                    <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
-                      + تدوين فائدة علمية
-                    </TextUI>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Display Saved Notes for this lesson */}
-                {activeLesson?.id && lessonNotes[activeLesson.id] && lessonNotes[activeLesson.id].length > 0 && (
-                  <View style={{ marginTop: 4 }}>
-                    <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginBottom: 6 }}>
-                      {`الوقفات والملاحظات المحفوظة لهذا الدرس (${toArabicNumber(lessonNotes[activeLesson.id].length)}):`}
-                    </TextUI>
-                    {lessonNotes[activeLesson.id].map((note) => (
-                      <View
-                        key={note.id}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          backgroundColor: c.surface,
-                          borderRadius: 8,
-                          paddingVertical: 7,
-                          paddingHorizontal: 10,
-                          borderWidth: 1,
-                          borderColor: c.border,
-                          marginBottom: 6
-                        }}
-                      >
-                        <TouchableOpacity
-                          onPress={() => jumpToNoteTimestamp(note.timeSecs)}
-                          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, marginEnd: 8 }}
-                        >
-                          <View
-                            style={{
-                              backgroundColor: '#1E5A3E',
-                              paddingHorizontal: 7,
-                              paddingVertical: 3,
-                              borderRadius: 6,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 3
-                            }}
-                          >
-                            <Feather name="play" size={9} color="#FFFFFF" />
-                            <TextUI size={10} weight="bold" color="#FFFFFF">{note.timeStr}</TextUI>
-                          </View>
-                          <TextUI size={11} color={c.textPrimary} numberOfLines={2} style={{ flex: 1 }}>
-                            {note.noteText}
-                          </TextUI>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={() => activeLesson?.id && deleteLessonNote(activeLesson.id, note.id)}
-                          style={{ padding: 4 }}
-                        >
-                          <Feather name="trash-2" size={13} color={c.textSecondary} />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-
           {/* VIEW MODE A: SCHEDULE OF SCHOLARLY CHAIRS (كراسي الحرم النبوي الحية) */}
           {lessonCategoryTab === 'schedule' ? (
             <View>
@@ -13828,10 +13318,12 @@ const ALLAH_99_NAMES = [
                       }}
                       style={{
                         flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 6,
+                        gap: 8,
                         paddingVertical: 12,
                         paddingHorizontal: 10,
                         borderRadius: TOKENS.radius.md,
@@ -13841,10 +13333,10 @@ const ALLAH_99_NAMES = [
                         opacity: prevLesson ? 1 : 0.5
                       }}
                     >
-                      <Feather name={isRTL ? 'chevron-right' : 'chevron-left'} size={16} color={prevLesson ? '#1E5A3E' : c.textSecondary} />
-                      <View style={{ alignItems: 'flex-start' }}>
+                      <Feather name={isRTL ? 'chevron-right' : 'chevron-left'} size={18} color={prevLesson ? '#1E5A3E' : c.textSecondary} />
+                      <View style={{ flex: 1, minWidth: 0, overflow: 'hidden', alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                         <TextUI size={11} color={c.textSecondary}>الدرس السابق</TextUI>
-                        <TextUI size={12} weight="bold" color={prevLesson ? '#1E5A3E' : c.textSecondary} numberOfLines={1}>
+                        <TextUI size={11.5} weight="bold" color={prevLesson ? '#1E5A3E' : c.textSecondary} numberOfLines={1} ellipsizeMode="tail">
                           {prevLesson ? prevLesson.titleAr : 'بداية السلسلة'}
                         </TextUI>
                       </View>
@@ -13863,10 +13355,12 @@ const ALLAH_99_NAMES = [
                       }}
                       style={{
                         flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 6,
+                        gap: 8,
                         paddingVertical: 12,
                         paddingHorizontal: 10,
                         borderRadius: TOKENS.radius.md,
@@ -13876,13 +13370,13 @@ const ALLAH_99_NAMES = [
                         opacity: nextLesson ? 1 : 0.5
                       }}
                     >
-                      <View style={{ alignItems: 'flex-end' }}>
+                      <View style={{ flex: 1, minWidth: 0, overflow: 'hidden', alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
                         <TextUI size={11} color={nextLesson ? 'rgba(255,255,255,0.8)' : c.textSecondary}>الدرس التالي</TextUI>
-                        <TextUI size={12} weight="bold" color={nextLesson ? '#FFFFFF' : c.textSecondary} numberOfLines={1}>
+                        <TextUI size={11.5} weight="bold" color={nextLesson ? '#FFFFFF' : c.textSecondary} numberOfLines={1} ellipsizeMode="tail">
                           {nextLesson ? nextLesson.titleAr : 'نهاية السلسلة'}
                         </TextUI>
                       </View>
-                      <Feather name={isRTL ? 'chevron-left' : 'chevron-right'} size={16} color={nextLesson ? '#FFFFFF' : c.textSecondary} />
+                      <Feather name={isRTL ? 'chevron-left' : 'chevron-right'} size={18} color={nextLesson ? '#FFFFFF' : c.textSecondary} />
                     </TouchableOpacity>
                   </View>
                 );
@@ -13966,6 +13460,92 @@ const ALLAH_99_NAMES = [
               </View>
             </ScrollView>
           </View>
+        )}
+
+        {/* Floating Mini Player Pill when audio is playing in the background while browsing */}
+        {audioPlaying && activeLesson && activeCourse && !isLessonPageOpen && (
+          <TouchableOpacity
+            activeOpacity={0.92}
+            onPress={() => {
+              setIsLessonPageOpen(true);
+              triggerHapticFeedback('light');
+            }}
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              left: 14,
+              right: 14,
+              backgroundColor: '#1E5A3E',
+              borderRadius: TOKENS.radius.lg,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 999,
+              elevation: 8,
+              ...makeShadow('0 4px 16px rgba(30,90,62,0.4)', '#1E5A3E', 0.4, 6, { width: 0, height: 4 }, 4)
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, marginEnd: 8 }}>
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Feather name="headphones" size={17} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <TextUI size={12.5} weight="bold" color="#FFFFFF" numberOfLines={1}>
+                  {activeLesson.titleAr}
+                </TextUI>
+                <TextUI size={11} color="rgba(255,255,255,0.85)" numberOfLines={1}>
+                  {`${activeCourse.scholarAr} • ${audioCurrentTime}`}
+                </TextUI>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity
+                onPress={(e) => {
+                  try { e.stopPropagation?.(); } catch (err) {}
+                  toggleLessonAudioPlayback();
+                }}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  backgroundColor: '#FFFFFF',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Feather name={audioPlaying ? 'pause' : 'play'} size={16} color="#1E5A3E" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={(e) => {
+                  try { e.stopPropagation?.(); } catch (err) {}
+                  stopAllAudioPlayback();
+                  setActiveLesson(null);
+                }}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: 'rgba(255,255,255,0.18)',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Feather name="x" size={14} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         )}
       </View>
     );
