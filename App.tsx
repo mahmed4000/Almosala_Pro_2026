@@ -1239,6 +1239,14 @@ const toArabicNumber = (num: number | string) => {
   return String(num).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d, 10)]);
 };
 
+// Global helper for formatting audio timestamps (MM:SS in Arabic numerals)
+const formatAudioTime = (seconds?: number) => {
+  const secs = Math.max(0, Math.floor(seconds || 0));
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return `${toArabicNumber(m)}:${toArabicNumber(s)}`;
+};
+
 // Surah names with authentic full diacritics / tashkeel as in the Holy Quran
 const SURAH_TASHKEEL: Record<number, string> = {
   1: 'الفَاتِحَةِ',
