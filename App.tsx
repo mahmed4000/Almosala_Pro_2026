@@ -1656,9 +1656,9 @@ function AlmosalaApp() {
   const [isLessonPageOpen, setIsLessonPageOpen] = useState<boolean>(false);
   const lessonsScrollRef = useRef<any>(null);
   const [currentAudioType, setCurrentAudioType] = useState<'quran' | 'lesson'>('quran');
-  const [activeCourse, setActiveCourse] = useState<any>(() => (typeof PROPHET_MOSQUE_COURSES !== 'undefined' ? PROPHET_MOSQUE_COURSES[0] : null));
-  const [activeLesson, setActiveLesson] = useState<any>(() => (typeof PROPHET_MOSQUE_COURSES !== 'undefined' && PROPHET_MOSQUE_COURSES[0]?.lessons ? PROPHET_MOSQUE_COURSES[0].lessons[0] : null));
-  const [selectedLessonCourse, setSelectedLessonCourse] = useState<any>(() => (typeof PROPHET_MOSQUE_COURSES !== 'undefined' ? PROPHET_MOSQUE_COURSES[0] : null));
+  const [activeCourse, setActiveCourse] = useState<any>(null);
+  const [activeLesson, setActiveLesson] = useState<any>(null);
+  const [selectedLessonCourse, setSelectedLessonCourse] = useState<any>(null);
   const [lessonModalVisible, setLessonModalVisible] = useState<boolean>(false);
   const [lessonPlaybackSpeed, setLessonPlaybackSpeed] = useState<number>(1.0);
   const [lessonCategoryTab, setLessonCategoryTab] = useState<string>('all');
