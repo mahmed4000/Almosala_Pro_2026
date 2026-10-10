@@ -3521,8 +3521,8 @@ function AlmosalaApp() {
     progress?: number;
   }) => {
     if (Platform.OS === 'web') {
-      const size = 88;
-      const strokeWidth = 5;
+      const size = 106;
+      const strokeWidth = 6.5;
       const center = size / 2;
       const radius = center - strokeWidth - 2;
       const circumference = 2 * Math.PI * radius;
@@ -3536,15 +3536,15 @@ function AlmosalaApp() {
               cx={center}
               cy={center}
               r={radius}
-              stroke="rgba(255, 255, 255, 0.15)"
+              stroke="rgba(255, 255, 255, 0.22)"
               strokeWidth={strokeWidth}
-              fill="none"
+              fill="rgba(0, 0, 0, 0.25)"
             />
             <circle
               cx={center}
               cy={center}
               r={radius}
-              stroke="#C69255"
+              stroke="#D4A373"
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -3553,17 +3553,17 @@ function AlmosalaApp() {
               style={{ transition: 'stroke-dashoffset 0.8s ease' }}
             />
           </svg>
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <TextUI size={9.5} color="#D8A868" weight="medium">{label}</TextUI>
-            <TextUI size={12.5} color="#FFFFFF" weight="bold" style={{ marginTop: 1 }}>{remainingText}</TextUI>
+          <View style={{ alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
+            <TextUI size={12} color="#F5ECE1" weight="bold">{label}</TextUI>
+            <TextUI size={17} color="#FFFFFF" weight="bold" style={{ marginTop: 2, letterSpacing: 0.5 }}>{remainingText}</TextUI>
           </View>
         </View>
       );
     }
     return (
-      <View style={{ alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, borderColor: '#C69255' }}>
-        <TextUI size={9.5} color="#D8A868" weight="medium">{label}</TextUI>
-        <TextUI size={12.5} color="#FFFFFF" weight="bold">{remainingText}</TextUI>
+      <View style={{ alignItems: 'center', justifyContent: 'center', width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(0,0,0,0.3)', borderWidth: 3, borderColor: '#D4A373' }}>
+        <TextUI size={12} color="#F5ECE1" weight="bold">{label}</TextUI>
+        <TextUI size={17} color="#FFFFFF" weight="bold" style={{ marginTop: 2 }}>{remainingText}</TextUI>
       </View>
     );
   };
@@ -4187,13 +4187,13 @@ function AlmosalaApp() {
               style={{ alignItems: 'center', flex: 1, paddingVertical: 4 }}
             >
               <Feather
-                name={tab.icon}
-                size={22}
+                name={tab.icon as any}
+                size={23}
                 color={isActive ? TOKENS.colors.primary : c.textSecondary}
               />
               <TextUI
-                weight={isActive ? 'bold' : 'regular'}
-                size={11}
+                weight={isActive ? 'bold' : 'medium'}
+                size={12.5}
                 color={isActive ? TOKENS.colors.primary : c.textSecondary}
                 style={{ marginTop: 3 }}
               >
@@ -4202,7 +4202,7 @@ function AlmosalaApp() {
               {isActive && (
                 <View
                   style={{
-                    width: 14,
+                    width: 16,
                     height: 3,
                     borderRadius: 2,
                     backgroundColor: TOKENS.colors.secondary,
@@ -5707,21 +5707,21 @@ function AlmosalaApp() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TextUI weight="bold" size={24} color={TOKENS.colors.primaryDark}>
+              <TextUI weight="bold" size={26} color={TOKENS.colors.primaryDark}>
                 {t('المصلى', 'Al-Mosala')}
               </TextUI>
               <View
                 style={{
                   backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#382E28',
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
                   borderRadius: TOKENS.radius.pill,
                   marginRight: 8,
                   borderWidth: 1,
                   borderColor: TOKENS.colors.secondary
                 }}
               >
-                <TextUI size={10} weight="bold" color={TOKENS.colors.primaryDark}>
+                <TextUI size={11.5} weight="bold" color={TOKENS.colors.primaryDark}>
                   {t('الأندلسي', 'Pro')}
                 </TextUI>
               </View>
@@ -5736,15 +5736,15 @@ function AlmosalaApp() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#2C221C',
-                  paddingVertical: 5,
-                  paddingHorizontal: 9,
+                  paddingVertical: 6,
+                  paddingHorizontal: 11,
                   borderRadius: TOKENS.radius.pill,
-                  borderWidth: 1,
+                  borderWidth: 1.5,
                   borderColor: TOKENS.colors.secondary
                 }}
               >
-                <Feather name="grid" size={13} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
-                <TextUI size={11} weight="bold" color={TOKENS.colors.primaryDark}>
+                <Feather name="grid" size={14} color={TOKENS.colors.primary} style={{ marginLeft: 5 }} />
+                <TextUI size={13} weight="bold" color={TOKENS.colors.primaryDark}>
                   {t(`كل الشاشات (${toArabicNumber(ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0))})`, `${ALL_APP_SCREENS.reduce((acc, s) => acc + s.items.length, 0)} Screens`)}
                 </TextUI>
               </TouchableOpacity>
@@ -5756,22 +5756,22 @@ function AlmosalaApp() {
                   padding: 3,
                   backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2A2019',
                   borderRadius: TOKENS.radius.pill,
-                  borderWidth: 1,
+                  borderWidth: 1.5,
                   borderColor: TOKENS.colors.secondary
                 }}
               >
-                <IslamicLogo size={36} />
+                <IslamicLogo size={38} />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Sub Line: Full-width Location & Hijri Date Bar (Never wrapped or truncated!) */}
+          {/* Sub Line: Full-width Location & Hijri Date Bar (Clear & Readable for all users) */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginTop: 6,
+              marginTop: 8,
               paddingTop: 2
             }}
           >
@@ -5781,17 +5781,17 @@ function AlmosalaApp() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: themeMode === 'light' ? 'rgba(140, 94, 60, 0.08)' : 'rgba(255, 255, 255, 0.08)',
-                paddingHorizontal: 8,
-                paddingVertical: 3,
+                backgroundColor: themeMode === 'light' ? 'rgba(140, 94, 60, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                paddingHorizontal: 10,
+                paddingVertical: 5,
                 borderRadius: TOKENS.radius.pill,
                 borderWidth: 1,
-                borderColor: 'rgba(198, 146, 85, 0.25)',
-                maxWidth: '52%'
+                borderColor: 'rgba(198, 146, 85, 0.35)',
+                maxWidth: '53%'
               }}
             >
-              <Feather name={currentCity.id === 'gps_live' ? 'crosshair' : 'map-pin'} size={11} color={TOKENS.colors.primary} style={{ marginLeft: 4 }} />
-              <TextUI size={11} weight="medium" color={TOKENS.colors.primary} numberOfLines={1}>
+              <Feather name={currentCity.id === 'gps_live' ? 'crosshair' : 'map-pin'} size={13} color={TOKENS.colors.primary} style={{ marginLeft: 5 }} />
+              <TextUI size={13} weight="bold" color={TOKENS.colors.primary} numberOfLines={1}>
                 {`${isRTL ? currentCity.nameAr : currentCity.nameEn} • ${t('تغيير', 'Change')}`}
               </TextUI>
             </TouchableOpacity>
@@ -5800,15 +5800,17 @@ function AlmosalaApp() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.08)' : 'rgba(255, 255, 255, 0.06)',
-                paddingHorizontal: 8,
-                paddingVertical: 3,
+                backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.12)' : 'rgba(255, 255, 255, 0.1)',
+                paddingHorizontal: 10,
+                paddingVertical: 5,
                 borderRadius: TOKENS.radius.pill,
+                borderWidth: 1,
+                borderColor: 'rgba(198, 146, 85, 0.35)',
                 maxWidth: '46%'
               }}
             >
-              <Feather name="calendar" size={11} color={c.textSecondary} style={{ marginLeft: 4 }} />
-              <TextUI size={11} color={c.textSecondary} numberOfLines={1}>
+              <Feather name="calendar" size={13} color={c.textSecondary} style={{ marginLeft: 5 }} />
+              <TextUI size={13} weight="bold" color={c.textPrimary} numberOfLines={1}>
                 {isRTL ? getFormattedHijriDate(hijriAdjustment).ar : getFormattedHijriDate(hijriAdjustment).en}
               </TextUI>
             </View>
@@ -5849,7 +5851,8 @@ function AlmosalaApp() {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                zIndex: 2
+                zIndex: 2,
+                gap: 10
               }}
             >
               {/* Right Side: Next Prayer Metadata */}
@@ -5857,23 +5860,23 @@ function AlmosalaApp() {
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View
                     style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
+                      width: 9,
+                      height: 9,
+                      borderRadius: 4.5,
                       backgroundColor: TOKENS.colors.secondary,
-                      marginLeft: 6
+                      marginLeft: 7
                     }}
                   />
-                  <TextUI size={12} weight="bold" color={TOKENS.colors.secondary}>
+                  <TextUI size={14.5} weight="bold" color="#D8B98A">
                     {t('الصلاة القادمة', 'NEXT PRAYER')}
                   </TextUI>
                 </View>
 
-                <TextUI weight="bold" size={32} color="#FFFFFF" style={{ marginTop: 2 }}>
+                <TextUI weight="bold" size={36} color="#FFFFFF" style={{ marginTop: 3 }}>
                   {isRTL ? nextPrayerInfo.nameAr : `${nextPrayerInfo.nameEn} Prayer`}
                 </TextUI>
 
-                <TextUI size={14} color="#F5ECE1" weight="medium" style={{ marginTop: 2 }}>
+                <TextUI size={17} color="#FFFFFF" weight="bold" style={{ marginTop: 4 }}>
                   {`${t('موعد الأذان:', 'Adhan Time:')} ${nextPrayerInfo.time}${nextPrayerInfo.isTomorrow ? (isRTL ? ' (غداً)' : ' (Tomorrow)') : ''}`}
                 </TextUI>
               </View>
@@ -5892,7 +5895,7 @@ function AlmosalaApp() {
                 marginTop: 16,
                 paddingTop: 12,
                 borderTopWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.15)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -5904,30 +5907,30 @@ function AlmosalaApp() {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.14)',
-                  paddingHorizontal: 12,
-                  paddingVertical: 5,
+                  backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
                   borderRadius: TOKENS.radius.pill,
-                  borderWidth: 1,
-                  borderColor: 'rgba(216, 185, 138, 0.4)'
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(216, 185, 138, 0.5)'
                 }}
               >
                 <Feather
                   name={prayerBells[nextPrayerInfo.id as keyof typeof prayerBells] ? 'bell' : 'bell-off'}
-                  size={14}
+                  size={16}
                   color={TOKENS.colors.secondary}
                   style={{ marginLeft: 6 }}
                 />
-                <TextUI size={12} weight="medium" color="#FFFFFF">
+                <TextUI size={13.5} weight="bold" color="#FFFFFF">
                   {prayerBells[nextPrayerInfo.id as keyof typeof prayerBells] ? t('تنبيه الأذان: مفعّل', 'Adhan Alert: On') : t('تنبيه الأذان: صامت', 'Adhan: Muted')}
                 </TextUI>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => navigate('Imsakiah')}
-                style={{ flexDirection: 'row', alignItems: 'center' }}
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4 }}
               >
-                <TextUI size={13} color="rgba(255, 255, 255, 0.95)" weight="medium">
+                <TextUI size={15} color="#FFFFFF" weight="bold">
                   {t('إمساكية الشهر ◀', 'Monthly Timetable ◀')}
                 </TextUI>
               </TouchableOpacity>
@@ -5947,8 +5950,8 @@ function AlmosalaApp() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Feather name="clock" size={15} color={TOKENS.colors.primary} />
-              <TextUI weight="bold" size={14.5}>
+              <Feather name="clock" size={17} color={TOKENS.colors.primary} />
+              <TextUI weight="bold" size={16.5}>
                 {t('مواقيت صلوات اليوم', "Today's Prayers")}
               </TextUI>
               {sunrisePrayer && (
@@ -5956,22 +5959,24 @@ function AlmosalaApp() {
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 3,
-                    backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.12)' : 'rgba(255, 255, 255, 0.08)',
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: TOKENS.radius.pill
+                    gap: 4,
+                    backgroundColor: themeMode === 'light' ? 'rgba(198, 146, 85, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: TOKENS.radius.pill,
+                    borderWidth: 1,
+                    borderColor: 'rgba(198, 146, 85, 0.3)'
                   }}
                 >
-                  <Feather name="sun" size={10} color={TOKENS.colors.secondary} />
-                  <TextUI size={9.5} color={TOKENS.colors.primary} weight="medium">
+                  <Feather name="sun" size={12} color={TOKENS.colors.secondary} />
+                  <TextUI size={12} color={TOKENS.colors.primaryDark} weight="bold">
                     {`${t('الشروق', 'Sunrise')}: ${sunrisePrayer.time.replace(' ص', '').replace(' م', '')} ص`}
                   </TextUI>
                 </View>
               )}
             </View>
             <TouchableOpacity onPress={() => navigate('PrayerTimes')}>
-              <TextUI size={11.5} color={TOKENS.colors.primary} weight="medium">
+              <TextUI size={13.5} color={TOKENS.colors.primary} weight="bold">
                 {t('التفاصيل والتقويم ◀', 'Details & Calendar ◀')}
               </TextUI>
             </TouchableOpacity>
@@ -5984,7 +5989,7 @@ function AlmosalaApp() {
               alignItems: 'stretch',
               justifyContent: 'space-between',
               width: '100%',
-              gap: 4
+              gap: 5
             }}
           >
             {fivePrayers.map((p) => {
@@ -5996,8 +6001,8 @@ function AlmosalaApp() {
                   onPress={() => navigate('PrayerTimes')}
                   style={{
                     flex: 1,
-                    paddingVertical: 9,
-                    paddingHorizontal: 2,
+                    paddingVertical: 10,
+                    paddingHorizontal: 3,
                     borderRadius: TOKENS.radius.md,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -6013,26 +6018,26 @@ function AlmosalaApp() {
                     <View
                       style={{
                         backgroundColor: TOKENS.colors.secondary,
-                        paddingHorizontal: 4,
-                        paddingVertical: 1,
+                        paddingHorizontal: 5,
+                        paddingVertical: 2,
                         borderRadius: TOKENS.radius.pill,
-                        marginBottom: 3
+                        marginBottom: 4
                       }}
                     >
-                      <TextUI size={8} weight="bold" color="#FFFFFF">
+                      <TextUI size={9.5} weight="bold" color="#FFFFFF">
                         {t('القادمة', 'Next')}
                       </TextUI>
                     </View>
                   )}
                   <Feather
                     name={p.icon as any}
-                    size={15}
+                    size={17}
                     color={isNext ? '#FFFFFF' : TOKENS.colors.primary}
                     style={{ marginBottom: 3 }}
                   />
                   <TextUI
-                    weight={isNext ? 'bold' : 'medium'}
-                    size={11.5}
+                    weight="bold"
+                    size={13.5}
                     color={isNext ? '#FFFFFF' : c.textPrimary}
                     style={{ marginBottom: 2 }}
                     numberOfLines={1}
@@ -6041,15 +6046,16 @@ function AlmosalaApp() {
                   </TextUI>
                   <TextUI
                     weight="bold"
-                    size={11}
-                    color={isNext ? '#F5ECE1' : TOKENS.colors.primaryDark}
+                    size={13.5}
+                    color={isNext ? '#FFFFFF' : TOKENS.colors.primaryDark}
                     numberOfLines={1}
                   >
                     {p.time.replace(' ص', '').replace(' م', '')}
                   </TextUI>
                   <TextUI
-                    size={9}
-                    color={isNext ? 'rgba(255,255,255,0.85)' : c.textSecondary}
+                    size={11}
+                    weight="medium"
+                    color={isNext ? 'rgba(255,255,255,0.9)' : c.textSecondary}
                     style={{ marginTop: 1 }}
                   >
                     {p.time.includes('ص') ? t('ص', 'AM') : t('م', 'PM')}
@@ -6059,11 +6065,11 @@ function AlmosalaApp() {
                       e.stopPropagation?.();
                       toggleBell(p.id);
                     }}
-                    style={{ marginTop: 4, padding: 2 }}
+                    style={{ marginTop: 4, padding: 3 }}
                   >
                     <Feather
                       name={prayerBells[p.id] ? 'bell' : 'bell-off'}
-                      size={12}
+                      size={14}
                       color={isNext ? TOKENS.colors.secondary : (prayerBells[p.id] ? TOKENS.colors.primary : c.textSecondary)}
                     />
                   </TouchableOpacity>
@@ -6080,7 +6086,7 @@ function AlmosalaApp() {
             justifyContent: 'space-between',
             backgroundColor: c.surface,
             borderRadius: TOKENS.radius.lg,
-            paddingVertical: 12,
+            paddingVertical: 14,
             paddingHorizontal: 8,
             marginBottom: 16,
             borderWidth: 1,
@@ -6101,9 +6107,9 @@ function AlmosalaApp() {
             >
               <View
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
                   backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2D231B',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6112,12 +6118,12 @@ function AlmosalaApp() {
                   borderColor: TOKENS.colors.secondary
                 }}
               >
-                <Feather name={item.icon as any} size={20} color={TOKENS.colors.primary} />
+                <Feather name={item.icon as any} size={22} color={TOKENS.colors.primary} />
               </View>
-              <TextUI weight="bold" size={12} color={c.textPrimary} align="center">
+              <TextUI weight="bold" size={13.5} color={c.textPrimary} align="center">
                 {item.title}
               </TextUI>
-              <TextUI size={10} color={c.textSecondary} align="center" style={{ marginTop: 1 }}>
+              <TextUI size={11.5} color={c.textSecondary} align="center" style={{ marginTop: 2 }}>
                 {item.sub}
               </TextUI>
             </TouchableOpacity>
@@ -6136,13 +6142,13 @@ function AlmosalaApp() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="book-open" size={15} color={TOKENS.colors.primary} style={{ marginLeft: 6 }} />
-              <TextUI weight="bold" size={15}>
+              <Feather name="book-open" size={17} color={TOKENS.colors.primary} style={{ marginLeft: 6 }} />
+              <TextUI weight="bold" size={16.5}>
                 {t('واحة القرآن الكريم', 'Holy Quran Hub')}
               </TextUI>
             </View>
             <TouchableOpacity onPress={() => navigate('QuranIndex')}>
-              <TextUI size={12} color={TOKENS.colors.primary} weight="medium">
+              <TextUI size={13.5} color={TOKENS.colors.primary} weight="bold">
                 {t('فهرس السور (١١٤) ◀', 'Surah Index (114) ◀')}
               </TextUI>
             </TouchableOpacity>
@@ -6170,7 +6176,7 @@ function AlmosalaApp() {
               }}
               style={{
                 flex: 1,
-                padding: 11,
+                padding: 12,
                 borderLeftWidth: isRTL ? 1 : 0,
                 borderRightWidth: isRTL ? 0 : 1,
                 borderColor: c.border,
@@ -6180,41 +6186,41 @@ function AlmosalaApp() {
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
                     backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginLeft: 8
                   }}
                 >
-                  <Feather name="book-open" size={15} color={TOKENS.colors.primary} />
+                  <Feather name="book-open" size={17} color={TOKENS.colors.primary} />
                 </View>
                 <View>
-                  <TextUI weight="bold" size={13} color={c.textPrimary}>
+                  <TextUI weight="bold" size={14.5} color={c.textPrimary}>
                     {t('متابعة التلاوة', 'Continue Reading')}
                   </TextUI>
                   <View
                     style={{
                       backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2D231B',
-                      paddingHorizontal: 6,
-                      paddingVertical: 1,
+                      paddingHorizontal: 7,
+                      paddingVertical: 2,
                       borderRadius: TOKENS.radius.pill,
                       alignSelf: 'flex-start',
                       marginTop: 2
                     }}
                   >
-                    <TextUI size={9} weight="bold" color={TOKENS.colors.primary}>
+                    <TextUI size={10.5} weight="bold" color={TOKENS.colors.primary}>
                       {t('آخر موضع', 'Last Read')}
                     </TextUI>
                   </View>
                 </View>
               </View>
-              <TextUI size={12} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginTop: 2 }}>
+              <TextUI size={13.5} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginTop: 2 }}>
                 {t('سورة الكهف • ص ٢٩٣', 'Al-Kahf • p. 293')}
               </TextUI>
-              <TextUI size={11} color={c.textSecondary} style={{ marginTop: 1 }}>
+              <TextUI size={12} weight="medium" color={c.textSecondary} style={{ marginTop: 2 }}>
                 {t('الحزب ٢٩ • الجزء ١٥', 'Juz 15 • Hizb 29')}
               </TextUI>
             </TouchableOpacity>
@@ -6225,37 +6231,37 @@ function AlmosalaApp() {
               onPress={() => navigate('QuranAudio')}
               style={{
                 flex: 1,
-                padding: 11,
+                padding: 12,
                 alignItems: 'flex-start'
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
                     backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2D231B',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginLeft: 8
                   }}
                 >
-                  <Feather name="headphones" size={15} color={TOKENS.colors.secondary} />
+                  <Feather name="headphones" size={17} color={TOKENS.colors.secondary} />
                 </View>
                 <View>
-                  <TextUI weight="bold" size={13} color={c.textPrimary}>
+                  <TextUI weight="bold" size={14.5} color={c.textPrimary}>
                     {t('الاستماع والختمة', 'Audio & Khatmah')}
                   </TextUI>
-                  <TextUI size={10} color={TOKENS.colors.secondary} weight="bold">
+                  <TextUI size={11} color={TOKENS.colors.secondary} weight="bold">
                     {t('تلاوة خاشعة', 'Holy Audio')}
                   </TextUI>
                 </View>
               </View>
-              <TextUI size={12} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginTop: 2 }}>
+              <TextUI size={13.5} weight="bold" color={TOKENS.colors.primaryDark} style={{ marginTop: 2 }}>
                 {t('الشيخ مشاري العفاسي', 'Mishary Alafasy')}
               </TextUI>
-              <TextUI size={11} color={c.textSecondary} style={{ marginTop: 1 }}>
+              <TextUI size={12} weight="medium" color={c.textSecondary} style={{ marginTop: 2 }}>
                 {`${t('الورد: ص', 'Daily:')} ${toArabicNumber(khatmahCurrentPage)} ${t('من ٦٠٤ ص', 'of 604')}`}
               </TextUI>
             </TouchableOpacity>
@@ -6274,13 +6280,13 @@ function AlmosalaApp() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="heart" size={15} color={TOKENS.colors.secondary} style={{ marginLeft: 6 }} />
-              <TextUI weight="bold" size={15}>
+              <Feather name="heart" size={17} color={TOKENS.colors.secondary} style={{ marginLeft: 6 }} />
+              <TextUI weight="bold" size={16.5}>
                 {t('حصن المسلم والأذكار اليومية', 'Daily Azkar & Fortress')}
               </TextUI>
             </View>
             <TouchableOpacity onPress={() => navigate('AzkarCategories')}>
-              <TextUI size={12} color={TOKENS.colors.primary} weight="medium">
+              <TextUI size={13.5} color={TOKENS.colors.primary} weight="bold">
                 {t('كافة الأبواب (٦) ◀', 'All Categories (6) ◀')}
               </TextUI>
             </TouchableOpacity>
@@ -6304,26 +6310,26 @@ function AlmosalaApp() {
               const cardTitle = isEveningTime ? t('أذكار المساء • حِصنك في ليلتك', 'Evening Azkar • Night Fortress') : t('أذكار الصباح • بداية يوم مبارك', 'Morning Azkar • Blessed Day');
               const cardIcon = isEveningTime ? 'moon' : 'sun';
               return (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View
                       style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
                         backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginLeft: 8
                       }}
                     >
-                      <Feather name={cardIcon as any} size={16} color={TOKENS.colors.primaryDark} />
+                      <Feather name={cardIcon as any} size={18} color={TOKENS.colors.primaryDark} />
                     </View>
                     <View>
-                      <TextUI weight="bold" size={14} color={c.textPrimary}>
+                      <TextUI weight="bold" size={15.5} color={c.textPrimary}>
                         {cardTitle}
                       </TextUI>
-                      <TextUI size={11} color={TOKENS.colors.primary}>
+                      <TextUI size={12.5} weight="bold" color={TOKENS.colors.primary}>
                         {t('٢٤ ذكراً مأثوراً كاملاً وموثقاً', '24 Complete Authentic Azkar')}
                       </TextUI>
                     </View>
@@ -6338,18 +6344,18 @@ function AlmosalaApp() {
                     }}
                     style={{
                       backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
-                      paddingHorizontal: 10,
-                      paddingVertical: 5,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
                       borderRadius: TOKENS.radius.pill,
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: 4
                     }}
                   >
-                    <TextUI size={11} weight="bold" color={TOKENS.colors.primary}>
+                    <TextUI size={12.5} weight="bold" color={TOKENS.colors.primary}>
                       {t('فتح الجلسة', 'Open')}
                     </TextUI>
-                    <Feather name="chevron-left" size={12} color={TOKENS.colors.primary} />
+                    <Feather name="chevron-left" size={14} color={TOKENS.colors.primary} />
                   </TouchableOpacity>
                 </View>
               );
@@ -6371,7 +6377,7 @@ function AlmosalaApp() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2D231B',
-                  paddingVertical: 8,
+                  paddingVertical: 10,
                   paddingHorizontal: 10,
                   borderRadius: TOKENS.radius.md,
                   borderWidth: 1,
@@ -6379,8 +6385,8 @@ function AlmosalaApp() {
                   gap: 6
                 }}
               >
-                <Feather name="activity" size={14} color={TOKENS.colors.primary} />
-                <TextUI size={12} weight="bold" color={TOKENS.colors.primaryDark}>
+                <Feather name="activity" size={16} color={TOKENS.colors.primary} />
+                <TextUI size={13.5} weight="bold" color={TOKENS.colors.primaryDark}>
                   {t('عداد التسبيح الذكي', 'Tasbih Counter')}
                 </TextUI>
               </TouchableOpacity>
@@ -6399,7 +6405,7 @@ function AlmosalaApp() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: themeMode === 'light' ? c.bgSecondary : '#25201C',
-                  paddingVertical: 8,
+                  paddingVertical: 10,
                   paddingHorizontal: 10,
                   borderRadius: TOKENS.radius.md,
                   borderWidth: 1,
@@ -6407,8 +6413,8 @@ function AlmosalaApp() {
                   gap: 6
                 }}
               >
-                <Feather name="book-open" size={14} color={TOKENS.colors.primary} />
-                <TextUI size={12} weight="bold" color={c.textPrimary}>
+                <Feather name="book-open" size={16} color={TOKENS.colors.primary} />
+                <TextUI size={13.5} weight="bold" color={c.textPrimary}>
                   {t('أدعية مأثورة (١٦)', 'Prophetic Duas (16)')}
                 </TextUI>
               </TouchableOpacity>
@@ -6442,13 +6448,13 @@ function AlmosalaApp() {
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="bookmark" size={13} color={TOKENS.colors.secondary} style={{ marginLeft: 6 }} />
-              <TextUI size={12} weight="bold" color={TOKENS.colors.primary}>
+              <Feather name="bookmark" size={15} color={TOKENS.colors.secondary} style={{ marginLeft: 6 }} />
+              <TextUI size={13.5} weight="bold" color={TOKENS.colors.primary}>
                 {t('آية اليوم وتدبر', 'Verse of the Day')}
               </TextUI>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <TextUI size={11} color={c.textSecondary}>
+              <TextUI size={12.5} weight="bold" color={c.textSecondary}>
                 {t('سورة الرعد • ٢٨', 'Ar-Ra\'d • 28')}
               </TextUI>
               <View
@@ -6462,8 +6468,8 @@ function AlmosalaApp() {
                   gap: 4
                 }}
               >
-                <Feather name="share-2" size={10} color={TOKENS.colors.primary} />
-                <TextUI size={10} weight="bold" color={TOKENS.colors.primary}>
+                <Feather name="share-2" size={12} color={TOKENS.colors.primary} />
+                <TextUI size={11.5} weight="bold" color={TOKENS.colors.primary}>
                   {t('مشاركة', 'Share')}
                 </TextUI>
               </View>
@@ -6472,11 +6478,11 @@ function AlmosalaApp() {
 
           <TextUI
             quran
-            size={16}
+            size={18}
             align="center"
             weight="bold"
             color={TOKENS.colors.primaryDark}
-            style={{ marginVertical: 4, lineHeight: 30 }}
+            style={{ marginVertical: 4, lineHeight: 34 }}
           >
             {t('﴿ الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ ۗ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾', '“Those who have believed and whose hearts are assured by the remembrance of Allah. Unquestionably, by the remembrance of Allah hearts are assured.”')}
           </TextUI>
@@ -6494,13 +6500,13 @@ function AlmosalaApp() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="award" size={15} color={TOKENS.colors.primary} style={{ marginLeft: 6 }} />
-              <TextUI weight="bold" size={15}>
+              <Feather name="award" size={17} color={TOKENS.colors.primary} style={{ marginLeft: 6 }} />
+              <TextUI weight="bold" size={16.5}>
                 {t('الموسوعة والفرائض الإسلامية', 'Islamic Encyclopedia & Duties')}
               </TextUI>
             </View>
             <TouchableOpacity onPress={() => navigate('More')}>
-              <TextUI size={12} color={TOKENS.colors.primary} weight="medium">
+              <TextUI size={13.5} color={TOKENS.colors.primary} weight="bold">
                 {t('المزيد من الخدمات ◀', 'More Services ◀')}
               </TextUI>
             </TouchableOpacity>
@@ -6525,8 +6531,8 @@ function AlmosalaApp() {
             >
               <View
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: TOKENS.radius.sm,
                   backgroundColor: themeMode === 'light' ? TOKENS.colors.primaryLight : '#382E28',
                   alignItems: 'center',
@@ -6534,11 +6540,11 @@ function AlmosalaApp() {
                   marginLeft: 8
                 }}
               >
-                <Feather name="shield" size={15} color={TOKENS.colors.primary} />
+                <Feather name="shield" size={17} color={TOKENS.colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <TextUI weight="bold" size={12}>{t('الرقية الشرعية', 'Ruqyah')}</TextUI>
-                <TextUI size={10} color={c.textSecondary}>{t('تحصين وعلاج', 'Protection')}</TextUI>
+                <TextUI weight="bold" size={13.5}>{t('الرقية الشرعية', 'Ruqyah')}</TextUI>
+                <TextUI size={11.5} color={c.textSecondary}>{t('تحصين وعلاج', 'Protection')}</TextUI>
               </View>
             </TouchableOpacity>
 
@@ -6559,8 +6565,8 @@ function AlmosalaApp() {
             >
               <View
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: TOKENS.radius.sm,
                   backgroundColor: themeMode === 'light' ? '#FAF1E6' : '#2D231B',
                   alignItems: 'center',
@@ -6568,11 +6574,11 @@ function AlmosalaApp() {
                   marginLeft: 8
                 }}
               >
-                <Feather name="book" size={15} color={TOKENS.colors.secondary} />
+                <Feather name="book" size={17} color={TOKENS.colors.secondary} />
               </View>
               <View style={{ flex: 1 }}>
-                <TextUI weight="bold" size={12}>{t('الأربعون النووية', '40 Hadiths')}</TextUI>
-                <TextUI size={10} color={c.textSecondary}>{t('أصول الإسلام', 'Essentials')}</TextUI>
+                <TextUI weight="bold" size={13.5}>{t('الأربعون النووية', '40 Hadiths')}</TextUI>
+                <TextUI size={11.5} color={c.textSecondary}>{t('أصول الإسلام', 'Essentials')}</TextUI>
               </View>
             </TouchableOpacity>
           </View>
@@ -6595,8 +6601,8 @@ function AlmosalaApp() {
             >
               <View
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: TOKENS.radius.sm,
                   backgroundColor: themeMode === 'light' ? '#F5ECE1' : '#33261F',
                   alignItems: 'center',
@@ -6604,11 +6610,11 @@ function AlmosalaApp() {
                   marginLeft: 8
                 }}
               >
-                <Feather name="star" size={15} color={TOKENS.colors.primary} />
+                <Feather name="star" size={17} color={TOKENS.colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <TextUI weight="bold" size={12}>{t('أسماء الله الحسنى', '99 Names')}</TextUI>
-                <TextUI size={10} color={c.textSecondary}>{t('٩٩ اسماً ومعانيها', 'Divine Names')}</TextUI>
+                <TextUI weight="bold" size={13.5}>{t('أسماء الله الحسنى', '99 Names')}</TextUI>
+                <TextUI size={11.5} color={c.textSecondary}>{t('٩٩ اسماً ومعانيها', 'Divine Names')}</TextUI>
               </View>
             </TouchableOpacity>
 
@@ -6629,8 +6635,8 @@ function AlmosalaApp() {
             >
               <View
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: TOKENS.radius.sm,
                   backgroundColor: themeMode === 'light' ? TOKENS.colors.secondaryLight : '#2A2019',
                   alignItems: 'center',
@@ -6638,11 +6644,11 @@ function AlmosalaApp() {
                   marginLeft: 8
                 }}
               >
-                <Feather name="calendar" size={15} color={TOKENS.colors.primaryDark} />
+                <Feather name="calendar" size={17} color={TOKENS.colors.primaryDark} />
               </View>
               <View style={{ flex: 1 }}>
-                <TextUI weight="bold" size={12}>{t('المناسبات الإسلامية', 'Events')}</TextUI>
-                <TextUI size={10} color={c.textSecondary}>{t('الأعياد والصيام', 'Islamic Dates')}</TextUI>
+                <TextUI weight="bold" size={13.5}>{t('المناسبات الإسلامية', 'Events')}</TextUI>
+                <TextUI size={11.5} color={c.textSecondary}>{t('الأعياد والصيام', 'Islamic Dates')}</TextUI>
               </View>
             </TouchableOpacity>
           </View>
@@ -6668,36 +6674,36 @@ function AlmosalaApp() {
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
                   backgroundColor: '#1E5A3E',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginLeft: 12
                 }}
               >
-                <Feather name="book-open" size={20} color="#FFFFFF" />
+                <Feather name="book-open" size={22} color="#FFFFFF" />
               </View>
               <View style={{ flex: 1, alignItems: 'flex-start' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <TextUI weight="bold" size={14} color="#1E5A3E">
+                  <TextUI weight="bold" size={15.5} color="#1E5A3E">
                     {t('دروس وكراسي الحرمين الشريفين', "Two Holy Mosques Scholarly Lessons")}
                   </TextUI>
                   <View
                     style={{
                       backgroundColor: '#E8F5E9',
-                      paddingHorizontal: 6,
-                      paddingVertical: 1.5,
+                      paddingHorizontal: 7,
+                      paddingVertical: 2,
                       borderRadius: TOKENS.radius.pill
                     }}
                   >
-                    <TextUI size={9} weight="bold" color="#1E5A3E">
+                    <TextUI size={10.5} weight="bold" color="#1E5A3E">
                       {t('كراسي العلم', 'Live Chairs')}
                     </TextUI>
                   </View>
                 </View>
-                <TextUI size={11} color={c.textSecondary}>
+                <TextUI size={12.5} color={c.textSecondary}>
                   {t('شروح المتون وكبار العلماء: القاسم، البدر، الشنقيطي، الحذيفي', 'Authentic lessons: Al-Qasim, Al-Badr, Al-Shinqiti, Al-Hudhaifi')}
                 </TextUI>
               </View>
@@ -6726,22 +6732,22 @@ function AlmosalaApp() {
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
+                  width: 46,
+                  height: 46,
+                  borderRadius: 23,
                   backgroundColor: TOKENS.colors.primary,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginLeft: 12
                 }}
               >
-                <Feather name="grid" size={20} color="#FFFFFF" />
+                <Feather name="grid" size={22} color="#FFFFFF" />
               </View>
               <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                <TextUI weight="bold" size={14} color={TOKENS.colors.primaryDark}>
+                <TextUI weight="bold" size={15.5} color={TOKENS.colors.primaryDark}>
                   {t('فهرس وشاشات التطبيق الكاملة (٣٧ شاشة)', 'Complete App Screen Directory (37 Screens)')}
                 </TextUI>
-                <TextUI size={11} color={c.textSecondary} style={{ marginTop: 1 }}>
+                <TextUI size={12.5} color={c.textSecondary} style={{ marginTop: 2 }}>
                   {t('استعراض والوصول الفوري لكافة الشاشات والخدمات الـ ٣٧', 'Explore and access all 37 app screens instantly')}
                 </TextUI>
               </View>
