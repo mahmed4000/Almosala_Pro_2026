@@ -1850,6 +1850,304 @@
       border-color: var(--primary);
     }
 
+    /* =========================================================
+       MADINAH MUSHAF SURAH HEADER BANNER (ترويسة السورة الشريفة)
+       ========================================================= */
+    .mushaf-surah-header-frame {
+      margin: 10px auto 14px;
+      position: relative;
+      background: linear-gradient(135deg, rgba(198, 146, 85, 0.22) 0%, rgba(255, 252, 245, 0.95) 50%, rgba(198, 146, 85, 0.26) 100%);
+      border: 2px solid var(--secondary);
+      border-radius: 16px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 18px rgba(140, 94, 60, 0.14), inset 0 0 0 2px rgba(198, 146, 85, 0.35);
+      text-align: center;
+      overflow: hidden;
+    }
+    body.dark-mode .mushaf-surah-header-frame {
+      background: linear-gradient(135deg, rgba(198, 146, 85, 0.25) 0%, rgba(30, 20, 14, 0.95) 50%, rgba(198, 146, 85, 0.18) 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(198, 146, 85, 0.4);
+    }
+    .mushaf-surah-frame-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .mushaf-surah-badge-pill {
+      background: rgba(140, 94, 60, 0.12);
+      border: 1px solid var(--secondary);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      white-space: nowrap;
+    }
+    body.dark-mode .mushaf-surah-badge-pill {
+      background: rgba(198, 146, 85, 0.2);
+      color: var(--secondary);
+    }
+    .mushaf-surah-title-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .mushaf-surah-name {
+      font-family: var(--font-quran);
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--primary-dark);
+      margin: 0;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(198, 146, 85, 0.3);
+    }
+    .mushaf-ornament-leaf {
+      color: var(--secondary);
+      font-size: 16px;
+      opacity: 0.85;
+    }
+
+    /* Basmala Frame in Madinah Mushaf Style */
+    .mushaf-basmala-frame {
+      text-align: center;
+      margin: 10px 0 16px;
+      font-family: var(--font-quran);
+      font-size: 24px;
+      color: var(--primary-dark);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .mushaf-basmala-frame::before,
+    .mushaf-basmala-frame::after {
+      content: '❖';
+      color: var(--secondary);
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       MUSHAF PAGE CARDS & PAGINATION (صفحات المصحف الشريف وأرقامها)
+       ========================================================= */
+    .mushaf-page-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 14px 14px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .mushaf-page-card:hover {
+      border-color: var(--secondary);
+    }
+    .mushaf-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed var(--border);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+    .mushaf-page-header-side {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--secondary);
+    }
+    .mushaf-page-content {
+      font-size: 22px;
+      line-height: 2.3;
+      color: var(--text-primary);
+      text-align: justify;
+      word-spacing: 2px;
+    }
+    .mushaf-page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .mushaf-page-number-ornament {
+      margin: 0 auto;
+      font-family: var(--font-quran);
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--primary-dark);
+      background: linear-gradient(135deg, rgba(140, 94, 60, 0.08), rgba(198, 146, 85, 0.2));
+      border: 1px solid var(--secondary);
+      border-radius: 20px;
+      padding: 3px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mushaf-page-meta-tag {
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    /* =========================================================
+       PROFESSIONAL FLOATING AUTO-SCROLL / AUTO-NAV CONTROLLER
+       ========================================================= */
+    .mushaf-autonav-floating-panel {
+      position: sticky;
+      bottom: 12px;
+      z-index: 600;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 420px;
+      background: rgba(30, 20, 14, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--secondary);
+      border-radius: 20px;
+      padding: 10px 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 12px rgba(198, 146, 85, 0.25);
+      color: #FFF;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mushaf-autonav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .autonav-status-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .autonav-pulsing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2ECC71;
+      display: inline-block;
+      animation: pulse 1s infinite;
+    }
+    .autonav-pulsing-dot.paused {
+      background: #E67E22;
+      animation: none;
+    }
+    .autonav-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .autonav-play-btn {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      padding: 7px 14px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    .autonav-play-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .autonav-speed-pills {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .autonav-speed-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFF;
+      border-radius: 8px;
+      padding: 4px 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .autonav-speed-pill.active {
+      background: var(--secondary);
+      border-color: var(--secondary);
+      color: #1E140E;
+      font-weight: 900;
+    }
+    .autonav-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px 10px;
+      border-radius: 10px;
+    }
+    .autonav-slider {
+      flex: 1;
+      accent-color: var(--secondary);
+      height: 4px;
+      cursor: pointer;
+    }
+    .autonav-progress-track {
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .autonav-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--secondary), #2ECC71);
+      transition: width 0.3s ease;
+    }
+    .autonav-compact-pill {
+      position: sticky;
+      bottom: 14px;
+      z-index: 600;
+      margin: 0 auto;
+      width: fit-content;
+      background: rgba(30, 20, 14, 0.94);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid var(--secondary);
+      border-radius: 25px;
+      padding: 6px 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #FFF;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .autonav-compact-pill:hover {
+      filter: brightness(1.15);
+    }
+
   </style>
 </head>
 <body>
@@ -2789,14 +3087,9 @@
         💡 اضغط على أي آية لعرض تفسيرها، الاستماع لتلاوتها، أو نسخها
       </div>
 
-      <!-- Basmala Header -->
-      <div id="readerBasmala" style="text-align: center; margin: 12px 0 16px; font-family: var(--font-quran); font-size: 24px; color: var(--primary-dark);">
-        بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-      </div>
-
-      <!-- Text Container (الرسم العثماني الأصيل الشريف المتصل كلياً) -->
-      <div id="readerContent" class="card quran-text" style="font-size: 22px; line-height: 2.3; color: var(--text-primary); text-align: justify; border-color: var(--border);">
-        <!-- Surah text injected dynamically with pure unbroken Uthmani calligraphy -->
+      <!-- Text Container (صفحات مصحف المدينة المنورة مع ترويسة السور وأرقام الصفحات) -->
+      <div id="readerContent" style="display: flex; flex-direction: column; gap: 14px;">
+        <!-- Injected dynamically: Madinah Surah Banners + Page Cards + Page Footers -->
       </div>
 
       <!-- Tafsir Container -->
@@ -2819,15 +3112,63 @@
         </button>
       </div>
 
-      <!-- Floating Auto-Scroll Controls Bar (يظهر أثناء التمرير التلقائي) -->
-      <div id="readerAutoScrollFloatingBar" style="display: none; position: sticky; bottom: 15px; z-index: 50; margin: 0 auto; width: fit-content; max-width: 95%; background: rgba(30, 20, 14, 0.92); backdrop-filter: blur(8px); border: 1px solid var(--secondary); border-radius: 25px; padding: 6px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); align-items: center; gap: 10px; color: #FFF;">
-        <span style="font-size: 11px; font-weight: 800; color: var(--secondary);">⚡ سرعة التمرير:</span>
-        <button type="button" class="autoscroll-speed-btn active" data-speed="1" onclick="setReaderScrollSpeed(1, this)">بطيء ١x</button>
-        <button type="button" class="autoscroll-speed-btn" data-speed="2" onclick="setReaderScrollSpeed(2, this)">متوسط ٢x</button>
-        <button type="button" class="autoscroll-speed-btn" data-speed="3" onclick="setReaderScrollSpeed(3, this)">سريع ٣x</button>
-        <button type="button" onclick="stopReaderAutoScroll()" style="background: #e74c3c; color: #FFF; border: none; border-radius: 15px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; margin-right: 4px;">
-          إيقاف ⏹️
-        </button>
+      <!-- Professional Floating Auto-Navigation & Auto-Scroll Controller -->
+      <div id="mushafAutoNavPanel" class="mushaf-autonav-floating-panel" style="display: none;">
+        <div class="mushaf-autonav-header">
+          <div class="autonav-status-label">
+            <span class="autonav-pulsing-dot" id="autonavPulsingDot"></span>
+            <span id="autonavStatusText">التصفح التلقائي نشط</span>
+            <span id="autonavSpeedBadge" style="background: rgba(198, 146, 85, 0.25); border: 1px solid var(--secondary); padding: 1px 6px; border-radius: 10px; font-size: 10px;">١x</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button type="button" onclick="minimizeAutoNavPanel()" title="تصغير الشريط" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 8px; width: 24px; height: 24px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              ─
+            </button>
+            <button type="button" onclick="stopReaderAutoScroll()" title="إيقاف التصفح التلقائي" style="background: rgba(231, 76, 60, 0.85); border: none; color: #FFF; border-radius: 8px; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="autonav-controls-row">
+          <button type="button" id="autonavPlayPauseBtn" class="autonav-play-btn" onclick="toggleAutoNavPlayPause()">
+            <span id="autonavPlayPauseIcon">⏸️</span>
+            <span id="autonavPlayPauseLabel">إيقاف مؤقت</span>
+          </button>
+
+          <!-- Speed Preset Buttons -->
+          <div class="autonav-speed-pills">
+            <button type="button" class="autonav-speed-pill" data-speed="0.5" onclick="setReaderScrollSpeed(0.5, this)">٠.٥x</button>
+            <button type="button" class="autonav-speed-pill active" data-speed="1.0" onclick="setReaderScrollSpeed(1.0, this)">١x</button>
+            <button type="button" class="autonav-speed-pill" data-speed="1.5" onclick="setReaderScrollSpeed(1.5, this)">١.٥x</button>
+            <button type="button" class="autonav-speed-pill" data-speed="2.0" onclick="setReaderScrollSpeed(2.0, this)">٢x</button>
+            <button type="button" class="autonav-speed-pill" data-speed="3.0" onclick="setReaderScrollSpeed(3.0, this)">٣x</button>
+          </div>
+        </div>
+
+        <!-- Fine-Tuning Speed Slider -->
+        <div class="autonav-slider-row">
+          <span>⚡ ضبط دقيق:</span>
+          <input type="range" id="autonavPrecisionSlider" min="0.5" max="3.5" step="0.25" value="1.0" class="autonav-slider" oninput="onPrecisionSpeedSliderChange(this.value)">
+          <span id="autonavSliderVal" style="font-weight: 800; min-width: 32px; text-align: left;">١.٠x</span>
+        </div>
+
+        <!-- Progress Tracker & Live Page Indicator -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: rgba(255, 255, 255, 0.7); margin-top: 6px;">
+          <span id="autonavPageIndicator">صفحة ١ من ١</span>
+          <span id="autonavPercentIndicator">إتمام السورة: ٪٠</span>
+        </div>
+        <div class="autonav-progress-track">
+          <div class="autonav-progress-bar" id="autonavProgressBar"></div>
+        </div>
+      </div>
+
+      <!-- Compact Floating Pill (عند تصغير لوحة التصفح التلقائي) -->
+      <div id="mushafAutoNavCompact" class="autonav-compact-pill" style="display: none;" onclick="expandAutoNavPanel()">
+        <span class="autonav-pulsing-dot" id="autonavCompactDot"></span>
+        <span>تصفح تلقائي: <strong id="autonavCompactSpeed">١x</strong></span>
+        <span id="autonavCompactPage" style="opacity: 0.85;">(ص ١)</span>
+        <span style="font-size: 13px; margin-right: 2px;">⚙️</span>
       </div>
     </div>
 
@@ -4947,11 +5288,17 @@
     });
 
     // =========================================================
-    // QURAN READER AUTO-SCROLL (التمرير التلقائي السلس للقراءة)
+    // PROFESSIONAL MADINAH MUSHAF AUTO-NAVIGATION & SCROLL
+    // (نظام التصفح والتحكم التلقائي الذكي لمصحف المدينة)
     // =========================================================
     let isReaderAutoScrolling = false;
+    let isReaderAutoNavPaused = false;
     let readerAutoScrollTimer = null;
-    let readerAutoScrollSpeed = 1;
+    let readerAutoScrollSpeed = 1.0;
+    let isAutoNavPanelMinimized = false;
+    let readerScrollTrackerAttached = false;
+    let lastScrollTime = 0;
+    let accumulatedScroll = 0;
 
     function toggleReaderAutoScroll() {
       if (isReaderAutoScrolling) {
@@ -4964,11 +5311,24 @@
     function startReaderAutoScroll() {
       const reader = document.getElementById('quranReaderView');
       if (!reader) return;
+      
       isReaderAutoScrolling = true;
+      isReaderAutoNavPaused = false;
+      lastScrollTime = performance.now();
+      accumulatedScroll = 0;
 
-      const bar = document.getElementById('readerAutoScrollFloatingBar');
-      if (bar) bar.style.display = 'flex';
+      // Show panel or compact pill
+      const panel = document.getElementById('mushafAutoNavPanel');
+      const compact = document.getElementById('mushafAutoNavCompact');
+      if (isAutoNavPanelMinimized) {
+        if (panel) panel.style.display = 'none';
+        if (compact) compact.style.display = 'flex';
+      } else {
+        if (panel) panel.style.display = 'block';
+        if (compact) compact.style.display = 'none';
+      }
 
+      // Update Top Nav Button
       const toggleBtn = document.getElementById('readerAutoScrollToggleBtn');
       if (toggleBtn) {
         toggleBtn.style.background = 'var(--secondary)';
@@ -4976,31 +5336,26 @@
         toggleBtn.style.color = '#FFF';
       }
 
-      showToast('بدأ التمرير التلقائي للقراءة 📜✨');
-
-      clearInterval(readerAutoScrollTimer);
-      readerAutoScrollTimer = setInterval(() => {
-        if (!isReaderAutoScrolling) {
-          clearInterval(readerAutoScrollTimer);
-          return;
-        }
-        const step = readerAutoScrollSpeed === 1 ? 1 : (readerAutoScrollSpeed === 2 ? 2 : 3.5);
-        reader.scrollTop += step;
-
-        if (reader.scrollTop + reader.clientHeight >= reader.scrollHeight - 6) {
-          stopReaderAutoScroll();
-          showToast('اكتملت قراءة السورة الكريمة 🌟');
-        }
-      }, 40);
+      updateAutoNavUIState();
+      attachReaderScrollTracker();
+      
+      if (readerAutoScrollTimer) cancelAnimationFrame(readerAutoScrollTimer);
+      readerAutoScrollTimer = requestAnimationFrame(runAutoNavCycle);
+      showToast('بدأ التصفح التلقائي لمصحف المدينة 📜✨');
     }
 
     function stopReaderAutoScroll() {
       isReaderAutoScrolling = false;
-      clearInterval(readerAutoScrollTimer);
-      readerAutoScrollTimer = null;
+      isReaderAutoNavPaused = false;
+      if (readerAutoScrollTimer) {
+        cancelAnimationFrame(readerAutoScrollTimer);
+        readerAutoScrollTimer = null;
+      }
 
-      const bar = document.getElementById('readerAutoScrollFloatingBar');
-      if (bar) bar.style.display = 'none';
+      const panel = document.getElementById('mushafAutoNavPanel');
+      if (panel) panel.style.display = 'none';
+      const compact = document.getElementById('mushafAutoNavCompact');
+      if (compact) compact.style.display = 'none';
 
       const toggleBtn = document.getElementById('readerAutoScrollToggleBtn');
       if (toggleBtn) {
@@ -5010,10 +5365,188 @@
       }
     }
 
+    function toggleAutoNavPlayPause() {
+      if (!isReaderAutoScrolling) {
+        startReaderAutoScroll();
+        return;
+      }
+      isReaderAutoNavPaused = !isReaderAutoNavPaused;
+      updateAutoNavUIState();
+      if (!isReaderAutoNavPaused) {
+        lastScrollTime = performance.now();
+        if (readerAutoScrollTimer) cancelAnimationFrame(readerAutoScrollTimer);
+        readerAutoScrollTimer = requestAnimationFrame(runAutoNavCycle);
+        showToast('تم استئناف التصفح التلقائي ▶️');
+      } else {
+        if (readerAutoScrollTimer) cancelAnimationFrame(readerAutoScrollTimer);
+        readerAutoScrollTimer = null;
+        showToast('تم إيقاف التصفح التلقائي مؤقتاً ⏸️');
+      }
+    }
+
+    function minimizeAutoNavPanel() {
+      isAutoNavPanelMinimized = true;
+      const panel = document.getElementById('mushafAutoNavPanel');
+      if (panel) panel.style.display = 'none';
+      const compact = document.getElementById('mushafAutoNavCompact');
+      if (compact && isReaderAutoScrolling) compact.style.display = 'flex';
+    }
+
+    function expandAutoNavPanel() {
+      isAutoNavPanelMinimized = false;
+      const compact = document.getElementById('mushafAutoNavCompact');
+      if (compact) compact.style.display = 'none';
+      const panel = document.getElementById('mushafAutoNavPanel');
+      if (panel && isReaderAutoScrolling) panel.style.display = 'block';
+    }
+
     function setReaderScrollSpeed(speed, btnEl) {
-      readerAutoScrollSpeed = speed;
-      document.querySelectorAll('.autoscroll-speed-btn').forEach(b => b.classList.remove('active'));
+      readerAutoScrollSpeed = parseFloat(speed) || 1.0;
+      
+      // Update Speed Pill active class
+      document.querySelectorAll('.autonav-speed-pill').forEach(b => {
+        b.classList.remove('active');
+        if (parseFloat(b.dataset.speed) === readerAutoScrollSpeed) {
+          b.classList.add('active');
+        }
+      });
       if (btnEl) btnEl.classList.add('active');
+
+      // Sync Precision Slider
+      const slider = document.getElementById('autonavPrecisionSlider');
+      if (slider) slider.value = readerAutoScrollSpeed;
+      const sliderVal = document.getElementById('autonavSliderVal');
+      if (sliderVal) sliderVal.innerText = toArNum(readerAutoScrollSpeed.toFixed(1)) + 'x';
+
+      updateAutoNavSpeedBadges();
+    }
+
+    function onPrecisionSpeedSliderChange(val) {
+      readerAutoScrollSpeed = parseFloat(val) || 1.0;
+      
+      const sliderVal = document.getElementById('autonavSliderVal');
+      if (sliderVal) sliderVal.innerText = toArNum(readerAutoScrollSpeed.toFixed(1)) + 'x';
+
+      // Update pills
+      document.querySelectorAll('.autonav-speed-pill').forEach(b => {
+        b.classList.toggle('active', Math.abs(parseFloat(b.dataset.speed) - readerAutoScrollSpeed) < 0.1);
+      });
+
+      updateAutoNavSpeedBadges();
+    }
+
+    function updateAutoNavSpeedBadges() {
+      const speedStr = toArNum(readerAutoScrollSpeed.toFixed(1)) + 'x';
+      const speedBadge = document.getElementById('autonavSpeedBadge');
+      if (speedBadge) speedBadge.innerText = speedStr;
+      const compactSpeed = document.getElementById('autonavCompactSpeed');
+      if (compactSpeed) compactSpeed.innerText = speedStr;
+    }
+
+    function updateAutoNavUIState() {
+      const icon = document.getElementById('autonavPlayPauseIcon');
+      const label = document.getElementById('autonavPlayPauseLabel');
+      const statusText = document.getElementById('autonavStatusText');
+      const dot = document.getElementById('autonavPulsingDot');
+      const compactDot = document.getElementById('autonavCompactDot');
+
+      if (isReaderAutoNavPaused) {
+        if (icon) icon.innerText = '▶️';
+        if (label) label.innerText = 'استئناف';
+        if (statusText) statusText.innerText = 'التصفح متوقف مؤقتاً';
+        if (dot) dot.style.animation = 'none';
+        if (compactDot) compactDot.style.animation = 'none';
+      } else {
+        if (icon) icon.innerText = '⏸️';
+        if (label) label.innerText = 'إيقاف مؤقت';
+        if (statusText) statusText.innerText = 'التصفح التلقائي نشط';
+        if (dot) dot.style.animation = 'autonavPulse 1.8s infinite';
+        if (compactDot) compactDot.style.animation = 'autonavPulse 1.8s infinite';
+      }
+      updateAutoNavSpeedBadges();
+    }
+
+    function runAutoNavCycle(timestamp) {
+      if (!isReaderAutoScrolling || isReaderAutoNavPaused) return;
+
+      const reader = document.getElementById('quranReaderView');
+      if (!reader) return;
+
+      if (!timestamp) timestamp = performance.now();
+      if (!lastScrollTime) lastScrollTime = timestamp;
+      const dt = Math.min(timestamp - lastScrollTime, 64);
+      lastScrollTime = timestamp;
+
+      // Base speed: ~32 pixels per second at 1.0x
+      const pxPerMs = (32 * readerAutoScrollSpeed) / 1000;
+      accumulatedScroll += pxPerMs * dt;
+
+      if (accumulatedScroll >= 1) {
+        const step = Math.floor(accumulatedScroll);
+        reader.scrollTop += step;
+        accumulatedScroll -= step;
+        updateReadingProgressHUD();
+      }
+
+      // Check if end of Surah is reached
+      if (reader.scrollTop + reader.clientHeight >= reader.scrollHeight - 6) {
+        stopReaderAutoScroll();
+        showToast('هنيئاً! اكتملت قراءة السورة الكريمة 🌟');
+        return;
+      }
+
+      readerAutoScrollTimer = requestAnimationFrame(runAutoNavCycle);
+    }
+
+    function attachReaderScrollTracker() {
+      if (readerScrollTrackerAttached) return;
+      const reader = document.getElementById('quranReaderView');
+      if (!reader) return;
+      reader.addEventListener('scroll', updateReadingProgressHUD, { passive: true });
+      readerScrollTrackerAttached = true;
+    }
+
+    function updateReadingProgressHUD() {
+      const reader = document.getElementById('quranReaderView');
+      if (!reader) return;
+
+      const maxScroll = reader.scrollHeight - reader.clientHeight;
+      const percent = maxScroll > 0 ? Math.min(100, Math.max(0, Math.round((reader.scrollTop / maxScroll) * 100))) : 0;
+
+      // Progress bar
+      const bar = document.getElementById('autonavProgressBar');
+      if (bar) bar.style.width = percent + '%';
+
+      // Percent text
+      const percentText = document.getElementById('autonavPercentIndicator');
+      if (percentText) percentText.innerText = `إتمام السورة: ٪${toArNum(percent)}`;
+
+      // Active Page Detection
+      const pageCards = document.querySelectorAll('.mushaf-page-card');
+      if (pageCards.length > 0) {
+        const readerRect = reader.getBoundingClientRect();
+        const readerMid = readerRect.top + (readerRect.height * 0.35);
+        let activeIdx = 0;
+        let activePageNum = 1;
+
+        pageCards.forEach((card, idx) => {
+          const rect = card.getBoundingClientRect();
+          if (rect.top <= readerMid) {
+            activeIdx = idx;
+            activePageNum = card.dataset.pageNum || (idx + 1);
+          }
+        });
+
+        const totalPages = pageCards.length;
+        const pageInd = document.getElementById('autonavPageIndicator');
+        if (pageInd) {
+          pageInd.innerText = `صفحة ${toArNum(activeIdx + 1)} من ${toArNum(totalPages)} (مصحف المدينة ص ${toArNum(activePageNum)})`;
+        }
+        const compactPage = document.getElementById('autonavCompactPage');
+        if (compactPage) {
+          compactPage.innerText = `(ص ${toArNum(activePageNum)})`;
+        }
+      }
     }
 
     function openSurahReader(surahId, targetAyahNumber) {
@@ -5025,7 +5558,7 @@
       document.getElementById('readerSurahMeta').innerText = `${s.type} • ${toArNum(s.verses)} آية • الصفحة ${toArNum(s.mushafPageStart || 1)}`;
       
       const basmalaEl = document.getElementById('readerBasmala');
-      basmalaEl.style.display = (s.id === 1 || s.id === 9) ? 'none' : 'block';
+      if (basmalaEl) basmalaEl.style.display = (s.id === 1 || s.id === 9) ? 'none' : 'block';
 
       renderReaderSurahContent(s);
 
@@ -5043,6 +5576,9 @@
       readerView.style.display = 'block';
       readerView.scrollTop = 0;
       safeFeatherReplace();
+
+      attachReaderScrollTracker();
+      updateReadingProgressHUD();
 
       if (targetAyahNumber) {
         setTimeout(() => {
@@ -5062,55 +5598,157 @@
       document.getElementById('quranReaderView').style.display = 'none';
     }
 
-    // Render Surah with interactive Ayah selection (متصل بالرسم العثماني الأصيل بدون انقطاع)
+    // Render Surah in Authentic Madinah Mushaf Pages with Headers and Footers
     function renderReaderSurahContent(surah) {
       const contentEl = document.getElementById('readerContent');
       if (!contentEl) return;
       contentEl.innerHTML = '';
-      contentEl.style.fontSize = quranFontSize + 'px';
 
-      if (!surah || !surah.text) {
+      if (!surah) {
         contentEl.innerText = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
         return;
       }
 
-      // Regex splitting on Quranic verse ending bracket: ﴿N﴾
-      const parts = surah.text.split(/([﴿\uFD3F][\u0660-\u0669\d]+[﴾\uFD3E])/);
-      const fragment = document.createDocumentFragment();
+      // Check if pages are available in surah object
+      const pages = (surah.pages && surah.pages.length > 0) ? surah.pages : [surah.text || ''];
+      const pageMetadata = (surah.pageMetadata && surah.pageMetadata.length > 0) 
+        ? surah.pageMetadata 
+        : pages.map((_, i) => ({
+            pageNum: (surah.mushafPageStart || 1) + i,
+            juz: surah.juz || 1,
+            startAyah: 1,
+            endAyah: surah.verses || 1
+          }));
 
-      let ayahIndex = 1;
-      for (let i = 0; i < parts.length - 1; i += 2) {
-        const textPart = parts[i].trim();
-        const bracketPart = parts[i + 1].trim();
-        if (!textPart && !bracketPart) continue;
+      let globalAyahTracker = 1;
 
-        const span = document.createElement('span');
-        span.className = 'quran-ayah';
-        span.id = `quran-ayah-${surah.id}-${ayahIndex}`;
-        span.dataset.surah = surah.id;
-        span.dataset.ayah = ayahIndex;
-        span.title = `انقر لعرض تفسير الآية (${toArNum(ayahIndex)})`;
-        
-        // Pure uninterrupted cursive Uthmani text within the span
-        span.textContent = `${textPart} ${bracketPart} `;
+      pages.forEach((pageText, pIdx) => {
+        const meta = pageMetadata[pIdx] || {
+          pageNum: (surah.mushafPageStart || 1) + pIdx,
+          juz: surah.juz || 1,
+          startAyah: globalAyahTracker,
+          endAyah: surah.verses || globalAyahTracker
+        };
 
-        const currentAyahNum = ayahIndex;
-        const currentAyahFullText = `${textPart} ${bracketPart}`;
+        const pageCard = document.createElement('div');
+        pageCard.className = 'mushaf-page-card';
+        pageCard.dataset.pageNum = meta.pageNum;
+        pageCard.dataset.pageIndex = pIdx + 1;
 
-        span.addEventListener('click', function(e) {
-          e.stopPropagation();
-          openAyahTafsirModal(surah.id, currentAyahNum, currentAyahFullText);
-        });
+        // 1. Top Header Margins (الجزء & السورة)
+        const headerEl = document.createElement('div');
+        headerEl.className = 'mushaf-page-header';
+        headerEl.innerHTML = `
+          <span class="mushaf-page-header-side">
+            <span>📖</span>
+            <span>الجزء ${toArNum(meta.juz || 1)}</span>
+          </span>
+          <span class="mushaf-page-header-side">
+            <span>سورة ${surah.nameAr}</span>
+            <span>🕌</span>
+          </span>
+        `;
+        pageCard.appendChild(headerEl);
 
-        fragment.appendChild(span);
-        ayahIndex++;
-      }
+        // 2. Madinah Surah Calligraphy Banner & Basmala (Only on first page at start of Surah)
+        if (pIdx === 0) {
+          const surahFrame = document.createElement('div');
+          surahFrame.className = 'mushaf-surah-header-frame';
+          surahFrame.innerHTML = `
+            <div class="mushaf-surah-frame-inner">
+              <div class="mushaf-surah-badge-pill">
+                ${surah.type === 'مدنية' ? 'مدنية' : 'مكية'}
+              </div>
+              <div class="mushaf-surah-title-center">
+                <span class="mushaf-ornament-leaf">❖</span>
+                <h2 class="mushaf-surah-name">سُورَةُ ${surah.nameAr}</h2>
+                <span class="mushaf-ornament-leaf">❖</span>
+              </div>
+              <div class="mushaf-surah-badge-pill">
+                ${toArNum(surah.verses)} آيات
+              </div>
+            </div>
+          `;
+          pageCard.appendChild(surahFrame);
 
-      if (ayahIndex === 1) {
-        contentEl.innerText = surah.text;
-      } else {
-        contentEl.appendChild(fragment);
-      }
+          // Basmala (except Surah 1 where it is Ayah 1, and Surah 9 At-Tawbah)
+          if (surah.id !== 1 && surah.id !== 9) {
+            const basmalaFrame = document.createElement('div');
+            basmalaFrame.className = 'mushaf-basmala-frame';
+            basmalaFrame.textContent = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
+            pageCard.appendChild(basmalaFrame);
+          }
+        }
+
+        // 3. Page Content Container with Interactive Ayahs
+        const contentBox = document.createElement('div');
+        contentBox.className = 'mushaf-page-content';
+        contentBox.style.fontSize = quranFontSize + 'px';
+
+        // Parse verses with brackets
+        const parts = pageText.split(/([﴿\uFD3F][\u0660-\u0669\d]+[﴾\uFD3E])/);
+        let parsedAny = false;
+
+        for (let i = 0; i < parts.length - 1; i += 2) {
+          const textPart = parts[i].trim();
+          const bracketPart = parts[i + 1].trim();
+          if (!textPart && !bracketPart) continue;
+
+          // Extract ayah number from bracket
+          const rawDigits = bracketPart.replace(/[^\d\u0660-\u0669]/g, '');
+          let ayahNum = globalAyahTracker;
+          if (rawDigits) {
+            const enDigits = rawDigits.replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+            const parsed = parseInt(enDigits, 10);
+            if (!isNaN(parsed) && parsed > 0) ayahNum = parsed;
+          }
+          globalAyahTracker = ayahNum + 1;
+
+          const span = document.createElement('span');
+          span.className = 'quran-ayah';
+          span.id = `quran-ayah-${surah.id}-${ayahNum}`;
+          span.dataset.surah = surah.id;
+          span.dataset.ayah = ayahNum;
+          span.title = `انقر لعرض تفسير الآية (${toArNum(ayahNum)})`;
+          span.textContent = `${textPart} ${bracketPart} `;
+
+          const curNum = ayahNum;
+          const fullAyahStr = `${textPart} ${bracketPart}`;
+          span.addEventListener('click', function(e) {
+            e.stopPropagation();
+            openAyahTafsirModal(surah.id, curNum, fullAyahStr);
+          });
+
+          contentBox.appendChild(span);
+          parsedAny = true;
+        }
+
+        // Fallback if no bracket found
+        if (!parsedAny) {
+          contentBox.textContent = pageText;
+        }
+
+        pageCard.appendChild(contentBox);
+
+        // 4. Madinah Mushaf Page Footer with bracketed page number
+        const footerEl = document.createElement('div');
+        footerEl.className = 'mushaf-page-footer';
+        footerEl.innerHTML = `
+          <span class="mushaf-page-meta-tag">آيات (${toArNum(meta.startAyah || 1)} - ${toArNum(meta.endAyah || surah.verses)})</span>
+          <div class="mushaf-page-number-ornament">
+            <span>—</span>
+            <span style="font-size: 17px; font-weight: 900;">${toArNum(meta.pageNum)}</span>
+            <span>—</span>
+          </div>
+          <span class="mushaf-page-meta-tag">مصحف المدينة</span>
+        `;
+        pageCard.appendChild(footerEl);
+
+        contentEl.appendChild(pageCard);
+      });
+
+      // Update progress HUD immediately
+      updateReadingProgressHUD();
     }
 
     // =========================================================
@@ -5476,7 +6114,7 @@
       if (tab === 'verses') {
         versesBtn?.classList.add('active');
         tafsirBtn?.classList.remove('active');
-        if (versesContent) versesContent.style.display = 'block';
+        if (versesContent) versesContent.style.display = 'flex';
         if (tafsirContent) tafsirContent.style.display = 'none';
         if (basmala && currentReaderSurah && currentReaderSurah.id !== 1 && currentReaderSurah.id !== 9) {
           basmala.style.display = 'block';
@@ -5619,8 +6257,12 @@
     }
 
     function adjustQuranFontSize(delta) {
-      quranFontSize = Math.min(36, Math.max(16, quranFontSize + (delta * 2)));
-      document.getElementById('readerContent').style.fontSize = quranFontSize + 'px';
+      quranFontSize = Math.min(38, Math.max(16, quranFontSize + (delta * 2)));
+      const contentEl = document.getElementById('readerContent');
+      if (contentEl) contentEl.style.fontSize = quranFontSize + 'px';
+      document.querySelectorAll('.mushaf-page-content').forEach(el => {
+        el.style.fontSize = quranFontSize + 'px';
+      });
     }
 
     // Quran Audio in Reader
