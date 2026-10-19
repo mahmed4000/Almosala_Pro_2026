@@ -2153,6 +2153,79 @@
       filter: brightness(1.15);
     }
 
+    /* =========================================================
+       MUSHAF FULLSCREEN READING MODE & FLOATING RETURN BUTTON
+       (وضع تصفح المصحف بملء الشاشة مع زر العودة الصغير)
+       ========================================================= */
+    #quranReaderView.mushaf-fullscreen-mode {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      transform: none !important;
+      border-radius: 0 !important;
+      z-index: 10000 !important;
+      padding: 16px 20px 40px !important;
+      box-shadow: none !important;
+    }
+
+    #quranReaderView.mushaf-fullscreen-mode .mushaf-page-card {
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    #quranReaderView.mushaf-fullscreen-mode .mushaf-autonav-floating-panel {
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Small Floating Return Button in Fullscreen Mode (زر العودة الصغير الأنيق) */
+    .mushaf-fullscreen-return-btn {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10005;
+      background: rgba(30, 20, 14, 0.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--secondary);
+      color: #FFF;
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mushaf-fullscreen-return-btn:hover {
+      background: var(--primary);
+      border-color: #FFF;
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 6px 20px rgba(198, 146, 85, 0.45);
+    }
+    .mushaf-fullscreen-return-btn:active {
+      transform: translateY(1px) scale(0.96);
+    }
+    .mushaf-fullscreen-return-icon {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+    }
+
   </style>
 </head>
 <body>
@@ -2999,6 +3072,12 @@
 
     <!-- 2.1 QURAN READER MODAL SCREEN (AUTHENTIC UTHMANI MUSHAF EXPERIENCE) -->
     <div id="quranReaderView" class="modal-overlay">
+      <!-- Small Floating Return Button for Fullscreen Mode (زر العودة الصغير الأنيق عند ملء الشاشة) -->
+      <button type="button" id="mushafFullscreenReturnBtn" class="mushaf-fullscreen-return-btn" onclick="exitMushafFullscreen()" title="العودة وإنهاء ملء الشاشة (Esc)">
+        <span class="mushaf-fullscreen-return-icon">←</span>
+        <span>العودة</span>
+      </button>
+
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); position: sticky; top: -16px; background: var(--bg); padding-top: 6px; z-index: 10;">
         <button onclick="closeQuranReader()" style="background: none; border: none; font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--primary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
           <i data-feather="arrow-right"></i> رجوع
@@ -3010,6 +3089,9 @@
         </div>
 
         <div style="display: flex; gap: 6px; align-items: center;">
+          <button id="readerFullscreenToggleBtn" onclick="toggleMushafFullscreen()" title="تصفح المصحف بملء الشاشة" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 5px 8px; cursor: pointer; font-size: 13px; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 3px;">
+            <span id="readerFullscreenIcon">⛶</span>
+          </button>
           <button id="readerAutoScrollToggleBtn" onclick="toggleReaderAutoScroll()" title="بدء / إيقاف التمرير التلقائي للقراءة" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 5px 8px; cursor: pointer; font-size: 13px; color: var(--primary);">
             <span id="readerAutoScrollIcon">📜⬇️</span>
           </button>
@@ -3126,6 +3208,9 @@
             <span id="autonavSpeedBadge" style="background: rgba(198, 146, 85, 0.25); border: 1px solid var(--secondary); padding: 1px 6px; border-radius: 10px; font-size: 10px;">١x</span>
           </div>
           <div style="display: flex; gap: 6px; align-items: center;">
+            <button type="button" onclick="toggleMushafFullscreen()" title="تصفح بملء الشاشة" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 8px; width: 24px; height: 24px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              ⛶
+            </button>
             <button type="button" onclick="minimizeAutoNavPanel()" title="تصغير الشريط" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 8px; width: 24px; height: 24px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
               ─
             </button>
@@ -5597,7 +5682,121 @@
       }
     }
 
+    // =========================================================
+    // MUSHAF FULLSCREEN BROWSING CONTROLLER (نظام تصفح المصحف بملء الشاشة)
+    // =========================================================
+    let isMushafFullscreen = false;
+
+    function toggleMushafFullscreen() {
+      if (isMushafFullscreen) {
+        exitMushafFullscreen();
+      } else {
+        enterMushafFullscreen();
+      }
+    }
+
+    function enterMushafFullscreen() {
+      const reader = document.getElementById('quranReaderView');
+      if (!reader) return;
+
+      isMushafFullscreen = true;
+      reader.classList.add('mushaf-fullscreen-mode');
+
+      // Show small floating return button
+      const returnBtn = document.getElementById('mushafFullscreenReturnBtn');
+      if (returnBtn) returnBtn.style.display = 'flex';
+
+      // Update Top Bar Fullscreen Button
+      const fsBtn = document.getElementById('readerFullscreenToggleBtn');
+      if (fsBtn) {
+        fsBtn.classList.add('active');
+        fsBtn.style.background = 'var(--secondary)';
+        fsBtn.style.color = '#FFF';
+        fsBtn.style.borderColor = 'var(--primary)';
+      }
+      const fsIcon = document.getElementById('readerFullscreenIcon');
+      if (fsIcon) fsIcon.innerText = '🗗';
+
+      // Native browser Fullscreen API
+      try {
+        const elem = reader;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        }
+      } catch (e) {}
+
+      showToast('تم تفعيل تصفح المصحف بملء الشاشة 📖✨');
+    }
+
+    function exitMushafFullscreen() {
+      isMushafFullscreen = false;
+      const reader = document.getElementById('quranReaderView');
+      if (reader) reader.classList.remove('mushaf-fullscreen-mode');
+
+      // Hide small floating return button
+      const returnBtn = document.getElementById('mushafFullscreenReturnBtn');
+      if (returnBtn) returnBtn.style.display = 'none';
+
+      // Reset Top Bar Fullscreen Button
+      const fsBtn = document.getElementById('readerFullscreenToggleBtn');
+      if (fsBtn) {
+        fsBtn.classList.remove('active');
+        fsBtn.style.background = 'var(--surface)';
+        fsBtn.style.color = 'var(--primary)';
+        fsBtn.style.borderColor = 'var(--border)';
+      }
+      const fsIcon = document.getElementById('readerFullscreenIcon');
+      if (fsIcon) fsIcon.innerText = '⛶';
+
+      // Native exit fullscreen
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        }
+      } catch (e) {}
+
+      showToast('تم الخروج من وضع ملء الشاشة 🔙');
+    }
+
+    // Fullscreen synchronization event listeners
+    document.addEventListener('fullscreenchange', () => {
+      const isNative = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+      if (!isNative && isMushafFullscreen) {
+        exitMushafFullscreen();
+      }
+    });
+
+    document.addEventListener('webkitfullscreenchange', () => {
+      const isNative = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+      if (!isNative && isMushafFullscreen) {
+        exitMushafFullscreen();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isMushafFullscreen) {
+        exitMushafFullscreen();
+      }
+    });
+
     function closeQuranReader() {
+      if (isMushafFullscreen) {
+        exitMushafFullscreen();
+      }
       stopReaderAutoScroll();
       closeAyahTafsirModal();
       document.getElementById('quranReaderView').style.display = 'none';
