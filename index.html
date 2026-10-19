@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>المصلى الأندلسي 2026 | Almosala Pro</title>
   
-  <!-- Google Fonts: Tajawal & Amiri -->
+  <!-- Google Fonts: Tajawal & Amiri Quran & Amiri -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   
       <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./assets/favicon.png">
@@ -44,7 +44,7 @@
       --shadow: 0 6px 20px rgba(93, 58, 34, 0.08);
       --shadow-lg: 0 12px 32px rgba(93, 58, 34, 0.12);
       --font-body: 'Tajawal', -apple-system, sans-serif;
-      --font-quran: 'Amiri', serif;
+      --font-quran: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
     }
 
     [data-theme="dark"] {
@@ -579,9 +579,12 @@
       stroke-width: 2.6;
     }
 
-    /* Quran Text Font */
-    .quran-text {
-      font-family: var(--font-quran);
+    /* Quran Text Font - الخط العثماني الأصيل لمصحف المدينة */
+    .quran-text,
+    .mushaf-page-content,
+    .quran-ayah,
+    #readerContent {
+      font-family: var(--font-quran) !important;
       line-height: 2.3;
       text-align: justify;
       word-spacing: 2px;
@@ -1605,6 +1608,7 @@
        AYAH INTERACTIVE SELECTION & TAFSIR MODAL STYLES
        ========================================================= */
     .quran-ayah {
+      font-family: var(--font-quran) !important;
       display: inline;
       cursor: pointer;
       padding: 1px 3px;
@@ -1964,6 +1968,7 @@
       color: var(--secondary);
     }
     .mushaf-page-content {
+      font-family: var(--font-quran) !important;
       font-size: 22px;
       line-height: 2.3;
       color: var(--text-primary);
@@ -3087,8 +3092,8 @@
         💡 اضغط على أي آية لعرض تفسيرها، الاستماع لتلاوتها، أو نسخها
       </div>
 
-      <!-- Text Container (صفحات مصحف المدينة المنورة مع ترويسة السور وأرقام الصفحات) -->
-      <div id="readerContent" style="display: flex; flex-direction: column; gap: 14px;">
+      <!-- Text Container (صفحات مصحف المدينة المنورة بالخط العثماني الشريف) -->
+      <div id="readerContent" class="quran-text" style="display: flex; flex-direction: column; gap: 14px; font-family: var(--font-quran) !important;">
         <!-- Injected dynamically: Madinah Surah Banners + Page Cards + Page Footers -->
       </div>
 
@@ -5682,7 +5687,8 @@
 
         // 3. Page Content Container with Interactive Ayahs
         const contentBox = document.createElement('div');
-        contentBox.className = 'mushaf-page-content';
+        contentBox.className = 'mushaf-page-content quran-text';
+        contentBox.style.fontFamily = 'var(--font-quran)';
         contentBox.style.fontSize = quranFontSize + 'px';
 
         // Parse verses with brackets
@@ -5705,7 +5711,8 @@
           globalAyahTracker = ayahNum + 1;
 
           const span = document.createElement('span');
-          span.className = 'quran-ayah';
+          span.className = 'quran-ayah quran-text';
+          span.style.fontFamily = 'var(--font-quran)';
           span.id = `quran-ayah-${surah.id}-${ayahNum}`;
           span.dataset.surah = surah.id;
           span.dataset.ayah = ayahNum;
@@ -8080,6 +8087,9 @@
       localStorage.setItem('almosala_font_size', quranFontSize);
       const contentEl = document.getElementById('readerContent');
       if (contentEl) contentEl.style.fontSize = quranFontSize + 'px';
+      document.querySelectorAll('.mushaf-page-content').forEach(el => {
+        el.style.fontSize = quranFontSize + 'px';
+      });
       showToast(`تم ضبط حجم الخط القرآني على (${size})`);
     }
 
