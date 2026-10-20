@@ -109,7 +109,6 @@ walk('node_modules/expo-modules-jsi', (file) => {
 
     if (changed) {
       fs.writeFileSync(file, content, 'utf8');
-      console.log('Fixed weak let / nonisolated runtime in:', file);
     }
   }
 });
@@ -125,7 +124,50 @@ if (fs.existsSync(jsTypePath)) {
   }
 }
 
-// 8. Fix JavaScriptError.swift Sendable conformance for Swift 6
+// 8. Fix JavaScriptRef.swift (remove sending to allow non-sending ref() calls)
+const jsRefPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRef.swift';
+if (fs.existsSync(jsRefPath)) {
+  let content = fs.readFileSync(jsRefPath, 'utf8');
+  content = content.replace(/consuming\s+sending\s+T/g, 'consuming T');
+  content = content.replace(/->\s*sending\s+T/g, '-> T');
+  fs.writeFileSync(jsRefPath, content, 'utf8');
+  console.log('Fixed JavaScriptRef.swift (removed sending)');
+}
+
+// 9. Fix JavaScriptCodable+Task.swift (wrap detached task captures in UncheckedSendable)
+const jsTaskPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Coding/JavaScriptCodable+Task.swift';
+if (fs.existsSync(jsTaskPath)) {
+  let content = fs.readFileSync(jsTaskPath, 'utf8');
+  if (!content.includes('let uncheckedPromise = UncheckedSendable(promise)')) {
+    const targetBlock = `    let promise = try JavaScriptPromise(copy runtime)
+    Task<Void, Never>.detached {
+      do {
+        promise.resolve(try await value.value)
+      } catch {
+        promise.reject(error)
+      }
+    }`;
+    const replacement = `    let promise = try JavaScriptPromise(copy runtime)
+    let uncheckedPromise = UncheckedSendable(promise)
+    let taskValue = UncheckedSendable(value)
+    Task<Void, Never>.detached {
+      do {
+        uncheckedPromise.value.resolve(try await taskValue.value.value)
+      } catch {
+        uncheckedPromise.value.reject(error)
+      }
+    }`;
+    if (content.includes(targetBlock)) {
+      content = content.replace(targetBlock, replacement);
+    } else {
+      content = content.replace(/let\s+promise\s*=\s*.*?JavaScriptPromise\(copy\s+runtime\)[\s\S]*?Task<Void,\s*Never>\.detached\s*\{[\s\S]*?\}\s*\}(?=\s*return)/g, replacement);
+    }
+    fs.writeFileSync(jsTaskPath, content, 'utf8');
+    console.log('Fixed JavaScriptCodable+Task.swift (UncheckedSendable)');
+  }
+}
+
+// 10. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
@@ -136,7 +178,7 @@ if (fs.existsSync(jsErrorPath)) {
   }
 }
 
-// 9. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 11. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
 if (fs.existsSync(hostFnPath)) {
   let content = fs.readFileSync(hostFnPath, 'utf8');
@@ -155,7 +197,7 @@ if (fs.existsSync(hostFnPath)) {
   }
 }
 
-// 10. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 12. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
 if (fs.existsSync(hostObjPath)) {
   let content = fs.readFileSync(hostObjPath, 'utf8');
@@ -166,7 +208,7 @@ if (fs.existsSync(hostObjPath)) {
   }
 }
 
-// 11. Fix JavaScriptExecutor in JavaScriptActor.swift
+// 13. Fix JavaScriptExecutor in JavaScriptActor.swift
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
