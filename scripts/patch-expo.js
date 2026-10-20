@@ -29,23 +29,32 @@ walk('node_modules', (file) => {
   }
 });
 
-// 2. Fix RuntimeScheduler.h (forward declare retain/release in global namespace before SWIFT_SHARED_REFERENCE)
+// 2. Fix RuntimeScheduler.h
+// Move SWIFT_SHARED_REFERENCE to class declaration and forward declare retain/release
 const headerPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h';
 if (fs.existsSync(headerPath)) {
   let content = fs.readFileSync(headerPath, 'utf8');
-  if (!content.includes('// forward declare retainRuntimeScheduler in global namespace')) {
+  
+  // Forward declarations before namespace
+  if (!content.includes('void retainRuntimeScheduler(expo::RuntimeScheduler *scheduler);')) {
     const forwardDecl = `
-// forward declare retainRuntimeScheduler in global namespace
 namespace expo { class RuntimeScheduler; }
 void retainRuntimeScheduler(expo::RuntimeScheduler *scheduler);
 void releaseRuntimeScheduler(expo::RuntimeScheduler *scheduler);
 `;
-    // Clean up any old forward declaration inside namespace expo
-    content = content.replace(/\/\/ forward declare retainRuntimeScheduler[\s\S]*?void releaseRuntimeScheduler\(expo::RuntimeScheduler \*scheduler\);\s*/g, '');
     content = content.replace('namespace expo {', forwardDecl + '\nnamespace expo {');
-    fs.writeFileSync(headerPath, content, 'utf8');
-    console.log('Added global forward declarations to RuntimeScheduler.h');
   }
+
+  // Move SWIFT_SHARED_REFERENCE to class header
+  if (content.includes('class RuntimeScheduler {')) {
+    content = content.replace('class RuntimeScheduler {', 'class SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler) RuntimeScheduler {');
+  }
+  if (content.includes('} SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler);')) {
+    content = content.replace('} SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler);', '};');
+  }
+
+  fs.writeFileSync(headerPath, content, 'utf8');
+  console.log('Fixed RuntimeScheduler.h SWIFT_SHARED_REFERENCE placement');
 }
 
 // 3. Add C++ factory function in HostFunctionClosure.h for Swift 6.0 compatibility
