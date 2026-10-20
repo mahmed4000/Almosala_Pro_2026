@@ -51,29 +51,25 @@ if (fs.existsSync(jsRuntimePath)) {
   }
 }
 
-// 4. Fix JavaScriptError.swift (weak let -> weak var, and Sendable -> @unchecked Sendable)
+// 4. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
+walk('node_modules/expo-modules-jsi', (file) => {
+  if (file.endsWith('.swift')) {
+    let content = fs.readFileSync(file, 'utf8');
+    if (content.includes('weak let')) {
+      content = content.replace(/weak\s+let\s+/g, 'weak var ');
+      fs.writeFileSync(file, content, 'utf8');
+      console.log('Fixed weak let in:', file);
+    }
+  }
+});
+
+// 5. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
-  content = content.replace(/weak\s+let\s+runtime/g, 'weak var runtime');
-  // replace Sendable with @unchecked Sendable on JavaScriptError
-  content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable(\s*,\s*@unchecked\s*Sendable)?/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
+  content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
   fs.writeFileSync(jsErrorPath, content, 'utf8');
-  console.log('Fixed JavaScriptError.swift (weak var & @unchecked Sendable)');
+  console.log('Fixed JavaScriptError.swift (@unchecked Sendable)');
 }
-
-// 5. Clean up any unintended edits in other files
-['CleanupContext.swift', 'HostFunctionContext.swift', 'HostObjectContext.swift'].forEach((fileName) => {
-  walk('node_modules/expo-modules-jsi', (file) => {
-    if (path.basename(file) === fileName) {
-      let content = fs.readFileSync(file, 'utf8');
-      if (content.includes(', @unchecked Sendable')) {
-        content = content.replace(/,\s*@unchecked\s*Sendable/g, '');
-        fs.writeFileSync(file, content, 'utf8');
-        console.log('Cleaned up redundant Sendable in:', fileName);
-      }
-    }
-  });
-});
 
 console.log('All Expo patches applied successfully.');
