@@ -17,6 +17,32 @@ function walk(dir, callback) {
 
 console.log('Patching Expo SDK 57 iOS native modules compatibility...');
 
+// 0. Automatically switch to the latest Xcode on the runner
+try {
+  const { execSync } = require('child_process');
+  const xcodes = execSync('ls -d /Applications/Xcode* 2>/dev/null').toString().trim().split('\n').filter(Boolean);
+  if (xcodes.length > 0) {
+    console.log('Installed Xcode versions on runner:', xcodes);
+    const sorted = xcodes.sort((a, b) => {
+      const getVer = str => (str.match(/Xcode_([0-9.]+)/) || [])[1] || '0';
+      return getVer(a).localeCompare(getVer(b), undefined, { numeric: true });
+    });
+    const latest = sorted[sorted.length - 1];
+    console.log('Selecting latest Xcode on runner:', latest);
+    try {
+      execSync(`sudo xcode-select -s "${latest}"`);
+    } catch(e) {
+      try {
+        execSync(`xcode-select -s "${latest}"`);
+      } catch(e2) {}
+    }
+    try {
+      console.log('Active Xcode:', execSync('xcode-select -p').toString().trim());
+      console.log('Active Swift:', execSync('swift --version').toString().trim().split('\n')[0]);
+    } catch(e) {}
+  }
+} catch (e) {}
+
 // 1. Fix Swift tools version in Package.swift (6.2 -> 6.0 for Xcode 16)
 walk('node_modules', (file) => {
   if (path.basename(file) === 'Package.swift') {
@@ -206,14 +232,14 @@ if (fs.existsSync(jsActorPath)) {
   }
 }
 
-// 14. Force building ExpoModulesCore from source to prevent Swift SDK version mismatch with prebuilt xcframework
-const expoCorePodspec = 'node_modules/expo-modules-core/ExpoModulesCore.podspec';
-if (fs.existsSync(expoCorePodspec)) {
-  let content = fs.readFileSync(expoCorePodspec, 'utf8');
-  if (content.includes('!Expo::PackagesConfig.instance.try_link_with_prebuilt_xcframework(s)')) {
-    content = content.replace('!Expo::PackagesConfig.instance.try_link_with_prebuilt_xcframework(s)', 'true');
-    fs.writeFileSync(expoCorePodspec, content, 'utf8');
-    console.log('Fixed ExpoModulesCore.podspec (force build from source)');
+// 14. Remove unused import ExpoModulesCore from LinearGradientLayer.swift
+const linearGradientLayerPath = 'node_modules/expo-linear-gradient/ios/LinearGradientLayer.swift';
+if (fs.existsSync(linearGradientLayerPath)) {
+  let content = fs.readFileSync(linearGradientLayerPath, 'utf8');
+  if (content.includes('import ExpoModulesCore')) {
+    content = content.replace('import ExpoModulesCore', '// import ExpoModulesCore (not needed in CALayer)');
+    fs.writeFileSync(linearGradientLayerPath, content, 'utf8');
+    console.log('Fixed LinearGradientLayer.swift (removed unused import)');
   }
 }
 
