@@ -14,7 +14,6 @@
     },
     "ios": {
       "supportsTablet": true,
-      "supportsRTL": true,
       "bundleIdentifier": "com.almosala.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "يحتاج تطبيق رفيق المسلم إلى تحديد موقعك الجغرافي لحساب مواقيت الصلاة بدقة وتحديد اتجاه القبلة نحو مكة المكرمة.",
@@ -23,11 +22,11 @@
           "audio",
           "fetch",
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "supportsRTL": true,
       "package": "com.almosala.app",
       "versionCode": 2027,
       "adaptiveIcon": {
@@ -44,7 +43,11 @@
         "RECEIVE_BOOT_COMPLETED",
         "WAKE_LOCK",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -66,13 +69,14 @@
           "color": "#8C5E3C"
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ],
     "extra": {
       "eas": {
-        "projectId": "4dd7909f-a0b8-4985-8ec5-dd25ace9babc"
+        "projectId": "52fa8569-b438-4ca1-9f01-de894689a90b"
       }
     },
-    "owner": "saudiavisa2023"
+    "owner": "mahmed4000"
   }
 }
