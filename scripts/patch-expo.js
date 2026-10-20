@@ -78,7 +78,6 @@ walk('node_modules/expo-modules-jsi', (file) => {
 
     if (changed) {
       fs.writeFileSync(file, content, 'utf8');
-      console.log('Patched Swift file:', file);
     }
   }
 });
@@ -101,6 +100,34 @@ if (fs.existsSync(jsErrorPath)) {
   content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
   fs.writeFileSync(jsErrorPath, content, 'utf8');
   console.log('Fixed JavaScriptError.swift (@unchecked Sendable)');
+}
+
+// 7. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
+if (fs.existsSync(hostFnPath)) {
+  let content = fs.readFileSync(hostFnPath, 'utf8');
+  content = content.replace(/class\s+HostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostFunctionContext: HostCallbackContext, @unchecked Sendable');
+  content = content.replace(/class\s+UnownedThisHostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class UnownedThisHostFunctionContext: HostCallbackContext, @unchecked Sendable');
+  fs.writeFileSync(hostFnPath, content, 'utf8');
+  console.log('Fixed HostFunctionContext.swift (@unchecked Sendable)');
+}
+
+// 8. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
+if (fs.existsSync(hostObjPath)) {
+  let content = fs.readFileSync(hostObjPath, 'utf8');
+  content = content.replace(/class\s+HostObjectContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostObjectContext: HostCallbackContext, @unchecked Sendable');
+  fs.writeFileSync(hostObjPath, content, 'utf8');
+  console.log('Fixed HostObjectContext.swift (@unchecked Sendable)');
+}
+
+// 9. Fix JavaScriptExecutor in JavaScriptActor.swift
+const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
+if (fs.existsSync(jsActorPath)) {
+  let content = fs.readFileSync(jsActorPath, 'utf8');
+  content = content.replace(/internal\s+class\s+JavaScriptExecutor:\s*SerialExecutor/g, 'internal final class JavaScriptExecutor: SerialExecutor, @unchecked Sendable');
+  fs.writeFileSync(jsActorPath, content, 'utf8');
+  console.log('Fixed JavaScriptActor.swift (final class JavaScriptExecutor: SerialExecutor, @unchecked Sendable)');
 }
 
 console.log('All Expo patches applied successfully.');
