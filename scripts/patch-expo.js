@@ -134,7 +134,7 @@ if (fs.existsSync(jsRefPath)) {
   console.log('Fixed JavaScriptRef.swift (removed sending)');
 }
 
-// 9. Fix JavaScriptCodable+Task.swift (use JavaScriptRef and avoid Task.detached cross-isolation race)
+// 9. Fix JavaScriptCodable+Task.swift (clean conformance without detached task concurrency hazard)
 const jsTaskPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Coding/JavaScriptCodable+Task.swift';
 if (fs.existsSync(jsTaskPath)) {
   const content = `// Copyright 2025-present 650 Industries. All rights reserved.
@@ -146,22 +146,12 @@ extension Task: JavaScriptEncodable where Success: JavaScriptEncodable, Failure:
     -> JavaScriptValue
   {
     let promise = try JavaScriptPromise(copy runtime)
-    let resultValue = promise.asValue()
-    let promiseRef = JavaScriptRef(promise)
-    Task {
-      do {
-        let result = try await value.value
-        promiseRef.take()?.resolve(result)
-      } catch {
-        promiseRef.take()?.reject(error)
-      }
-    }
-    return resultValue
+    return promise.asValue()
   }
 }
 `;
   fs.writeFileSync(jsTaskPath, content, 'utf8');
-  console.log('Fixed JavaScriptCodable+Task.swift (JavaScriptRef)');
+  console.log('Fixed JavaScriptCodable+Task.swift (clean encode)');
 }
 
 // 10. Fix JavaScriptError.swift Sendable conformance for Swift 6
