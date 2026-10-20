@@ -23,6 +23,10 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
+      - name: 🩹 Fix Swift Tools Version in Expo Packages
+        run: |
+          find node_modules -name "Package.swift" -exec sed -i '' 's/swift-tools-version: 6.2/swift-tools-version: 6.0/g' {} +
+
       - name: ⚙️ Generate Native iOS Project (Expo Prebuild)
         run: npx expo prebuild --platform ios --clean
 
