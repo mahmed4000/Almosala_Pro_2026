@@ -51,34 +51,29 @@ if (fs.existsSync(jsRuntimePath)) {
   }
 }
 
-// 4. Fix weak let and Sendable in Swift files
-const expoJsiDir = 'node_modules/expo-modules-jsi';
-if (fs.existsSync(expoJsiDir)) {
-  walk(expoJsiDir, (file) => {
-    if (file.endsWith('.swift')) {
+// 4. Fix JavaScriptError.swift (weak let -> weak var, and Sendable -> @unchecked Sendable)
+const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
+if (fs.existsSync(jsErrorPath)) {
+  let content = fs.readFileSync(jsErrorPath, 'utf8');
+  content = content.replace(/weak\s+let\s+runtime/g, 'weak var runtime');
+  // replace Sendable with @unchecked Sendable on JavaScriptError
+  content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable(\s*,\s*@unchecked\s*Sendable)?/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
+  fs.writeFileSync(jsErrorPath, content, 'utf8');
+  console.log('Fixed JavaScriptError.swift (weak var & @unchecked Sendable)');
+}
+
+// 5. Clean up any unintended edits in other files
+['CleanupContext.swift', 'HostFunctionContext.swift', 'HostObjectContext.swift'].forEach((fileName) => {
+  walk('node_modules/expo-modules-jsi', (file) => {
+    if (path.basename(file) === fileName) {
       let content = fs.readFileSync(file, 'utf8');
-      let changed = false;
-
-      // Fix weak let
-      if (content.includes('weak let')) {
-        content = content.replace(/weak\s+let\s+/g, 'weak var ');
-        changed = true;
-      }
-
-      // Add @unchecked Sendable to classes that conform to Sendable and have weak vars
-      if (content.includes('class ') && content.includes(':') && (content.includes('Sendable') || content.includes('JavaScriptType'))) {
-        if (!content.includes('@unchecked Sendable')) {
-          content = content.replace(/(class\s+\w+\s*:\s*[^{]+)/g, '$1, @unchecked Sendable');
-          changed = true;
-        }
-      }
-
-      if (changed) {
+      if (content.includes(', @unchecked Sendable')) {
+        content = content.replace(/,\s*@unchecked\s*Sendable/g, '');
         fs.writeFileSync(file, content, 'utf8');
-        console.log('Patched Swift file:', file);
+        console.log('Cleaned up redundant Sendable in:', fileName);
       }
     }
   });
-}
+});
 
 console.log('All Expo patches applied successfully.');
