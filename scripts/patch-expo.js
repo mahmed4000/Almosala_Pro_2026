@@ -29,7 +29,39 @@ walk('node_modules', (file) => {
   }
 });
 
-// 2. Fix Task+immediate.swift for Swift 6.0 (Xcode 16 / iOS 18 SDK)
+// 2. Add static create to HostFunctionClosure.h for Swift foreign reference constructor
+const hostClosurePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/HostFunctionClosure.h';
+if (fs.existsSync(hostClosurePath)) {
+  let content = fs.readFileSync(hostClosurePath, 'utf8');
+  if (!content.includes('static HostFunctionClosure *create')) {
+    const createFn = `
+  static HostFunctionClosure *create(Context context, Closure closure, Deallocator deallocator) noexcept {
+    return new HostFunctionClosure(context, closure, deallocator);
+  }
+`;
+    content = content.replace('explicit HostFunctionClosure(Context context, Closure closure, Deallocator deallocator)', createFn + '\n  explicit HostFunctionClosure(Context context, Closure closure, Deallocator deallocator)');
+    fs.writeFileSync(hostClosurePath, content, 'utf8');
+    console.log('Added static create to HostFunctionClosure.h');
+  }
+}
+
+// 3. Add pushPropNameId helper in HostObjectCallbacks.h to avoid Swift non-copyable C++ vector move issue
+const callbacksPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/HostObjectCallbacks.h';
+if (fs.existsSync(callbacksPath)) {
+  let content = fs.readFileSync(callbacksPath, 'utf8');
+  if (!content.includes('pushPropNameId')) {
+    const helper = `
+inline void pushPropNameId(HostObjectCallbacks::PropNameIds &vector, facebook::jsi::IRuntime &runtime, const char *name) {
+  vector.push_back(facebook::jsi::PropNameID::forUtf8(runtime, name));
+}
+`;
+    content = content.replace('} // namespace expo', helper + '\n} // namespace expo');
+    fs.writeFileSync(callbacksPath, content, 'utf8');
+    console.log('Added pushPropNameId helper to HostObjectCallbacks.h');
+  }
+}
+
+// 4. Fix Task+immediate.swift for Swift 6.0 (Xcode 16 / iOS 18 SDK)
 const taskImmPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Extensions/Task+immediate.swift';
 if (fs.existsSync(taskImmPath)) {
   let content = fs.readFileSync(taskImmPath, 'utf8');
@@ -40,26 +72,23 @@ if (fs.existsSync(taskImmPath)) {
   }
 }
 
-// 3. Fix trailing comma and consuming in JavaScriptRuntime.swift
+// 5. Fix JavaScriptRuntime.swift
 const jsRuntimePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift';
 if (fs.existsSync(jsRuntimePath)) {
   let content = fs.readFileSync(jsRuntimePath, 'utf8');
-  let changed = false;
+  // Trailing comma
   if (content.includes('consuming JavaScriptValuesBuffer,')) {
     content = content.replace(/consuming\s+JavaScriptValuesBuffer,/g, 'consuming JavaScriptValuesBuffer');
-    changed = true;
   }
-  if (content.includes('vector.push_back(consuming: propNameId)')) {
-    content = content.replace('vector.push_back(consuming: propNameId)', 'vector.push_back(propNameId)');
-    changed = true;
-  }
-  if (changed) {
-    fs.writeFileSync(jsRuntimePath, content, 'utf8');
-    console.log('Fixed JavaScriptRuntime.swift syntax');
-  }
+  // HostFunctionClosure constructors -> factory calls
+  content = content.replace(/expo\.HostFunctionClosure\(context,\s*call,\s*deallocate\)/g, 'expo.HostFunctionClosure.create(context, call, deallocate)');
+  // pushPropNameId helper call in C++
+  content = content.replace(/let\s+propNameId\s*=\s*facebook\.jsi\.PropNameID\.forUtf8[^\n]+\n\s*vector\.push_back[^\n]+/g, 'expo.pushPropNameId(&vector, iRuntime, propertyName)');
+  fs.writeFileSync(jsRuntimePath, content, 'utf8');
+  console.log('Fixed JavaScriptRuntime.swift (HostFunctionClosure.create, pushPropNameId)');
 }
 
-// 4. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
+// 6. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
 // AND annotate weak var runtime with nonisolated(unsafe) to allow Sendable conformance
 walk('node_modules/expo-modules-jsi', (file) => {
   if (file.endsWith('.swift')) {
@@ -85,7 +114,7 @@ walk('node_modules/expo-modules-jsi', (file) => {
   }
 });
 
-// 5. Fix JavaScriptType protocol (remove strict Sendable requirement)
+// 7. Fix JavaScriptType protocol (remove strict Sendable requirement)
 const jsTypePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Protocols/JavaScriptType.swift';
 if (fs.existsSync(jsTypePath)) {
   let content = fs.readFileSync(jsTypePath, 'utf8');
@@ -96,7 +125,7 @@ if (fs.existsSync(jsTypePath)) {
   }
 }
 
-// 6. Fix JavaScriptError.swift Sendable conformance for Swift 6
+// 8. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
@@ -107,7 +136,7 @@ if (fs.existsSync(jsErrorPath)) {
   }
 }
 
-// 7. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 9. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
 if (fs.existsSync(hostFnPath)) {
   let content = fs.readFileSync(hostFnPath, 'utf8');
@@ -126,7 +155,7 @@ if (fs.existsSync(hostFnPath)) {
   }
 }
 
-// 8. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 10. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
 if (fs.existsSync(hostObjPath)) {
   let content = fs.readFileSync(hostObjPath, 'utf8');
@@ -137,7 +166,7 @@ if (fs.existsSync(hostObjPath)) {
   }
 }
 
-// 9. Fix JavaScriptExecutor in JavaScriptActor.swift
+// 11. Fix JavaScriptExecutor in JavaScriptActor.swift
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
