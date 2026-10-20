@@ -40,16 +40,42 @@ if (fs.existsSync(headerPath)) {
   }
 }
 
-// 3. Fix weak let in Swift files
+// 3. Fix trailing comma in JavaScriptRuntime.swift
+const jsRuntimePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift';
+if (fs.existsSync(jsRuntimePath)) {
+  let content = fs.readFileSync(jsRuntimePath, 'utf8');
+  if (content.includes('consuming JavaScriptValuesBuffer,')) {
+    content = content.replace(/consuming\s+JavaScriptValuesBuffer,/g, 'consuming JavaScriptValuesBuffer');
+    fs.writeFileSync(jsRuntimePath, content, 'utf8');
+    console.log('Fixed trailing comma in JavaScriptRuntime.swift');
+  }
+}
+
+// 4. Fix weak let and Sendable in Swift files
 const expoJsiDir = 'node_modules/expo-modules-jsi';
 if (fs.existsSync(expoJsiDir)) {
   walk(expoJsiDir, (file) => {
     if (file.endsWith('.swift')) {
       let content = fs.readFileSync(file, 'utf8');
+      let changed = false;
+
+      // Fix weak let
       if (content.includes('weak let')) {
         content = content.replace(/weak\s+let\s+/g, 'weak var ');
+        changed = true;
+      }
+
+      // Add @unchecked Sendable to classes that conform to Sendable and have weak vars
+      if (content.includes('class ') && content.includes(':') && (content.includes('Sendable') || content.includes('JavaScriptType'))) {
+        if (!content.includes('@unchecked Sendable')) {
+          content = content.replace(/(class\s+\w+\s*:\s*[^{]+)/g, '$1, @unchecked Sendable');
+          changed = true;
+        }
+      }
+
+      if (changed) {
         fs.writeFileSync(file, content, 'utf8');
-        console.log('Fixed weak let in:', file);
+        console.log('Patched Swift file:', file);
       }
     }
   });
