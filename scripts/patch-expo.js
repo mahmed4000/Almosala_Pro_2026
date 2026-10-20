@@ -121,13 +121,13 @@ if (fs.existsSync(hostObjPath)) {
   console.log('Fixed HostObjectContext.swift (@unchecked Sendable)');
 }
 
-// 9. Fix JavaScriptExecutor in JavaScriptActor.swift
+// 9. Fix JavaScriptExecutor in JavaScriptActor.swift (MUST NOT be final because JavaScriptRuntimeExecutor subclasses it)
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
-  content = content.replace(/internal\s+class\s+JavaScriptExecutor:\s*SerialExecutor/g, 'internal final class JavaScriptExecutor: SerialExecutor, @unchecked Sendable');
+  content = content.replace(/internal\s+(?:final\s+)?class\s+JavaScriptExecutor:\s*SerialExecutor(?:\s*,\s*@unchecked\s*Sendable)?/g, 'internal class JavaScriptExecutor: SerialExecutor, @unchecked Sendable');
   fs.writeFileSync(jsActorPath, content, 'utf8');
-  console.log('Fixed JavaScriptActor.swift (final class JavaScriptExecutor: SerialExecutor, @unchecked Sendable)');
+  console.log('Fixed JavaScriptActor.swift (internal class JavaScriptExecutor: SerialExecutor, @unchecked Sendable)');
 }
 
 console.log('All Expo patches applied successfully.');
