@@ -217,13 +217,4 @@ if (fs.existsSync(expoCorePodspec)) {
   }
 }
 
-const precompiledModulesRb = 'node_modules/expo-modules-autolinking/scripts/ios/precompiled_modules.rb';
-if (fs.existsSync(precompiledModulesRb)) {
-  let content = fs.readFileSync(precompiledModulesRb, 'utf8');
-  content = content.replace(/def\s+try_link_with_prebuilt_xcframework\(spec\)[\s\S]*?return false unless enabled\?/g, 'def try_link_with_prebuilt_xcframework(spec)\n        return false');
-  content = content.replace(/def\s+enabled\?[\s\S]*?end/g, 'def enabled?\n        false\n      end');
-  fs.writeFileSync(precompiledModulesRb, content, 'utf8');
-  console.log('Fixed precompiled_modules.rb (disabled precompiled xcframeworks)');
-}
-
 console.log('All Expo patches applied successfully.');
