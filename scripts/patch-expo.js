@@ -29,23 +29,22 @@ walk('node_modules', (file) => {
   }
 });
 
-// 2. Add C++ factory functions in RuntimeScheduler.h for Swift 6.0 compatibility
+// 2. Fix RuntimeScheduler.h (forward declare retain/release in global namespace before SWIFT_SHARED_REFERENCE)
 const headerPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h';
 if (fs.existsSync(headerPath)) {
   let content = fs.readFileSync(headerPath, 'utf8');
-  if (!content.includes('createRuntimeScheduler')) {
-    const factory = `
-inline RuntimeScheduler *createRuntimeScheduler() {
-  return new RuntimeScheduler();
-}
-
-inline RuntimeScheduler *createRuntimeScheduler(void *scheduler, RuntimeScheduler::ScheduleFn fn) {
-  return new RuntimeScheduler(scheduler, fn);
-}
+  if (!content.includes('// forward declare retainRuntimeScheduler in global namespace')) {
+    const forwardDecl = `
+// forward declare retainRuntimeScheduler in global namespace
+namespace expo { class RuntimeScheduler; }
+void retainRuntimeScheduler(expo::RuntimeScheduler *scheduler);
+void releaseRuntimeScheduler(expo::RuntimeScheduler *scheduler);
 `;
-    content = content.replace('} // namespace expo', factory + '\n} // namespace expo');
+    // Clean up any old forward declaration inside namespace expo
+    content = content.replace(/\/\/ forward declare retainRuntimeScheduler[\s\S]*?void releaseRuntimeScheduler\(expo::RuntimeScheduler \*scheduler\);\s*/g, '');
+    content = content.replace('namespace expo {', forwardDecl + '\nnamespace expo {');
     fs.writeFileSync(headerPath, content, 'utf8');
-    console.log('Added factory functions to RuntimeScheduler.h');
+    console.log('Added global forward declarations to RuntimeScheduler.h');
   }
 }
 
@@ -88,13 +87,10 @@ if (fs.existsSync(jsRuntimePath)) {
   if (content.includes('vector.push_back(consuming: propNameId)')) {
     content = content.replace('vector.push_back(consuming: propNameId)', 'vector.push_back(propNameId)');
   }
-  // RuntimeScheduler constructors -> factory calls
-  content = content.replace(/self\.scheduler\s*=\s*expo\.RuntimeScheduler\(\)/g, 'self.scheduler = expo.createRuntimeScheduler()');
-  content = content.replace(/self\.scheduler\s*=\s*expo\.RuntimeScheduler\(scheduler,\s*fn\)/g, 'self.scheduler = expo.createRuntimeScheduler(scheduler, fn)');
   // HostFunctionClosure constructors -> factory calls
   content = content.replace(/return\s+expo\.HostFunctionClosure\(context,\s*call,\s*deallocate\)/g, 'return expo.createHostFunctionClosure(context, call, deallocate)');
   fs.writeFileSync(jsRuntimePath, content, 'utf8');
-  console.log('Fixed JavaScriptRuntime.swift (constructors, trailing comma, push_back)');
+  console.log('Fixed JavaScriptRuntime.swift (push_back, trailing comma, HostFunctionClosure)');
 }
 
 // 6. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
