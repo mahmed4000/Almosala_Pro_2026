@@ -60,6 +60,7 @@ if (fs.existsSync(jsRuntimePath)) {
 }
 
 // 4. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
+// AND annotate weak var runtime with nonisolated(unsafe) to allow Sendable conformance
 walk('node_modules/expo-modules-jsi', (file) => {
   if (file.endsWith('.swift')) {
     let content = fs.readFileSync(file, 'utf8');
@@ -71,14 +72,31 @@ walk('node_modules/expo-modules-jsi', (file) => {
       changed = true;
     }
 
+    // weak var runtime -> nonisolated(unsafe) weak var runtime
+    if (content.includes('weak var runtime') && !content.includes('nonisolated(unsafe)')) {
+      content = content.replace(/((?:private|internal)\s+weak\s+var\s+runtime)/g, 'nonisolated(unsafe) $1');
+      changed = true;
+    }
+
     if (changed) {
       fs.writeFileSync(file, content, 'utf8');
-      console.log('Fixed weak let in:', file);
+      console.log('Fixed weak let / nonisolated runtime in:', file);
     }
   }
 });
 
-// 5. Fix JavaScriptError.swift Sendable conformance for Swift 6
+// 5. Fix JavaScriptType protocol (remove strict Sendable requirement)
+const jsTypePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Protocols/JavaScriptType.swift';
+if (fs.existsSync(jsTypePath)) {
+  let content = fs.readFileSync(jsTypePath, 'utf8');
+  if (content.includes('public protocol JavaScriptType: Sendable, ~Copyable')) {
+    content = content.replace('public protocol JavaScriptType: Sendable, ~Copyable', 'public protocol JavaScriptType: ~Copyable');
+    fs.writeFileSync(jsTypePath, content, 'utf8');
+    console.log('Fixed JavaScriptType.swift (removed Sendable)');
+  }
+}
+
+// 6. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
@@ -89,7 +107,7 @@ if (fs.existsSync(jsErrorPath)) {
   }
 }
 
-// 6. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 7. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
 if (fs.existsSync(hostFnPath)) {
   let content = fs.readFileSync(hostFnPath, 'utf8');
@@ -108,7 +126,7 @@ if (fs.existsSync(hostFnPath)) {
   }
 }
 
-// 7. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 8. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
 if (fs.existsSync(hostObjPath)) {
   let content = fs.readFileSync(hostObjPath, 'utf8');
@@ -119,7 +137,7 @@ if (fs.existsSync(hostObjPath)) {
   }
 }
 
-// 8. Fix JavaScriptExecutor in JavaScriptActor.swift
+// 9. Fix JavaScriptExecutor in JavaScriptActor.swift
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
