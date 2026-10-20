@@ -134,37 +134,34 @@ if (fs.existsSync(jsRefPath)) {
   console.log('Fixed JavaScriptRef.swift (removed sending)');
 }
 
-// 9. Fix JavaScriptCodable+Task.swift (wrap detached task captures in UncheckedSendable)
+// 9. Fix JavaScriptCodable+Task.swift (use JavaScriptRef and avoid Task.detached cross-isolation race)
 const jsTaskPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Coding/JavaScriptCodable+Task.swift';
 if (fs.existsSync(jsTaskPath)) {
-  let content = fs.readFileSync(jsTaskPath, 'utf8');
-  if (!content.includes('let uncheckedPromise = UncheckedSendable(promise)')) {
-    const targetBlock = `    let promise = try JavaScriptPromise(copy runtime)
-    Task<Void, Never>.detached {
+  const content = `// Copyright 2025-present 650 Industries. All rights reserved.
+
+/// Encodes a \`Task\` to a JavaScript promise that settles with the task's result.
+extension Task: JavaScriptEncodable where Success: JavaScriptEncodable, Failure: Error {
+  @JavaScriptActor
+  public static func encode(_ value: Task<Success, Failure>, in runtime: borrowing JavaScriptRuntime) throws
+    -> JavaScriptValue
+  {
+    let promise = try JavaScriptPromise(copy runtime)
+    let resultValue = promise.asValue()
+    let promiseRef = JavaScriptRef(promise)
+    Task {
       do {
-        promise.resolve(try await value.value)
+        let result = try await value.value
+        promiseRef.take()?.resolve(result)
       } catch {
-        promise.reject(error)
+        promiseRef.take()?.reject(error)
       }
-    }`;
-    const replacement = `    let promise = try JavaScriptPromise(copy runtime)
-    let uncheckedPromise = UncheckedSendable(promise)
-    let taskValue = UncheckedSendable(value)
-    Task<Void, Never>.detached {
-      do {
-        uncheckedPromise.value.resolve(try await taskValue.value.value)
-      } catch {
-        uncheckedPromise.value.reject(error)
-      }
-    }`;
-    if (content.includes(targetBlock)) {
-      content = content.replace(targetBlock, replacement);
-    } else {
-      content = content.replace(/let\s+promise\s*=\s*.*?JavaScriptPromise\(copy\s+runtime\)[\s\S]*?Task<Void,\s*Never>\.detached\s*\{[\s\S]*?\}\s*\}(?=\s*return)/g, replacement);
     }
-    fs.writeFileSync(jsTaskPath, content, 'utf8');
-    console.log('Fixed JavaScriptCodable+Task.swift (UncheckedSendable)');
+    return resultValue
   }
+}
+`;
+  fs.writeFileSync(jsTaskPath, content, 'utf8');
+  console.log('Fixed JavaScriptCodable+Task.swift (JavaScriptRef)');
 }
 
 // 10. Fix JavaScriptError.swift Sendable conformance for Swift 6
