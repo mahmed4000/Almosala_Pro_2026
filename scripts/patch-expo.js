@@ -17,7 +17,7 @@ function walk(dir, callback) {
 
 console.log('Patching Expo SDK 57 iOS native modules compatibility...');
 
-// 1. Fix Swift tools version in Package.swift
+// 1. Fix Swift tools version in Package.swift (6.2 -> 6.0 for Xcode 16)
 walk('node_modules', (file) => {
   if (path.basename(file) === 'Package.swift') {
     let content = fs.readFileSync(file, 'utf8');
@@ -29,51 +29,7 @@ walk('node_modules', (file) => {
   }
 });
 
-// 2. Fix RuntimeScheduler.h
-// Move SWIFT_SHARED_REFERENCE to class declaration and forward declare retain/release
-const headerPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h';
-if (fs.existsSync(headerPath)) {
-  let content = fs.readFileSync(headerPath, 'utf8');
-  
-  // Forward declarations before namespace
-  if (!content.includes('void retainRuntimeScheduler(expo::RuntimeScheduler *scheduler);')) {
-    const forwardDecl = `
-namespace expo { class RuntimeScheduler; }
-void retainRuntimeScheduler(expo::RuntimeScheduler *scheduler);
-void releaseRuntimeScheduler(expo::RuntimeScheduler *scheduler);
-`;
-    content = content.replace('namespace expo {', forwardDecl + '\nnamespace expo {');
-  }
-
-  // Move SWIFT_SHARED_REFERENCE to class header
-  if (content.includes('class RuntimeScheduler {')) {
-    content = content.replace('class RuntimeScheduler {', 'class SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler) RuntimeScheduler {');
-  }
-  if (content.includes('} SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler);')) {
-    content = content.replace('} SWIFT_SHARED_REFERENCE(retainRuntimeScheduler, releaseRuntimeScheduler);', '};');
-  }
-
-  fs.writeFileSync(headerPath, content, 'utf8');
-  console.log('Fixed RuntimeScheduler.h SWIFT_SHARED_REFERENCE placement');
-}
-
-// 3. Add C++ factory function in HostFunctionClosure.h for Swift 6.0 compatibility
-const hostClosurePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/HostFunctionClosure.h';
-if (fs.existsSync(hostClosurePath)) {
-  let content = fs.readFileSync(hostClosurePath, 'utf8');
-  if (!content.includes('createHostFunctionClosure')) {
-    const factory = `
-inline HostFunctionClosure *createHostFunctionClosure(HostFunctionClosure::Context context, HostFunctionClosure::Closure closure, HostFunctionClosure::Deallocator deallocator) {
-  return new HostFunctionClosure(context, closure, deallocator);
-}
-`;
-    content = content.replace('} // namespace expo', factory + '\n} // namespace expo');
-    fs.writeFileSync(hostClosurePath, content, 'utf8');
-    console.log('Added factory function to HostFunctionClosure.h');
-  }
-}
-
-// 4. Fix Task+immediate.swift for Swift 6.0 (Xcode 16 / iOS 18 SDK)
+// 2. Fix Task+immediate.swift for Swift 6.0 (Xcode 16 / iOS 18 SDK)
 const taskImmPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Extensions/Task+immediate.swift';
 if (fs.existsSync(taskImmPath)) {
   let content = fs.readFileSync(taskImmPath, 'utf8');
@@ -84,26 +40,26 @@ if (fs.existsSync(taskImmPath)) {
   }
 }
 
-// 5. Fix JavaScriptRuntime.swift
+// 3. Fix trailing comma and consuming in JavaScriptRuntime.swift
 const jsRuntimePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift';
 if (fs.existsSync(jsRuntimePath)) {
   let content = fs.readFileSync(jsRuntimePath, 'utf8');
-  // Trailing comma
+  let changed = false;
   if (content.includes('consuming JavaScriptValuesBuffer,')) {
     content = content.replace(/consuming\s+JavaScriptValuesBuffer,/g, 'consuming JavaScriptValuesBuffer');
+    changed = true;
   }
-  // extraneous consuming: in push_back
   if (content.includes('vector.push_back(consuming: propNameId)')) {
     content = content.replace('vector.push_back(consuming: propNameId)', 'vector.push_back(propNameId)');
+    changed = true;
   }
-  // HostFunctionClosure constructors -> factory calls
-  content = content.replace(/return\s+expo\.HostFunctionClosure\(context,\s*call,\s*deallocate\)/g, 'return expo.createHostFunctionClosure(context, call, deallocate)');
-  fs.writeFileSync(jsRuntimePath, content, 'utf8');
-  console.log('Fixed JavaScriptRuntime.swift (push_back, trailing comma, HostFunctionClosure)');
+  if (changed) {
+    fs.writeFileSync(jsRuntimePath, content, 'utf8');
+    console.log('Fixed JavaScriptRuntime.swift syntax');
+  }
 }
 
-// 6. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
-// AND annotate weak var runtime with nonisolated(unsafe) to allow Sendable conformance
+// 4. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
 walk('node_modules/expo-modules-jsi', (file) => {
   if (file.endsWith('.swift')) {
     let content = fs.readFileSync(file, 'utf8');
@@ -115,70 +71,63 @@ walk('node_modules/expo-modules-jsi', (file) => {
       changed = true;
     }
 
-    // weak var runtime -> nonisolated(unsafe) weak var runtime
-    if (content.includes('weak var runtime') && !content.includes('nonisolated(unsafe)')) {
-      content = content.replace(/((?:private|internal)\s+weak\s+var\s+runtime)/g, 'nonisolated(unsafe) $1');
-      changed = true;
-    }
-
-    // clean up any artificially appended @unchecked Sendable
-    if (content.includes(', @unchecked Sendable')) {
-      content = content.replace(/,\s*@unchecked\s*Sendable/g, '');
-      changed = true;
-    }
-
     if (changed) {
       fs.writeFileSync(file, content, 'utf8');
+      console.log('Fixed weak let in:', file);
     }
   }
 });
 
-// 7. Fix JavaScriptType protocol (remove strict Sendable requirement)
-const jsTypePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Protocols/JavaScriptType.swift';
-if (fs.existsSync(jsTypePath)) {
-  let content = fs.readFileSync(jsTypePath, 'utf8');
-  if (content.includes('public protocol JavaScriptType: Sendable, ~Copyable')) {
-    content = content.replace('public protocol JavaScriptType: Sendable, ~Copyable', 'public protocol JavaScriptType: ~Copyable');
-    fs.writeFileSync(jsTypePath, content, 'utf8');
-    console.log('Fixed JavaScriptType.swift (removed Sendable)');
-  }
-}
-
-// 8. Fix JavaScriptError.swift Sendable conformance for Swift 6
+// 5. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
-  content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
-  fs.writeFileSync(jsErrorPath, content, 'utf8');
-  console.log('Fixed JavaScriptError.swift (@unchecked Sendable)');
+  if (content.includes('class JavaScriptError: Error, Sendable')) {
+    content = content.replace(/public\s+final\s+class\s+JavaScriptError:\s*Error,\s*Sendable/g, 'public final class JavaScriptError: Error, @unchecked Sendable');
+    fs.writeFileSync(jsErrorPath, content, 'utf8');
+    console.log('Fixed JavaScriptError.swift (@unchecked Sendable)');
+  }
 }
 
-// 9. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 6. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
 if (fs.existsSync(hostFnPath)) {
   let content = fs.readFileSync(hostFnPath, 'utf8');
-  content = content.replace(/class\s+HostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostFunctionContext: HostCallbackContext, @unchecked Sendable');
-  content = content.replace(/class\s+UnownedThisHostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class UnownedThisHostFunctionContext: HostCallbackContext, @unchecked Sendable');
-  fs.writeFileSync(hostFnPath, content, 'utf8');
-  console.log('Fixed HostFunctionContext.swift (@unchecked Sendable)');
+  let changed = false;
+  if (content.includes('class HostFunctionContext: HostCallbackContext, Sendable')) {
+    content = content.replace(/class\s+HostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostFunctionContext: HostCallbackContext, @unchecked Sendable');
+    changed = true;
+  }
+  if (content.includes('class UnownedThisHostFunctionContext: HostCallbackContext, Sendable')) {
+    content = content.replace(/class\s+UnownedThisHostFunctionContext:\s*HostCallbackContext,\s*Sendable/g, 'class UnownedThisHostFunctionContext: HostCallbackContext, @unchecked Sendable');
+    changed = true;
+  }
+  if (changed) {
+    fs.writeFileSync(hostFnPath, content, 'utf8');
+    console.log('Fixed HostFunctionContext.swift (@unchecked Sendable)');
+  }
 }
 
-// 10. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 7. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
 if (fs.existsSync(hostObjPath)) {
   let content = fs.readFileSync(hostObjPath, 'utf8');
-  content = content.replace(/class\s+HostObjectContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostObjectContext: HostCallbackContext, @unchecked Sendable');
-  fs.writeFileSync(hostObjPath, content, 'utf8');
-  console.log('Fixed HostObjectContext.swift (@unchecked Sendable)');
+  if (content.includes('class HostObjectContext: HostCallbackContext, Sendable')) {
+    content = content.replace(/class\s+HostObjectContext:\s*HostCallbackContext,\s*Sendable/g, 'class HostObjectContext: HostCallbackContext, @unchecked Sendable');
+    fs.writeFileSync(hostObjPath, content, 'utf8');
+    console.log('Fixed HostObjectContext.swift (@unchecked Sendable)');
+  }
 }
 
-// 11. Fix JavaScriptExecutor in JavaScriptActor.swift
+// 8. Fix JavaScriptExecutor in JavaScriptActor.swift
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
-  content = content.replace(/internal\s+(?:final\s+)?class\s+JavaScriptExecutor:\s*SerialExecutor(?:\s*,\s*@unchecked\s*Sendable)?/g, 'internal class JavaScriptExecutor: SerialExecutor, @unchecked Sendable');
-  fs.writeFileSync(jsActorPath, content, 'utf8');
-  console.log('Fixed JavaScriptActor.swift (internal class JavaScriptExecutor: SerialExecutor, @unchecked Sendable)');
+  if (content.includes('internal class JavaScriptExecutor: SerialExecutor {')) {
+    content = content.replace(/internal\s+class\s+JavaScriptExecutor:\s*SerialExecutor\s*\{/g, 'internal class JavaScriptExecutor: SerialExecutor, @unchecked Sendable {');
+    fs.writeFileSync(jsActorPath, content, 'utf8');
+    console.log('Fixed JavaScriptActor.swift (@unchecked Sendable)');
+  }
 }
 
 console.log('All Expo patches applied successfully.');
