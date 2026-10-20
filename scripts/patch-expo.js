@@ -29,29 +29,75 @@ walk('node_modules', (file) => {
   }
 });
 
-// 2. Fix RuntimeScheduler.h SWIFT_RETURNS_RETAINED error
+// 2. Add C++ factory functions in RuntimeScheduler.h for Swift 6.0 compatibility
 const headerPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h';
 if (fs.existsSync(headerPath)) {
   let content = fs.readFileSync(headerPath, 'utf8');
-  if (content.includes('SWIFT_RETURNS_RETAINED')) {
-    content = content.replace(/SWIFT_RETURNS_RETAINED\s+/g, '');
+  if (!content.includes('createRuntimeScheduler')) {
+    const factory = `
+inline RuntimeScheduler *createRuntimeScheduler() {
+  return new RuntimeScheduler();
+}
+
+inline RuntimeScheduler *createRuntimeScheduler(void *scheduler, RuntimeScheduler::ScheduleFn fn) {
+  return new RuntimeScheduler(scheduler, fn);
+}
+`;
+    content = content.replace('} // namespace expo', factory + '\n} // namespace expo');
     fs.writeFileSync(headerPath, content, 'utf8');
-    console.log('Fixed SWIFT_RETURNS_RETAINED in RuntimeScheduler.h');
+    console.log('Added factory functions to RuntimeScheduler.h');
   }
 }
 
-// 3. Fix trailing comma in JavaScriptRuntime.swift
+// 3. Add C++ factory function in HostFunctionClosure.h for Swift 6.0 compatibility
+const hostClosurePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/HostFunctionClosure.h';
+if (fs.existsSync(hostClosurePath)) {
+  let content = fs.readFileSync(hostClosurePath, 'utf8');
+  if (!content.includes('createHostFunctionClosure')) {
+    const factory = `
+inline HostFunctionClosure *createHostFunctionClosure(HostFunctionClosure::Context context, HostFunctionClosure::Closure closure, HostFunctionClosure::Deallocator deallocator) {
+  return new HostFunctionClosure(context, closure, deallocator);
+}
+`;
+    content = content.replace('} // namespace expo', factory + '\n} // namespace expo');
+    fs.writeFileSync(hostClosurePath, content, 'utf8');
+    console.log('Added factory function to HostFunctionClosure.h');
+  }
+}
+
+// 4. Fix Task+immediate.swift for Swift 6.0 (Xcode 16 / iOS 18 SDK)
+const taskImmPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Extensions/Task+immediate.swift';
+if (fs.existsSync(taskImmPath)) {
+  let content = fs.readFileSync(taskImmPath, 'utf8');
+  if (content.includes('Task.immediate')) {
+    content = content.replace(/if\s+#available\([^)]+\)\s*\{[\s\S]*?\}\s*else\s*\{[\s\S]*?\}/g, 'return Task(priority: priority ?? .high, operation: operation)');
+    fs.writeFileSync(taskImmPath, content, 'utf8');
+    console.log('Fixed Task+immediate.swift');
+  }
+}
+
+// 5. Fix JavaScriptRuntime.swift
 const jsRuntimePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift';
 if (fs.existsSync(jsRuntimePath)) {
   let content = fs.readFileSync(jsRuntimePath, 'utf8');
+  // Trailing comma
   if (content.includes('consuming JavaScriptValuesBuffer,')) {
     content = content.replace(/consuming\s+JavaScriptValuesBuffer,/g, 'consuming JavaScriptValuesBuffer');
-    fs.writeFileSync(jsRuntimePath, content, 'utf8');
-    console.log('Fixed trailing comma in JavaScriptRuntime.swift');
   }
+  // extraneous consuming: in push_back
+  if (content.includes('vector.push_back(consuming: propNameId)')) {
+    content = content.replace('vector.push_back(consuming: propNameId)', 'vector.push_back(propNameId)');
+  }
+  // RuntimeScheduler constructors -> factory calls
+  content = content.replace(/self\.scheduler\s*=\s*expo\.RuntimeScheduler\(\)/g, 'self.scheduler = expo.createRuntimeScheduler()');
+  content = content.replace(/self\.scheduler\s*=\s*expo\.RuntimeScheduler\(scheduler,\s*fn\)/g, 'self.scheduler = expo.createRuntimeScheduler(scheduler, fn)');
+  // HostFunctionClosure constructors -> factory calls
+  content = content.replace(/return\s+expo\.HostFunctionClosure\(context,\s*call,\s*deallocate\)/g, 'return expo.createHostFunctionClosure(context, call, deallocate)');
+  fs.writeFileSync(jsRuntimePath, content, 'utf8');
+  console.log('Fixed JavaScriptRuntime.swift (constructors, trailing comma, push_back)');
 }
 
-// 4. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
+// 6. Fix weak let across ALL Swift files in expo-modules-jsi (Swift 6 requires weak var)
 // AND annotate weak var runtime with nonisolated(unsafe) to allow Sendable conformance
 walk('node_modules/expo-modules-jsi', (file) => {
   if (file.endsWith('.swift')) {
@@ -82,7 +128,7 @@ walk('node_modules/expo-modules-jsi', (file) => {
   }
 });
 
-// 5. Fix JavaScriptType protocol (remove strict Sendable requirement)
+// 7. Fix JavaScriptType protocol (remove strict Sendable requirement)
 const jsTypePath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Protocols/JavaScriptType.swift';
 if (fs.existsSync(jsTypePath)) {
   let content = fs.readFileSync(jsTypePath, 'utf8');
@@ -93,7 +139,7 @@ if (fs.existsSync(jsTypePath)) {
   }
 }
 
-// 6. Fix JavaScriptError.swift Sendable conformance for Swift 6
+// 8. Fix JavaScriptError.swift Sendable conformance for Swift 6
 const jsErrorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/Values/JavaScriptError.swift';
 if (fs.existsSync(jsErrorPath)) {
   let content = fs.readFileSync(jsErrorPath, 'utf8');
@@ -102,7 +148,7 @@ if (fs.existsSync(jsErrorPath)) {
   console.log('Fixed JavaScriptError.swift (@unchecked Sendable)');
 }
 
-// 7. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 9. Fix HostFunctionContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostFnPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostFunctionContext.swift';
 if (fs.existsSync(hostFnPath)) {
   let content = fs.readFileSync(hostFnPath, 'utf8');
@@ -112,7 +158,7 @@ if (fs.existsSync(hostFnPath)) {
   console.log('Fixed HostFunctionContext.swift (@unchecked Sendable)');
 }
 
-// 8. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
+// 10. Fix HostObjectContext.swift (Unmanaged runtime needs @unchecked Sendable)
 const hostObjPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Contexts/HostObjectContext.swift';
 if (fs.existsSync(hostObjPath)) {
   let content = fs.readFileSync(hostObjPath, 'utf8');
@@ -121,7 +167,7 @@ if (fs.existsSync(hostObjPath)) {
   console.log('Fixed HostObjectContext.swift (@unchecked Sendable)');
 }
 
-// 9. Fix JavaScriptExecutor in JavaScriptActor.swift (MUST NOT be final because JavaScriptRuntimeExecutor subclasses it)
+// 11. Fix JavaScriptExecutor in JavaScriptActor.swift
 const jsActorPath = 'node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptActor.swift';
 if (fs.existsSync(jsActorPath)) {
   let content = fs.readFileSync(jsActorPath, 'utf8');
